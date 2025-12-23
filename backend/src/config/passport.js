@@ -1,6 +1,7 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import User from "../models/user.js";
+import Profile from "../models/profile.js";
 
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     passport.use(
@@ -23,12 +24,22 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                     }
 
                     if (!user) {
+                        // Split displayName into firstName and lastName
+                        const nameParts = profile.displayName.trim().split(/\s+/);
+                        const firstName = nameParts[0] || "User";
+                        const lastName = nameParts.slice(1).join(" ") || profile.displayName;
+
+                        // Create a new profile document
+                        const newProfile = await Profile.create({});
+
                         user = await User.create({
-                            fullName: profile.displayName,
+                            firstName,
+                            lastName,
                             email,
                             googleId: profile.id,
                             authProvider: "GOOGLE",
-                            role: "VISITOR"
+                            role: "VISITOR",
+                            profile: newProfile._id
                         });
                     }
 

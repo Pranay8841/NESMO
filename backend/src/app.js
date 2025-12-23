@@ -5,6 +5,7 @@ import cors from "cors";
 import passport from "passport";
 import authRoutes from "./routes/auth.js";
 import adminRoutes from "./routes/admin.js";
+import profileRoutes from "./routes/profile.js";
 import connectDB from "./config/mongodb.js";
 import "./config/passport.js";
 
@@ -16,6 +17,7 @@ app.use(passport.initialize());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/profile", profileRoutes);
 
 const startServer = async () => {
   try {

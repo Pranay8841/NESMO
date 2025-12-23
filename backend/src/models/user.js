@@ -2,7 +2,13 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
-    fullName: {
+    firstName: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    lastName: {
       type: String,
       required: true,
       trim: true
@@ -18,32 +24,6 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       select: false
-    },
-
-    about: {
-      type: String,
-      maxlength: 500
-    },
-
-    phone: {
-      type: String
-    },
-
-    jnvBatch: {
-      type: String
-    },
-
-    occupation: {
-      type: String
-    },
-
-    currentAddress: {
-      type: String
-    },
-
-    bloodGroup: {
-      type: String,
-      enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
     },
 
     authProvider: {
@@ -75,19 +55,10 @@ const userSchema = new mongoose.Schema(
       default: "ACTIVE"
     },
 
-    directoryVisibility: {
-      type: Boolean,
-      default: true
-    },
-
-    showPhone: {
-      type: Boolean,
-      default: false
-    },
-
-    showEmail: {
-      type: Boolean,
-      default: false
+    profile: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Profile",
+      required: true
     }
   },
   { timestamps: true }

@@ -23,16 +23,17 @@ export const protect = async (
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = await User.findById(decoded.id);
+        req.user = { id: decoded.userId, role: decoded.role };
 
-        if (!req.user) {
-            return res.status(401).json({ message: "User not found" });
+        const userExists = await User.findById(decoded.userId);
+        if (!userExists || userExists.status === "BLOCKED") {
+            return res.status(403).json({ message: "Access denied" });
         }
-
+        
         if (req.user.status === "BLOCKED") {
             return res.status(403).json({ message: "Account is blocked" });
         }
-        
+
         next();
     } catch (error) {
         return res.status(401).json({
