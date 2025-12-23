@@ -28,21 +28,9 @@ const profileSchema = new mongoose.Schema(
             enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
         },
 
-        privacy: {
-            directoryVisibility: {
-                type: Boolean,
-                default: true
-            },
-
-            showPhone: {
-                type: Boolean,
-                default: false
-            },
-
-            showEmail: {
-                type: Boolean,
-                default: false
-            }
+        profilePhoto: {
+            type: String,
+            default: "" // uploaded later
         }
     },
     { timestamps: true }

@@ -18,6 +18,7 @@ app.use(passport.initialize());
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/profile", profileRoutes);
+app.use("/api/alumni-directory", profileRoutes);
 
 const startServer = async () => {
   try {
