@@ -28,24 +28,17 @@ const profileSchema = new mongoose.Schema(
             enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
         },
 
-        privacy: {
-            directoryVisibility: {
-                type: Boolean,
-                default: true
-            },
-
-            showPhone: {
-                type: Boolean,
-                default: false
-            },
-
-            showEmail: {
-                type: Boolean,
-                default: false
-            }
+        profilePhoto: {
+            type: String,
+            default: "" // uploaded later
         }
     },
     { timestamps: true }
 );
+
+profileSchema.index({ currentAddress: 1 });
+profileSchema.index({ occupation: 1 });
+profileSchema.index({ jnvBatch: 1 });
+profileSchema.index({ bloodGroup: 1 });
 
 export default mongoose.model("Profile", profileSchema);
