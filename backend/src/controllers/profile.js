@@ -1,47 +1,54 @@
 import User from "../models/user.js";
 import Profile from "../models/profile.js";
+import uploadImageToCloudinary from "../utils/imageUploader.js";
 
 /**
  * UPDATE PROFILE
  */
 export const updateProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const userId = req.user.id;
+    const {
+      about,
+      phone,
+      city,
+      occupation,
+      jnvBatch,
+      bloodGroup
+    } = req.body;
+
+    const user = await User.findById(userId).populate("profile");
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
     }
 
-    const allowedFields = [
-      "about",
-      "phone",
-      "jnvBatch",
-      "occupation",
-      "currentAddress",
-      "bloodGroup",
-      "privacy"
-    ];
-
-    const updates = {};
-    allowedFields.forEach((field) => {
-      if (req.body[field] !== undefined) {
-        updates[field] = req.body[field];
-      }
-    });
-
-    const updatedProfile = await Profile.findByIdAndUpdate(
-      user.profile,
-      { $set: updates },
-      { new: true, runValidators: true }
+    const profile = await Profile.findByIdAndUpdate(
+      user.profile._id,
+      {
+        about,
+        phone,
+        currentAddress: city,
+        occupation,
+        jnvBatch,
+        bloodGroup
+      },
+      { new: true }
     );
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       message: "Profile updated successfully",
-      data: updatedProfile
+      profile
     });
 
   } catch (error) {
-    return res.status(500).json({ message: "Profile update failed" });
+    res.status(500).json({
+      success: false,
+      message: "Unable to update profile"
+    });
   }
 };
 
@@ -61,5 +68,59 @@ export const getMyProfile = async (req, res) => {
 
   } catch (error) {
     return res.status(500).json({ message: "Failed to fetch profile" });
+  }
+};
+
+export const getProfileCompleteness = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).populate("profile");
+
+    let score = 0;
+    const profile = user.profile;
+
+    if (profile.profilePhoto) score += 20;
+    if (profile.phone) score += 20;
+    if (profile.currentAddress) score += 20;
+    if (profile.occupation) score += 20;
+    if (profile.about) score += 20;
+
+    res.status(200).json({
+      success: true,
+      completeness: score
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Unable to calculate profile completeness"
+    });
+  }
+};
+
+export const uploadProfilePhoto = async (req, res) => {
+  try {
+    const displayPicture = req.files.profilePhoto
+    const userId = req.user.id
+    const image = await uploadImageToCloudinary(
+      displayPicture,
+      process.env.FOLDER_NAME,
+      1000,
+      1000
+    )
+    const updatedProfile = await User.findByIdAndUpdate(
+      { _id: userId },
+      { image: image.secure_url },
+      { new: true }
+    )
+    res.send({
+      success: true,
+      message: `Image Updated successfully`,
+      data: updatedProfile,
+    })
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    })
   }
 };

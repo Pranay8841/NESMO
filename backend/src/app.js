@@ -7,6 +7,8 @@ import authRoutes from "./routes/auth.js";
 import adminRoutes from "./routes/admin.js";
 import profileRoutes from "./routes/profile.js";
 import connectDB from "./config/mongodb.js";
+import fileUpload from "express-fileupload"
+import cloudinaryConnect from "./config/cloudinary.js";
 import "./config/passport.js";
 
 const app = express();
@@ -14,6 +16,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(passport.initialize());
+app.use(
+  fileUpload({
+    useTempFiles: true,
+    tempFileDir: "/tmp/"
+  })
+);
+
+cloudinaryConnect();
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);

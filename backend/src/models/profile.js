@@ -36,4 +36,9 @@ const profileSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
+profileSchema.index({ currentAddress: 1 });
+profileSchema.index({ occupation: 1 });
+profileSchema.index({ jnvBatch: 1 });
+profileSchema.index({ bloodGroup: 1 });
+
 export default mongoose.model("Profile", profileSchema);
