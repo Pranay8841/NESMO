@@ -80,6 +80,106 @@ export const updateUserStatus = async (req, res) => {
  * List users (Admin view)
  */
 export const getAllUsers = async (req, res) => {
-  const users = await User.find().select("-password");
-  res.json(users);
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 20;
+
+  const query = {};
+  if (req.query.status === "blocked") query.isBlocked = true;
+
+  const users = await User.find(query)
+    .select("firstName lastName email isMember isBlocked isVerified createdAt")
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .sort({ createdAt: -1 });
+
+  const total = await User.countDocuments(query);
+
+  res.json({
+    success: true,
+    page,
+    total,
+    users
+  });
+};
+
+export const blockUser = async (req, res) => {
+  const { reason } = req.body;
+
+  await User.findByIdAndUpdate(req.params.id, {
+    isBlocked: true,
+    blockedReason: reason,
+    blockedAt: new Date()
+  });
+
+  res.json({
+    success: true,
+    message: "User blocked successfully"
+  });
+};
+
+export const unblockUser = async (req, res) => {
+  await User.findByIdAndUpdate(req.params.id, {
+    isBlocked: false,
+    blockedReason: null,
+    blockedAt: null
+  });
+
+  res.json({
+    success: true,
+    message: "User unblocked successfully"
+  });
+};
+
+export const verifyUser = async (req, res) => {
+  await User.findByIdAndUpdate(req.params.id, {
+    isVerified: true
+  });
+
+  res.json({
+    success: true,
+    message: "User verified successfully"
+  });
+};
+
+export const getAllPayments = async (req, res) => {
+  const page = Number(req.query.page) || 1;
+  const limit = 20;
+
+  const filter = {};
+  if (req.query.status) filter.status = req.query.status;
+
+  const payments = await Payment.find(filter)
+    .populate("user", "firstName lastName email")
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .sort({ createdAt: -1 });
+
+  const total = await Payment.countDocuments(filter);
+
+  res.json({
+    success: true,
+    total,
+    payments
+  });
+};
+
+export const manualVerifyPayment = async (req, res) => {
+  const payment = await Payment.findById(req.params.id);
+
+  if (!payment) {
+    return res.status(404).json({ success: false, message: "Payment not found" });
+  }
+
+  payment.status = "SUCCESS";
+  payment.verifiedAt = new Date();
+  await payment.save();
+
+  await User.findByIdAndUpdate(payment.user, {
+    isMember: true
+  });
+
+  res.json({
+    success: true,
+    message: "Payment verified manually"
+  });
 };

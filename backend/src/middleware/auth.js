@@ -1,11 +1,7 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/user.js';
 
-export const protect = async (
-    req,
-    res,
-    next
-) => {
+export const protect = async (req, res, next) => {
     let token;
 
     if (
@@ -16,31 +12,33 @@ export const protect = async (
     }
 
     if (!token) {
-        return res.status(401).json({
-            message: "Not authorized - no token"
-        });
+        return res.status(401).json({ message: "Not authorized - no token" });
     }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = { id: decoded.userId, role: decoded.role };
 
-        const userExists = await User.findById(decoded.userId);
-        if (!userExists || userExists.status === "BLOCKED") {
-            return res.status(403).json({ message: "Access denied" });
+        const user = await User.findById(decoded.userId).select("role status");
+
+        if (!user) {
+            return res.status(401).json({ message: "User not found" });
         }
-        
-        if (req.user.status === "BLOCKED") {
+
+        if (user.status === "BLOCKED") {
             return res.status(403).json({ message: "Account is blocked" });
         }
 
+        req.user = {
+            id: user._id,
+            role: user.role,
+        };
+
         next();
     } catch (error) {
-        return res.status(401).json({
-            message: "Not authorized - invalid token"
-        });
+        return res.status(401).json({ message: "Not authorized - invalid token" });
     }
-}
+};
+
 
 export const authorize = (
     ...roles
