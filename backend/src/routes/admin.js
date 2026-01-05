@@ -3,7 +3,12 @@ import {
   bootstrapAdmin,
   updateUserRole,
   updateUserStatus,
-  getAllUsers
+  getAllUsers,
+  blockUser,
+  unblockUser,
+  verifyUser,
+  getAllPayments,
+  manualVerifyPayment
 } from "../controllers/admin.js";
 import { protect, authorize } from "../middleware/auth.js";
 
@@ -20,8 +25,15 @@ router.post("/bootstrap", bootstrapAdmin);
 router.use(protect);
 router.use(authorize("ADMIN"));
 
-router.get("/users", getAllUsers);
 router.patch("/users/:id/role", updateUserRole);
 router.patch("/users/:id/status", updateUserStatus);
+
+router.get("/users", getAllUsers);
+router.put("/user/:id/block", blockUser);
+router.put("/user/:id/unblock", unblockUser);
+router.put("/user/:id/verify", verifyUser);
+
+router.get("/payments", getAllPayments);
+router.put("/payment/:id/verify", manualVerifyPayment);
 
 export default router;

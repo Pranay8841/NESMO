@@ -59,6 +59,24 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Profile",
       required: true
+    },
+
+    isBlocked: {
+      type: Boolean,
+      default: false
+    },
+
+    isVerified: {
+      type: Boolean,
+      default: false
+    },
+
+    blockedReason: {
+      type: String
+    },
+    
+    blockedAt: {
+      type: Date
     }
   },
   { timestamps: true }
