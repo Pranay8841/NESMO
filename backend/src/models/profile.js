@@ -19,6 +19,10 @@ const profileSchema = new mongoose.Schema(
             type: String
         },
 
+        sector: {
+            type: String
+        },
+
         currentAddress: {
             type: String
         },

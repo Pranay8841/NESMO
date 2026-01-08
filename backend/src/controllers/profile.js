@@ -13,6 +13,7 @@ export const updateProfile = async (req, res) => {
       phone,
       city,
       occupation,
+      sector,
       jnvBatch,
       bloodGroup
     } = req.body;
@@ -32,6 +33,7 @@ export const updateProfile = async (req, res) => {
         phone,
         currentAddress: city,
         occupation,
+        sector,
         jnvBatch,
         bloodGroup
       },
@@ -82,6 +84,7 @@ export const getProfileCompleteness = async (req, res) => {
     if (profile.phone) score += 20;
     if (profile.currentAddress) score += 20;
     if (profile.occupation) score += 20;
+    if (profile.sector) score += 20;
     if (profile.about) score += 20;
 
     res.status(200).json({
