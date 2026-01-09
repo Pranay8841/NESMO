@@ -1,4 +1,5 @@
 import User from "../models/user.js";
+import EventRequest from "../models/eventRequest.js";
 
 /**
  * One-time Admin Bootstrap
@@ -236,4 +237,31 @@ export const getAllSupportTickets = async (req, res) => {
       message: "Unable to fetch tickets"
     });
   }
+};
+
+/**
+ * Admin: Approve / Reject event request
+ * PUT /api/admin/events/request/:id
+ */
+export const reviewEventRequest = async (req, res) => {
+  const { status, adminRemark } = req.body;
+
+  if (!["APPROVED", "REJECTED"].includes(status)) {
+    return res.status(400).json({ message: "Invalid status" });
+  }
+
+  const request = await EventRequest.findById(req.params.id);
+  if (!request) return res.status(404).json({ message: "Request not found" });
+
+  request.status = status;
+  request.adminRemark = adminRemark;
+  await request.save();
+
+  if (status === "APPROVED") {
+    await User.findByIdAndUpdate(request.requestedBy, {
+      role: "EVENT_LEAD"
+    });
+  }
+
+  res.json({ success: true, message: "Request processed" });
 };
