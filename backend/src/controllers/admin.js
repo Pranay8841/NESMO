@@ -183,3 +183,57 @@ export const manualVerifyPayment = async (req, res) => {
     message: "Payment verified manually"
   });
 };
+
+/** List Support Tickets (Admin)
+ */
+export const getAllSupportTickets = async (req, res) => {
+  try {
+    const {
+      category,
+      status,
+      priority,
+      city,
+      page = 1,
+      limit = 20
+    } = req.query;
+
+    const query = {};
+
+    if (category) query.category = category;
+    if (status) query.status = status;
+    if (priority) query.priority = priority;
+
+    if (city) {
+      query.cities = { $in: [city] };
+    }
+
+    const skip = (page - 1) * limit;
+
+    const tickets = await SupportTicket.find(query)
+      .populate("createdBy", "firstName lastName email")
+      .populate("assignedHelper", "firstName lastName email")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(Number(limit));
+
+    const total = await SupportTicket.countDocuments(query);
+
+    res.status(200).json({
+      success: true,
+      pagination: {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        pages: Math.ceil(total / limit)
+      },
+      data: tickets
+    });
+
+  } catch (error) {
+    console.error("Admin Ticket List Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Unable to fetch tickets"
+    });
+  }
+};

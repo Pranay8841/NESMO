@@ -8,7 +8,8 @@ import {
   unblockUser,
   verifyUser,
   getAllPayments,
-  manualVerifyPayment
+  manualVerifyPayment,
+  getAllSupportTickets
 } from "../controllers/admin.js";
 import { protect, authorize } from "../middleware/auth.js";
 
@@ -35,5 +36,7 @@ router.put("/user/:id/verify", verifyUser);
 
 router.get("/payments", getAllPayments);
 router.put("/payment/:id/verify", manualVerifyPayment);
+
+router.get("/support/tickets", protect, getAllSupportTickets);
 
 export default router;
