@@ -1,4 +1,4 @@
-import { Mail, MapPin, Phone, Shield, Twitter, Github, Linkedin, Instagram } from 'lucide-react';
+import { Mail, MapPin, Phone, Shield, Twitter, Github, Linkedin, Instagram, CircleCheck } from 'lucide-react';
 
 export default function Footer() {
     return (
@@ -47,7 +47,7 @@ export default function Footer() {
                             Connecting Navodaya alumni for a lifetime of support, growth, and giving back. Together we build a legacy that transcends generations.
                         </p>
                         <div className="flex items-center gap-2 mb-3 sm:mb-5">
-                            <Shield className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500 flex-shrink-0" />
+                            <CircleCheck className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500 flex-shrink-0" />
                             <span className="text-xs font-semibold text-gray-700 uppercase">
                                 Authorized NGO Reg. No. 12345/GOI
                             </span>
