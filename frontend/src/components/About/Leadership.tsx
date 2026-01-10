@@ -76,19 +76,20 @@ export default function App() {
                     </div>
 
                     {/* President Message Card */}
+                    {/* President Message Card */}
                     <div className="bg-gray-50 rounded-2xl overflow-hidden shadow-sm">
-                        <div className="flex flex-col lg:flex-row items-stretch">
+                        <div className="flex flex-col md:flex-row items-stretch">
 
                             {/* Leader Image */}
                             <div
-                                className="w-full lg:w-2/5 min-h-[500px] bg-cover bg-center"
+                                className="w-full md:w-2/5 min-h-[450px] bg-cover bg-center"
                                 style={{ backgroundImage: `url(${leaderImage})` }}
                                 aria-label="Dr. Rajesh Sharma"
                             />
 
                             {/* Message Content */}
-                            <div className="flex-1 p-8 lg:p-10 flex flex-col justify-center">
-                                <div className="flex items-center gap-2 mb-4">
+                            <div className="flex-1 p-8 md:p-12 flex flex-col justify-center gap-6">
+                                <div className="flex items-center gap-2 mb-2">
                                     <svg
                                         width="20"
                                         height="20"
@@ -101,38 +102,38 @@ export default function App() {
                                             fill="#3B82F6"
                                         />
                                     </svg>
-                                    <span className="text-blue-600 text-xs font-bold uppercase tracking-wide">
+                                    <span className="text-blue-600 text-sm font-bold uppercase tracking-wider">
                                         Message from the President
                                     </span>
                                 </div>
 
-                                <blockquote className="text-gray-900 text-lg lg:text-xl leading-relaxed mb-6">
+                                <blockquote className="text-xl md:text-2xl font-medium text-gray-900 leading-relaxed">
                                     "As we connect alumni from across decades, our mission remains rooted in
                                     the values we learned at JNV. Together, we build a stronger future for
                                     our community and society."
                                 </blockquote>
 
-                                <div className="border-l-4 border-blue-600 pl-4 mb-4">
-                                    <h3 className="font-bold text-gray-900 text-base mb-1">
+                                <div className="mt-4 border-l-4 border-blue-600 pl-4">
+                                    <h3 className="font-bold text-gray-900 text-lg">
                                         Dr. Rajesh Sharma
                                     </h3>
-                                    <p className="text-gray-600 text-sm">
+                                    <p className="text-gray-500 text-sm">
                                         Batch 1999 • Chief Surgeon
                                     </p>
                                 </div>
 
-                                <div className="flex items-center gap-3">
+                                <div className="flex gap-4 mt-2">
                                     <a
                                         href="#"
-                                        className="w-9 h-9 bg-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-300 transition-colors"
+                                        className="text-gray-400 hover:text-blue-600 transition-colors"
                                     >
-                                        <Mail className="w-4 h-4 text-gray-600" />
+                                        <Mail className="w-5 h-5" />
                                     </a>
                                     <a
                                         href="#"
-                                        className="w-9 h-9 bg-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-300 transition-colors"
+                                        className="text-gray-400 hover:text-blue-600 transition-colors"
                                     >
-                                        <Globe className="w-4 h-4 text-gray-600" />
+                                        <Globe className="w-5 h-5" />
                                     </a>
                                 </div>
                             </div>
