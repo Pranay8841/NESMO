@@ -1,5 +1,7 @@
 import User from "../models/user.js";
 import EventRequest from "../models/eventRequest.js";
+import News from "../models/news.js";
+import { sendNotifications } from "../service/notification.js";
 
 /**
  * One-time Admin Bootstrap
@@ -264,4 +266,85 @@ export const reviewEventRequest = async (req, res) => {
   }
 
   res.json({ success: true, message: "Request processed" });
+};
+
+export const createNews = async (req, res) => {
+  const news = await News.create({
+    ...req.body,
+    createdBy: req.user.id
+  });
+
+  res.status(201).json({
+    success: true,
+    data: news
+  });
+};
+
+export const publishNews = async (req, res) => {
+  const news = await News.findById(req.params.id);
+  if (!news) {
+    return res.status(404).json({ success: false });
+  }
+
+  news.status = "PUBLISHED";
+  news.publishedAt = new Date();
+  await news.save();
+
+  const userQuery = { status: "ACTIVE" };
+
+  if (news.audience === "ALUMNI") {
+    userQuery.isMember = true;
+  }
+
+  if (news.cities?.length) {
+    userQuery["profile.city"] = { $in: news.cities };
+  }
+
+  const users = await User.find(userQuery).select("_id");
+
+  await sendNotifications({
+    title: "NESMO News",
+    message: news.title,
+    type: "NEWS",
+    recipients: users.map(u => u._id),
+    link: `/news/${news._id}`,
+    meta: { newsId: news._id }
+  });
+
+  res.json({
+    success: true,
+    message: "News published successfully"
+  });
+};
+
+export const getAllNewsAdmin = async (req, res) => {
+  const news = await News.find()
+    .populate("createdBy", "firstName lastName")
+    .sort({ createdAt: -1 });
+
+  res.json({
+    success: true,
+    data: news
+  });
+};
+
+export const broadcastNotification = async (req, res) => {
+  const { title, message, role } = req.body;
+
+  const users = await User.find({
+    status: "ACTIVE",
+    ...(role && { role })
+  }).select("_id");
+
+  await sendNotifications({
+    title,
+    message,
+    type: "SYSTEM",
+    recipients: users.map(u => u._id)
+  });
+
+  res.json({
+    success: true,
+    message: "Broadcast sent"
+  });
 };
