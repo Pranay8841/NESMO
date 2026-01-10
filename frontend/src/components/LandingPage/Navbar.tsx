@@ -1,5 +1,6 @@
 import { LogIn, Menu, X } from 'lucide-react';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -10,21 +11,21 @@ export default function Navbar() {
             <header className="border-b border-gray-200 sticky top-0 bg-white z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
                     {/* Logo */}
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <Link to="/" className="flex items-center gap-2 flex-shrink-0 hover:opacity-80 transition">
                         <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M4 6L10 3L16 6V10C16 13.5 13.5 16.5 10 17C6.5 16.5 4 13.5 4 10V6Z" fill="white" />
                             </svg>
                         </div>
                         <span className="text-lg sm:text-xl font-bold text-blue-600">NESMO</span>
-                    </div>
+                    </Link>
 
                     {/* Navigation */}
                     <nav className="hidden md:flex items-center gap-6 lg:gap-8">
-                        <a href="#" className="text-gray-700 text-sm hover:text-gray-900 transition">About</a>
-                        <a href="#" className="text-gray-700 text-sm hover:text-gray-900 transition">Directory</a>
-                        <a href="#" className="text-gray-700 text-sm hover:text-gray-900 transition">Events</a>
-                        <a href="#" className="text-gray-700 text-sm hover:text-gray-900 transition">Helpline</a>
+                        <Link to="/about" className="text-gray-700 text-sm hover:text-gray-900 transition">About</Link>
+                        <Link to="/" className="text-gray-700 text-sm hover:text-gray-900 transition">Directory</Link>
+                        <Link to="/events" className="text-gray-700 text-sm hover:text-gray-900 transition">Events</Link>
+                        <Link to="/contact" className="text-gray-700 text-sm hover:text-gray-900 transition">Contact</Link>
                     </nav>
 
                     {/* Auth Buttons - Desktop */}
@@ -51,10 +52,10 @@ export default function Navbar() {
                 {isMenuOpen && (
                     <div className="md:hidden border-t border-gray-200 bg-white">
                         <nav className="flex flex-col px-4 py-4 space-y-3">
-                            <a href="#" className="text-gray-700 hover:text-gray-900 text-sm">About</a>
-                            <a href="#" className="text-gray-700 hover:text-gray-900 text-sm">Directory</a>
-                            <a href="#" className="text-gray-700 hover:text-gray-900 text-sm">Events</a>
-                            <a href="#" className="text-gray-700 hover:text-gray-900 text-sm">Helpline</a>
+                            <Link to="/about" className="text-gray-700 hover:text-gray-900 text-sm">About</Link>
+                            <Link to="/" className="text-gray-700 hover:text-gray-900 text-sm">Directory</Link>
+                            <Link to="/events" className="text-gray-700 hover:text-gray-900 text-sm">Events</Link>
+                            <Link to="/contact" className="text-gray-700 hover:text-gray-900 text-sm">Contact</Link>
                             <div className="flex gap-2 pt-2 border-t border-gray-200">
                                 <button className="flex-1 px-3 py-2 border border-blue-600 text-blue-600 rounded-lg text-xs font-medium hover:bg-blue-50">
                                     Login
