@@ -1,118 +1,79 @@
-# NESMO Portal Development Guide
+# NESMO Portal - AI Agent Guide
 
-## Project Overview
-NESMO Portal is an alumni management platform with membership management, event registration, payment processing, and helpline services. Built as a monorepo with separate backend (Express/MongoDB) and frontend (React/TypeScript/Vite).
+## Architecture Overview
+Monorepo alumni platform: `backend/` (Express + MongoDB + ES Modules) and `frontend/` (React 19 + TypeScript + Vite).
 
-## Architecture
+**Critical**: Backend uses ES Modules (`"type": "module"`) — always use `import/export`, never `require()`.
 
-### Backend Structure (Node.js + Express + MongoDB)
-- **Entry Point**: [backend/src/app.js](backend/src/app.js) - Initializes Express, CORS, Passport, and connects to MongoDB
-- **ES Modules**: Project uses `"type": "module"` - always use `import/export` syntax
-- **Route Prefix**: All API routes are mounted under `/api/*` (e.g., `/api/auth`, `/api/membership`, `/api/events`)
-- **Environment**: [backend/src/config/env.js](backend/src/config/env.js) loads `.env` from backend root using ESM-compatible path resolution
-
-### Authentication & Authorization Pattern
-- **JWT-based auth** with Bearer token in Authorization header
-- **Middleware**: [backend/src/middleware/auth.js](backend/src/middleware/auth.js)
-  - `protect`: Validates JWT, checks user status (blocks if `BLOCKED`)
-  - `authorize(...roles)`: Role-based access control (VISITOR, MEMBER, EVENT_LEAD, ADMIN)
-- **OAuth**: Google OAuth via Passport.js - links existing accounts by email or creates new ones
-- **User Model**: [backend/src/models/user.js](backend/src/models/user.js) - Has separate `User` and `Profile` models (1:1 relationship)
-
-### User Roles & Status
-- **Roles**: `VISITOR` (default) → `MEMBER` (after payment) → `EVENT_LEAD` or `ADMIN`
-- **Status**: `ACTIVE` or `BLOCKED` (separate from role)
-- **Admin Bootstrap**: One-time setup via `/api/admin/bootstrap` (no auth required, should be removed in production)
-
-### Payment Integration (Razorpay)
-- **Flow**: Create order → Frontend integration → Verify signature server-side
-- **Signature Verification**: Uses HMAC SHA256 with `orderId|paymentId` format
-- **Membership**: Single plan `ANNUAL` at ₹500 for 365 days (see [backend/src/config/membershipPlans.js](backend/src/config/membershipPlans.js))
-
-### File Uploads (Cloudinary)
-- **Middleware**: Uses `express-fileupload` with temp files
-- **Helper**: [backend/src/utils/imageUploader.js](backend/src/utils/imageUploader.js) - Uploads to Cloudinary with folder, height, quality options
-- **Config**: [backend/src/config/cloudinary.js](backend/src/config/cloudinary.js)
-
-### Notification System
-- **Service**: [backend/src/service/notification.js](backend/src/service/notification.js) - Batch creates notifications for multiple recipients
-- **Model**: [backend/src/models/notification.js](backend/src/models/notification.js) - Stores in-app notifications with type, link, meta fields
-
-### Frontend Structure (React 19 + TypeScript + Vite)
-- **Router**: React Router v7 with Layout wrapper ([frontend/src/App.tsx](frontend/src/App.tsx))
-- **Layout**: [frontend/src/components/Layout.tsx](frontend/src/components/Layout.tsx) - Navbar + Outlet + Footer structure
-- **State Management**: Redux Toolkit with typed hooks ([frontend/src/redux/store.js](frontend/src/redux/store.js))
-  - `useAppSelector` and `useAppDispatch` for type-safe store access
-  - Auth slice manages user state and JWT token (persists to localStorage)
-  - UI slice handles notifications, sidebar state, and loading states
-- **API Client**: [frontend/src/utils/api.ts](frontend/src/utils/api.ts) - Centralized fetch wrapper with automatic auth headers
-- **Styling**: Tailwind CSS v4 (configured with PostCSS)
-- **Icons**: `lucide-react` package
-- **Type Safety**: Explicit `JSX.Element` return types in all components
-
-## Development Workflows
-
-### Starting Development
+## Quick Start
 ```bash
-# Backend (from root or backend/)
-cd backend
-npm run dev  # Uses nodemon to watch src/app.js
-
-# Frontend (from root or frontend/)
-cd frontend
-npm run dev  # Vite dev server with HMR
+cd backend && npm run dev   # Express on :5000, watches src/app.js
+cd frontend && npm run dev  # Vite on :5173 with HMR
 ```
 
-### Database Indexes
-Models define indexes for frequently queried fields:
-- Profile: `currentAddress`, `occupation`, `jnvBatch`, `bloodGroup`
-- User: `email` (unique), `googleId` (unique, sparse)
+## Backend Patterns
 
-### Error Handling Pattern
-Controllers return JSON with `{ message: "..." }` for errors. Common status codes:
-- `400`: Invalid input/bad request
-- `401`: Unauthorized (missing/invalid token)
-- `403`: Forbidden (blocked account or insufficient role)
-- `500`: Internal server error
+### Route Structure
+All routes mount under `/api/*` in [backend/src/app.js](backend/src/app.js):
+```javascript
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);  // Protected: protect + authorize("ADMIN")
+```
 
-## Key Conventions
+### Auth Middleware (backend/src/middleware/auth.js)
+```javascript
+// Protected route pattern
+router.get("/resource", protect, someController);
+// Admin-only pattern
+router.patch("/admin-action", protect, authorize("ADMIN"), adminController);
+```
+- `protect`: Validates JWT Bearer token, blocks if user status is `BLOCKED`
+- `authorize(...roles)`: Checks role is one of: `VISITOR`, `MEMBER`, `EVENT_LEAD`, `ADMIN`
 
-### Backend
-- **No TypeScript in runtime**: DevDependencies include TS types but backend runs plain JS with ES modules
-- **Password Security**: User password field has `select: false` - must explicitly select in queries
-- **Mongoose ObjectId**: Always use `mongoose.Schema.Types.ObjectId` for references
-- **Route Protection**: Admin routes MUST use both `protect` and `authorize("ADMIN")` middleware
+### User Model Gotcha
+Password field uses `select: false` — explicitly include when needed:
+```javascript
+const user = await User.findOne({ email }).select("+password");
+```
 
-### Frontend
-- **Component Structure**: Group related components in subdirectories (e.g., `About/`, `LandingPage/`)
-- **JSX Return Type**: Always annotate function return as `JSX.Element`
-- **Redux Patterns**: 
-  - Import typed hooks: `import { useAppSelector, useAppDispatch } from '../redux/hooks'`
-  - Access auth state: `const { user, isAuthenticated } = useAppSelector(state => state.auth)`
-  - Use services for API calls: `authService.login(credentials, dispatch)`
-- **API Calls**: Use the centralized API client with `requiresAuth: true` for protected endpoints
-- **Responsive Design**: Use Tailwind's responsive prefixes (`sm:`, `md:`, `lg:`) consistently
+### Error Response Pattern
+Always return `{ message: "..." }` with appropriate status:
+- `400` bad input, `401` no/invalid token, `403` blocked/unauthorized role, `500` server error
 
-## External Integrations
-- **MongoDB**: Connection via Mongoose with async startup pattern
-- **Cloudinary**: Media storage for profile photos, event images, albums
-- **Razorpay**: Payment gateway (test/live mode via env variables)
-- **Google OAuth**: Optional authentication provider (config in passport.js)
+### File Uploads
+Use `express-fileupload` → [backend/src/utils/imageUploader.js](backend/src/utils/imageUploader.js) → Cloudinary
 
-## Critical Files Reference
-- User & Profile schemas: [backend/src/models/user.js](backend/src/models/user.js), [backend/src/models/profile.js](backend/src/models/profile.js)
-- Auth middleware: [backend/src/middleware/auth.js](backend/src/middleware/auth.js)
-- Admin routes: [backend/src/routes/admin.js](backend/src/routes/admin.js) - Bootstrap, user management, payments, news
-- Membership controller: [backend/src/controllers/membership.js](backend/src/controllers/membership.js)
+## Frontend Patterns
 
-## Environment Variables Required
-Backend `.env` must include:
+### Redux State (frontend/src/redux/)
+```typescript
+import { useAppSelector, useAppDispatch } from '../redux/hooks';
+const { user, token } = useAppSelector(state => state.auth);
+```
+- Token persisted to `localStorage` and synced to state
+- Use `createAsyncThunk` in services (see [frontend/src/services/authService.ts](frontend/src/services/authService.ts))
 
-Frontend `.env` (copy from `.env.example`):
-- `VITE_API_URL` - Backend API URL (default: http://localhost:5000/api)
-- `VITE_RAZORPAY_KEY_ID` - Razorpay public key for payment integration
-- `PORT`, `JWT_SECRET`
-- `MONGO_URI`
-- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
-- `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`
-- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (optional)
+### API Endpoints
+All endpoints defined in [frontend/src/utils/api.ts](frontend/src/utils/api.ts) — add new endpoints there, not inline.
+Use `apiConnector` from [frontend/src/utils/APIsConnector.ts](frontend/src/utils/APIsConnector.ts) for requests.
+
+### Component Conventions
+- Group by feature: `components/LandingPage/`, `components/Authentication/`
+- Icons: `lucide-react` package
+- Styling: Tailwind CSS v4
+
+## Key Domain Logic
+
+### User Lifecycle
+`VISITOR` (signup) → pay membership → `MEMBER` → can be promoted to `EVENT_LEAD` or `ADMIN`
+
+### Payment Flow (Razorpay)
+1. Backend creates order → 2. Frontend opens Razorpay modal → 3. Backend verifies signature (HMAC SHA256: `orderId|paymentId`)
+
+### Data Relationships
+- `User` ↔ `Profile` (1:1, separate collections)
+- User references Profile via `profile: ObjectId`
+
+## Environment Variables
+**Backend** (`backend/.env`): `PORT`, `JWT_SECRET`, `MONGO_URI`, `CLOUDINARY_*`, `RAZORPAY_*`, `GOOGLE_*` (optional)  
+**Frontend** (`frontend/.env`): `VITE_API_URL` (default: http://localhost:5000/api), `VITE_RAZORPAY_KEY_ID`
