@@ -39,8 +39,19 @@ export const register = async (
             profile: profile._id
         });
 
+        // Generate token for auto-login after registration
+        const token = jwt.sign(
+            { userId: user._id.toString() },
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
+        );
+
+        // Don't return password
+        user.password = undefined;
+
         res.status(201).json({
             message: "User registered successfully",
+            token,
             user
         });
     } catch(error) {
@@ -97,3 +108,56 @@ export const login  = async (
         })
     }
 }
+
+// Google OAuth Callback Handler
+export const googleAuthCallback = async (req, res) => {
+    try {
+        const user = req.user;
+
+        if (!user) {
+            return res.redirect(
+                `${process.env.CLIENT_URL}/oauth-error?message=Authentication failed`
+            );
+        }
+
+        if (user.status === "BLOCKED") {
+            return res.redirect(
+                `${process.env.CLIENT_URL}/oauth-error?message=Account is blocked`
+            );
+        }
+
+        const token = jwt.sign(
+            { userId: user._id.toString() },
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
+        );
+
+        res.redirect(`${process.env.CLIENT_URL}/oauth-success?token=${token}`);
+    } catch (error) {
+        res.redirect(
+            `${process.env.CLIENT_URL}/oauth-error?message=${encodeURIComponent(error.message)}`
+        );
+    }
+};
+
+// Get current user from token
+export const getCurrentUser = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).populate("profile");
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            user
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to get user: " + error
+        });
+    }
+};
