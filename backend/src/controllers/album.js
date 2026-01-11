@@ -1,7 +1,7 @@
 // controllers/gallery.controller.js
 import Album from "../models/album.js";
 import Media from "../models/media.js";
-import { uploadImageToCloudinary } from "../utils/imageUploader.js";
+import uploadImageToCloudinary from "../utils/imageUploader.js";
 import { v2 as cloudinary } from "cloudinary";
 
 export const createAlbum = async (req, res) => {

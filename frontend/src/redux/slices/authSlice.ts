@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { registerUser } from "../../services/authService";
 
 type AuthProvider = "LOCAL" | "GOOGLE";
 type UserRole = "VISITOR" | "MEMBER" | "EVENT_LEAD" | "ADMIN";
@@ -27,7 +26,7 @@ export interface User {
 
 interface AuthState {
     user: User | null;
-    loading?: boolean;
+    loading: boolean;
     token: string | null;
 }
 
@@ -49,16 +48,15 @@ export const authSlice = createSlice({
         },
         setUser: (state, action: PayloadAction<User | null>) => {
             state.user = action.payload;
+        },
+        logout: (state) => {
+            state.user = null;
+            state.token = null;
+            localStorage.removeItem('token');
         }
-    },
-    extraReducers: (builder) => {
-        builder
-        .addCase(registerUser.fulfilled, (state, action: PayloadAction<User | null>) => {
-            state.user = action.payload;
-        });
     },
 });
 
-export const { setLoading, setToken, setUser } = authSlice.actions;
+export const { setLoading, setToken, setUser, logout } = authSlice.actions;
 
 export default authSlice.reducer;
