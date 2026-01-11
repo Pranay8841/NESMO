@@ -30,8 +30,8 @@ router.post("/bootstrap", bootstrapAdmin);
 router.use(protect);
 router.use(authorize("ADMIN"));
 
-router.patch("/users/:id/role", updateUserRole);
-router.patch("/users/:id/status", updateUserStatus);
+router.patch("/user/:id/role", updateUserRole);
+router.patch("/user/:id/status", updateUserStatus);
 
 router.get("/users", getAllUsers);
 router.put("/user/:id/block", blockUser);
@@ -60,7 +60,7 @@ router.get(
 );
 
 router.post(
-  "/broadcast",
+  "/notifications/broadcast",
   protect,
   broadcastNotification
 );

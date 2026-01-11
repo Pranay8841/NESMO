@@ -41,6 +41,11 @@ NESMO Portal is an alumni management platform with membership management, event 
 ### Frontend Structure (React 19 + TypeScript + Vite)
 - **Router**: React Router v7 with Layout wrapper ([frontend/src/App.tsx](frontend/src/App.tsx))
 - **Layout**: [frontend/src/components/Layout.tsx](frontend/src/components/Layout.tsx) - Navbar + Outlet + Footer structure
+- **State Management**: Redux Toolkit with typed hooks ([frontend/src/redux/store.js](frontend/src/redux/store.js))
+  - `useAppSelector` and `useAppDispatch` for type-safe store access
+  - Auth slice manages user state and JWT token (persists to localStorage)
+  - UI slice handles notifications, sidebar state, and loading states
+- **API Client**: [frontend/src/utils/api.ts](frontend/src/utils/api.ts) - Centralized fetch wrapper with automatic auth headers
 - **Styling**: Tailwind CSS v4 (configured with PostCSS)
 - **Icons**: `lucide-react` package
 - **Type Safety**: Explicit `JSX.Element` return types in all components
@@ -81,6 +86,11 @@ Controllers return JSON with `{ message: "..." }` for errors. Common status code
 ### Frontend
 - **Component Structure**: Group related components in subdirectories (e.g., `About/`, `LandingPage/`)
 - **JSX Return Type**: Always annotate function return as `JSX.Element`
+- **Redux Patterns**: 
+  - Import typed hooks: `import { useAppSelector, useAppDispatch } from '../redux/hooks'`
+  - Access auth state: `const { user, isAuthenticated } = useAppSelector(state => state.auth)`
+  - Use services for API calls: `authService.login(credentials, dispatch)`
+- **API Calls**: Use the centralized API client with `requiresAuth: true` for protected endpoints
 - **Responsive Design**: Use Tailwind's responsive prefixes (`sm:`, `md:`, `lg:`) consistently
 
 ## External Integrations
@@ -97,6 +107,10 @@ Controllers return JSON with `{ message: "..." }` for errors. Common status code
 
 ## Environment Variables Required
 Backend `.env` must include:
+
+Frontend `.env` (copy from `.env.example`):
+- `VITE_API_URL` - Backend API URL (default: http://localhost:5000/api)
+- `VITE_RAZORPAY_KEY_ID` - Razorpay public key for payment integration
 - `PORT`, `JWT_SECRET`
 - `MONGO_URI`
 - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`

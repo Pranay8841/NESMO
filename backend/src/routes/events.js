@@ -29,7 +29,7 @@ router.put(
 
 /* Events */
 router.post(
-    "/",
+    "/create",
     protect,
     authorize("EVENT_LEAD"),
     createEvent
@@ -50,7 +50,7 @@ router.get(
     eventDashboard
 );
 
-router.post("/:id/pay", protect, createEventPaymentOrder);
-router.post("/payment/verify", protect, verifyEventPayment);
+router.post("/:id/payment/create-order", protect, createEventPaymentOrder);
+router.post("/payment/verifyEventPayment", protect, verifyEventPayment);
 
 export default router;

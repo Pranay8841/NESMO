@@ -17,7 +17,7 @@ router.put("/profilePhoto", protect, uploadProfilePhoto);
 router.get("/profileCompleteness", protect, getProfileCompleteness);
 
 // Alumni Directory Route
-router.get("/", protect, getAlumniDirectory);
+router.get("/alumni", protect, getAlumniDirectory);
 
 router.get("/news/published", protect, getPublishedNews);
 
