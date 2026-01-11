@@ -8,7 +8,7 @@ import {
 
 const router = express.Router();
 
-router.post("/create-order", protect, createMembershipOrder);
-router.post("/verify", protect, verifyMembershipPayment);
+router.post("/createMembershipOrder", protect, createMembershipOrder);
+router.post("/verifyMembershipPayment", protect, verifyMembershipPayment);
 
 export default router;

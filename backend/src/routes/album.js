@@ -12,30 +12,30 @@ import {
 
 const router = express.Router();
 
-router.get("/albums", protect, getAlbums);
+router.get("/", protect, getAlbums);
 
 router.post(
-    "/albums",
+    "/create-album",
     protect,
     authorize("ADMIN", "EVENT_LEAD"),
     createAlbum
 );
 
 router.post(
-    "/albums/:albumId/media",
+    "/:albumId/media",
     protect,
     authorize("ADMIN", "EVENT_LEAD"),
     uploadMedia
 );
 
 router.get(
-    "/albums/:albumId/media",
+    "/:albumId/media",
     protect,
     getAlbumMedia
 );
 
 router.delete(
-    "/media/:id",
+    "/:albumId/media/:mediaId",
     protect,
     authorize("ADMIN"),
     deleteMedia

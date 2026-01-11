@@ -10,6 +10,7 @@ import profileRoutes from "./routes/profile.js";
 import membershipRoutes from "./routes/membership.js";
 import helplineRoutes from "./routes/helpline.js";
 import eventRoutes from "./routes/events.js";
+import albumRoutes from "./routes/album.js";
 
 import connectDB from "./config/mongodb.js";
 import fileUpload from "express-fileupload"
@@ -37,6 +38,7 @@ app.use("/api/alumni-directory", profileRoutes);
 app.use("/api/membership", membershipRoutes);
 app.use("/api/helpline", helplineRoutes);
 app.use("/api/events", eventRoutes);
+app.use("/api/albums", albumRoutes);
 
 const startServer = async () => {
   try {
