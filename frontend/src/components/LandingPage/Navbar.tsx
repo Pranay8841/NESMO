@@ -1,8 +1,7 @@
-import { LogIn, LogOut, Menu, X, User, ChevronDown } from 'lucide-react';
+import { LogIn, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAppSelector, useAppDispatch } from '../../redux/hooks';
-import { logout } from '../../redux/slices/authSlice';
+import { useAppSelector } from '../../redux/hooks';
 
 interface NavbarProps {
     onSignupClick?: () => void;
@@ -11,9 +10,7 @@ interface NavbarProps {
 
 export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     
-    const dispatch = useAppDispatch();
     const { user } = useAppSelector((state) => state.auth);
 
     const handleSignupClick = () => {
@@ -24,12 +21,6 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
     const handleLoginClick = () => {
         setIsMenuOpen(false); // Close mobile menu if open
         onLoginClick?.();
-    };
-
-    const handleLogout = () => {
-        dispatch(logout());
-        setIsUserMenuOpen(false);
-        setIsMenuOpen(false);
     };
 
     const userInitials = user ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase() : '';
@@ -60,42 +51,18 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
                     {/* Auth Buttons - Desktop */}
                     <div className="hidden sm:flex items-center gap-2 sm:gap-3">
                         {user ? (
-                            <div className="relative">
-                                <button
-                                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition cursor-pointer"
-                                >
-                                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                                        {userInitials}
-                                    </div>
-                                    <span className="text-sm font-medium text-gray-700">{user.firstName}</span>
-                                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
-                                </button>
-                                
-                                {isUserMenuOpen && (
-                                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                                        <div className="px-4 py-2 border-b border-gray-100">
-                                            <p className="text-sm font-medium text-gray-900 truncate">{user.firstName} {user.lastName}</p>
-                                            <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                                        </div>
-                                        <Link
-                                            to="/profile"
-                                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                            onClick={() => setIsUserMenuOpen(false)}
-                                        >
-                                            <User className="w-4 h-4" />
-                                            My Profile
-                                        </Link>
-                                        <button
-                                            onClick={handleLogout}
-                                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer"
-                                        >
-                                            <LogOut className="w-4 h-4" />
-                                            Logout
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
+                            <Link
+                                to="/dashboard"
+                                className="flex items-center gap-3 hover:bg-gray-50 rounded-lg px-2 py-1.5 transition"
+                            >
+                                <div className="text-right hidden md:block">
+                                    <div className="text-sm font-bold text-gray-900">{user.firstName} {user.lastName}</div>
+                                    <div className="text-xs text-gray-500 uppercase">{user.isMember ? 'Member' : 'Visitor'}</div>
+                                </div>
+                                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                    {userInitials}
+                                </div>
+                            </Link>
                         ) : (
                             <>
                                 <button
@@ -134,32 +101,19 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
                             <Link to="/contact" className="text-gray-700 hover:text-gray-900 text-sm">Contact</Link>
                             <div className="pt-2 border-t border-gray-200">
                                 {user ? (
-                                    <div className="space-y-3">
-                                        <div className="flex items-center gap-3 py-2">
-                                            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
-                                                {userInitials}
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-medium text-gray-900">{user.firstName} {user.lastName}</p>
-                                                <p className="text-xs text-gray-500">{user.email}</p>
-                                            </div>
+                                    <Link
+                                        to="/dashboard"
+                                        className="flex items-center gap-3 px-3 py-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
+                                        onClick={() => setIsMenuOpen(false)}
+                                    >
+                                        <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                                            {userInitials}
                                         </div>
-                                        <Link
-                                            to="/profile"
-                                            className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg"
-                                            onClick={() => setIsMenuOpen(false)}
-                                        >
-                                            <User className="w-4 h-4" />
-                                            My Profile
-                                        </Link>
-                                        <button
-                                            onClick={handleLogout}
-                                            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm text-red-600 border border-red-200 rounded-lg hover:bg-red-50 cursor-pointer"
-                                        >
-                                            <LogOut className="w-4 h-4" />
-                                            Logout
-                                        </button>
-                                    </div>
+                                        <div>
+                                            <div className="text-sm font-bold text-gray-900">{user.firstName} {user.lastName}</div>
+                                            <div className="text-xs text-gray-500 uppercase">{user.isMember ? 'Member' : 'Visitor'}</div>
+                                        </div>
+                                    </Link>
                                 ) : (
                                     <div className="flex gap-2">
                                         <button
