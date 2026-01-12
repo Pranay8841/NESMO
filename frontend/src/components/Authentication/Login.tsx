@@ -51,7 +51,8 @@ export default function App({ onSuccess }: LoginProps) {
 
     const handleGoogleLogin = () => {
         setIsAuthenticating(true);
-        window.location.href = 'http://localhost:5000/api/auth/google';
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        window.location.href = `${apiUrl}/auth/google`;
     };
 
     // Show full-screen loading when authenticating
@@ -61,9 +62,9 @@ export default function App({ onSuccess }: LoginProps) {
 
     return (
         <div className="min-h-screen flex flex-col lg:flex-row">
-            {/* Left Side - Hero Section */}
+            {/* Left Side - Hero Section (hidden on mobile) */}
             <div
-                className="flex w-full lg:w-1/2 bg-blue-700 relative overflow-hidden min-h-[300px] lg:min-h-screen"
+                className="hidden lg:flex w-full lg:w-1/2 bg-blue-700 relative overflow-hidden min-h-[300px] lg:min-h-screen"
                 style={{
                     backgroundImage: `url(${backgroundImage})`,
                     backgroundSize: 'cover',
@@ -129,7 +130,7 @@ export default function App({ onSuccess }: LoginProps) {
             </div>
 
             {/* Right Side - Login Form */}
-            <div className="w-full lg:w-1/2 bg-gray-100 flex items-center justify-center p-6 sm:p-8">
+            <div className="w-full lg:w-1/2 bg-gray-100 flex items-center justify-center p-6 sm:p-8 min-h-screen">
                 <div className="w-full max-w-md">
                     {/* Header */}
                     <div className="mb-6 lg:mb-10 text-center">

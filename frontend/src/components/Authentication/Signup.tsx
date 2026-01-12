@@ -59,7 +59,8 @@ export default function App({ onSuccess }: SignupProps) {
 
     const handleGoogleSignup = () => {
         setIsAuthenticating(true);
-        window.location.href = 'http://localhost:5000/api/auth/google';
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        window.location.href = `${apiUrl}/auth/google`;
     };
 
     // Show full-screen loading when authenticating
@@ -69,9 +70,9 @@ export default function App({ onSuccess }: SignupProps) {
 
     return (
         <div className="min-h-screen flex flex-col lg:flex-row">
-            {/* Left Side - Hero Section */}
+            {/* Left Side - Hero Section (hidden on mobile) */}
             <div
-                className="flex w-full lg:w-1/2 bg-cover bg-center relative min-h-[300px] lg:min-h-screen"
+                className="hidden lg:flex w-full lg:w-1/2 bg-cover bg-center relative min-h-[300px] lg:min-h-screen"
                 style={{ backgroundImage: `url(${backgroundImage})` }}
             >
                 {/* Overlay */}
@@ -151,7 +152,7 @@ export default function App({ onSuccess }: SignupProps) {
             </div>
 
             {/* Right Side - Sign Up Form */}
-            <div className="w-full lg:w-1/2 bg-gray-50 flex items-center justify-center p-6 sm:p-8">
+            <div className="w-full lg:w-1/2 bg-gray-50 flex items-center justify-center p-6 sm:p-8 min-h-screen">
                 <div className="w-full max-w-md">
                     {/* Header */}
                     <div className="mb-6 lg:mb-8">
