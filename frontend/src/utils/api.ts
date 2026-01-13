@@ -9,7 +9,11 @@ export const USER_API = {
   CURRENT_USER: `${BASE_URL}/auth/me`,
   LOGOUT: `${BASE_URL}/auth/logout`,
   GET_PUBLISHED_NEWS: `${BASE_URL}/auth/news/published`,
-  GET_ALUMNI_DIRECTORY: `${BASE_URL}/auth/alumni`,
+};
+
+// ALUMNI DIRECTORY ENDPOINTS
+export const ALUMNI_API = {
+  GET_ALUMNI_DIRECTORY: `${BASE_URL}/profile/alumni`,
 };
 
 // PROFILE ENDPOINTS
