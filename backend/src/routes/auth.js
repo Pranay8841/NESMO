@@ -1,6 +1,6 @@
 import express from 'express';
 import passport from 'passport';
-import { register, login, googleAuthCallback, getCurrentUser } from "../controllers/auth.js";
+import { register, login, googleAuthCallback, getCurrentUser, logoutUser } from "../controllers/auth.js";
 import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -10,6 +10,9 @@ router.post('/register', register);
 
 // User Login
 router.post('/login', login);
+
+// User Logout (protected)
+router.post('/logout', protect, logoutUser);
 
 // Get Current User (protected)
 router.get('/me', protect, getCurrentUser);

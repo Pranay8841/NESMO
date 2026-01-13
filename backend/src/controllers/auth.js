@@ -161,3 +161,19 @@ export const getCurrentUser = async (req, res) => {
         });
     }
 };
+
+// Logout user
+export const logoutUser = async (req, res) => {
+    try {
+        // For JWT, logout is primarily client-side (token removal)
+        // This endpoint can be used for logging, analytics, or future token blacklisting
+        res.status(200).json({
+            success: true,
+            message: "Logged out successfully"
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Logout failed: " + error
+        });
+    }
+};

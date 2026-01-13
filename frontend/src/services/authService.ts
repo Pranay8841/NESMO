@@ -1,4 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import type { AxiosRequestHeaders } from 'axios';
+import toast from 'react-hot-toast';
 import { setLoading, setToken, setUser } from '../redux/slices/authSlice';
 
 import { apiConnector } from '../utils/APIsConnector';
@@ -14,6 +16,7 @@ interface RegisterData {
 export const registerUser = createAsyncThunk(
     'auth/registerUser',
     async (userData: RegisterData, { dispatch, rejectWithValue }) => {
+        const toastId = toast.loading('Creating your account...');
         try {
             dispatch(setLoading(true));
             const response = await apiConnector(
@@ -36,11 +39,13 @@ export const registerUser = createAsyncThunk(
             }
             
             dispatch(setLoading(false));
+            toast.success('Account created successfully!', { id: toastId });
             return response.data;
         } catch (error: any) {
             dispatch(setLoading(false));
-            console.error('Error registering user:', error);
-            return rejectWithValue(error.response?.data?.message || 'Registration failed');
+            const errorMessage = error.response?.data?.message || 'Registration failed';
+            toast.error(errorMessage, { id: toastId });
+            return rejectWithValue(errorMessage);
         }
     }
 );
@@ -48,6 +53,7 @@ export const registerUser = createAsyncThunk(
 export const loginUser = createAsyncThunk(
     'auth/loginUser',
     async (credentials: { email: string; password: string }, { dispatch, rejectWithValue }) => {
+        const toastId = toast.loading('Signing you in...');
         try {
             dispatch(setLoading(true));
             const response = await apiConnector(
@@ -66,11 +72,49 @@ export const loginUser = createAsyncThunk(
             // Save token to localStorage
             localStorage.setItem('token', JSON.stringify(response.data.token));
             
+            toast.success('Welcome back!', { id: toastId });
             return response.data;
         } catch (error: any) {
             dispatch(setLoading(false));
-            console.error('Error logging in user:', error);
-            return rejectWithValue(error.response?.data?.message || 'Login failed');
+            const errorMessage = error.response?.data?.message || 'Login failed';
+            toast.error(errorMessage, { id: toastId });
+            return rejectWithValue(errorMessage);
+        }
+    }
+);
+
+export const logoutUser = createAsyncThunk(
+    'auth/logoutUser',
+    async (_, { dispatch, getState, rejectWithValue }) => {
+        try {
+            const state = getState() as { auth: { token: string | null } };
+            const token = state.auth.token;
+
+            // Call backend logout endpoint (optional, for logging/analytics)
+            if (token) {
+                try {
+                    await apiConnector(
+                        'POST',
+                        USER_API.LOGOUT,
+                        null,
+                        { Authorization: `Bearer ${token}` } as AxiosRequestHeaders
+                    );
+                } catch {
+                    // Ignore backend errors - we still want to clear local state
+                }
+            }
+
+            // Clear local state
+            dispatch(setUser(null));
+            dispatch(setToken(null));
+            localStorage.removeItem('token');
+
+            toast.success('Logged out successfully');
+            return { success: true };
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.message || 'Logout failed';
+            toast.error(errorMessage);
+            return rejectWithValue(errorMessage);
         }
     }
 );
