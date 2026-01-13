@@ -1,7 +1,7 @@
 import { Calendar, Ticket, Settings, LogOut, Medal } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../redux/hooks';
-import { logout } from '../../redux/slices/authSlice';
+import { logoutUser } from '../../services/authService';
 
 interface SidebarItem {
     path: string;
@@ -58,8 +58,8 @@ export default function Sidebar() {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
 
-    const handleLogout = () => {
-        dispatch(logout());
+    const handleLogout = async () => {
+        await dispatch(logoutUser());
         navigate('/');
     };
 

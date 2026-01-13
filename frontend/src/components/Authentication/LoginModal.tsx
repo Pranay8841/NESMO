@@ -1,5 +1,6 @@
 import { X } from 'lucide-react';
 import { type JSX, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Login from './Login';
 
 interface LoginModalProps {
@@ -8,6 +9,13 @@ interface LoginModalProps {
 }
 
 export default function LoginModal({ isOpen, onClose }: LoginModalProps): JSX.Element | null {
+    const navigate = useNavigate();
+
+    const handleLoginSuccess = () => {
+        onClose();
+        navigate('/dashboard');
+    };
+
     // Prevent body scroll when modal is open
     useEffect(() => {
         if (isOpen) {
@@ -60,7 +68,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps): JSX.El
 
                 {/* Login Component */}
                 <div className="max-h-[90vh] overflow-y-auto">
-                    <Login onSuccess={onClose} />
+                    <Login onSuccess={handleLoginSuccess} />
                 </div>
             </div>
         </div>

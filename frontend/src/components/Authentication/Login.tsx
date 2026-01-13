@@ -1,5 +1,6 @@
 import { Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
+import toast from 'react-hot-toast';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { loginUser } from '../../services/authService';
 import AuthLoading from './AuthLoading';
@@ -20,7 +21,6 @@ export default function App({ onSuccess }: LoginProps) {
     });
     const [showPassword, setShowPassword] = useState(false);
     const [stayLoggedIn, setStayLoggedIn] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [isAuthenticating, setIsAuthenticating] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,10 +29,9 @@ export default function App({ onSuccess }: LoginProps) {
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        setError(null);
 
         if (!formData.email || !formData.password) {
-            setError('Please fill in all fields');
+            toast.error('Please fill in all fields');
             return;
         }
 
@@ -45,7 +44,6 @@ export default function App({ onSuccess }: LoginProps) {
             onSuccess?.();
         } else {
             setIsAuthenticating(false);
-            setError(result.payload as string || 'Login failed. Please check your credentials.');
         }
     };
 
@@ -173,13 +171,6 @@ export default function App({ onSuccess }: LoginProps) {
 
                         {/* Form */}
                         <form className="space-y-5" onSubmit={handleSubmit}>
-                            {/* Error Message */}
-                            {error && (
-                                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-                                    {error}
-                                </div>
-                            )}
-
                             {/* Email Address */}
                             <div>
                                 <label htmlFor="email" className="block text-sm font-bold text-gray-900 mb-2">

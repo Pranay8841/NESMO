@@ -3,6 +3,7 @@ import "./config/env.js";
 import express from "express";
 import cors from "cors";
 import passport from "passport";
+import "./config/passport.js"; // Must be imported before routes that use passport
 
 import authRoutes from "./routes/auth.js";
 import adminRoutes from "./routes/admin.js";
@@ -15,7 +16,6 @@ import albumRoutes from "./routes/album.js";
 import connectDB from "./config/mongodb.js";
 import fileUpload from "express-fileupload"
 import cloudinaryConnect from "./config/cloudinary.js";
-import "./config/passport.js";
 
 const app = express();
 

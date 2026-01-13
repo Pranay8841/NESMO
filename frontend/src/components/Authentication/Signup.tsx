@@ -1,5 +1,6 @@
 import { User, Mail, Lock, Eye, EyeOff, Shield } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
+import toast from 'react-hot-toast';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { registerUser } from '../../services/authService';
 import type { RootState } from '../../redux/store';
@@ -23,7 +24,6 @@ export default function App({ onSuccess }: SignupProps) {
     });
     const [termsAccepted, setTermsAccepted] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [isAuthenticating, setIsAuthenticating] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,15 +32,14 @@ export default function App({ onSuccess }: SignupProps) {
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        setError(null);
 
         if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
-            setError('Please fill in all fields');
+            toast.error('Please fill in all fields');
             return;
         }
 
         if (!termsAccepted) {
-            setError('Please accept the Terms of Service and Privacy Policy');
+            toast.error('Please accept the Terms of Service and Privacy Policy');
             return;
         }
 
@@ -53,7 +52,6 @@ export default function App({ onSuccess }: SignupProps) {
             onSuccess?.();
         } else {
             setIsAuthenticating(false);
-            setError(result.payload as string || 'Registration failed. Please try again.');
         }
     };
 
@@ -196,13 +194,6 @@ export default function App({ onSuccess }: SignupProps) {
 
                     {/* Form */}
                     <form className="space-y-4" onSubmit={handleSubmit}>
-                        {/* Error Message */}
-                        {error && (
-                            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-                                {error}
-                            </div>
-                        )}
-
                         {/* First Name & Last Name Row */}
                         <div className="grid grid-cols-2 gap-4">
                             {/* First Name */}
