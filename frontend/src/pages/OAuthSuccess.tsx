@@ -49,7 +49,7 @@ export default function OAuthSuccess() {
                 }
 
                 dispatch(setLoading(false));
-                navigate('/');
+                navigate('/dashboard');
             } catch (error) {
                 console.error('OAuth success handling failed:', error);
                 dispatch(setLoading(false));
