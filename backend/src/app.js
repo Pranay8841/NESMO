@@ -44,7 +44,7 @@ const startServer = async () => {
   try {
     await connectDB();
     const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => console.log(`Server running on ${PORT}`));
+    app.listen(PORT, "0.0.0.0", () => console.log(`Server running on ${PORT}`));
   } catch (error) {
     console.error("Server startup failed:", error);
     process.exit(1);

@@ -6,14 +6,19 @@ import Login from './Login';
 interface LoginModalProps {
     isOpen: boolean;
     onClose: () => void;
+    onSuccess?: () => void;
 }
 
-export default function LoginModal({ isOpen, onClose }: LoginModalProps): JSX.Element | null {
+export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps): JSX.Element | null {
     const navigate = useNavigate();
 
     const handleLoginSuccess = () => {
-        onClose();
-        navigate('/dashboard');
+        if (onSuccess) {
+            onSuccess();
+        } else {
+            onClose();
+            navigate('/dashboard');
+        }
     };
 
     // Prevent body scroll when modal is open
