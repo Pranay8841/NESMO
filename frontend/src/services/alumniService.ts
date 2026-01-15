@@ -15,17 +15,18 @@ interface FetchAlumniParams {
     page: number;
     limit: number;
     filters: AlumniFilters;
+    search?: string;
 }
 
 export const fetchAlumniDirectory = createAsyncThunk(
     'alumni/fetchAlumniDirectory',
-    async ({ page, limit, filters }: FetchAlumniParams, { dispatch, getState, rejectWithValue }) => {
+    async ({ page, limit, filters, search }: FetchAlumniParams, { dispatch, getState, rejectWithValue }) => {
         try {
             const state = getState() as { auth: { token: string | null } };
             const token = state.auth.token;
 
+
             if (!token) {
-                toast.error('Please login to view the alumni directory');
                 return rejectWithValue('Not authenticated');
             }
 
@@ -41,6 +42,7 @@ export const fetchAlumniDirectory = createAsyncThunk(
             if (filters.occupation) params.occupation = filters.occupation;
             if (filters.bloodGroup) params.bloodGroup = filters.bloodGroup;
             if (filters.isMember) params.isMember = filters.isMember;
+            if (search) params.search = search;
 
             const response = await apiConnector(
                 'GET',
@@ -52,7 +54,7 @@ export const fetchAlumniDirectory = createAsyncThunk(
 
             if (response.data.success) {
                 dispatch(setAlumni(response.data.data));
-                dispatch(setTotalCount(response.data.count));
+                dispatch(setTotalCount(response.data.totalCount));
                 dispatch(setLoading(false));
                 return response.data;
             } else {

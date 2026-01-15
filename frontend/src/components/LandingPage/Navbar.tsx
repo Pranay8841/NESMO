@@ -96,7 +96,7 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
                     <div className="md:hidden border-t border-gray-200 bg-white">
                         <nav className="flex flex-col px-4 py-4 space-y-3">
                             <Link to="/about" className="text-gray-700 hover:text-gray-900 text-sm">About</Link>
-                            <Link to="/" className="text-gray-700 hover:text-gray-900 text-sm">Directory</Link>
+                            <Link to="/directory" className="text-gray-700 hover:text-gray-900 text-sm">Directory</Link>
                             <Link to="/events" className="text-gray-700 hover:text-gray-900 text-sm">Events</Link>
                             <Link to="/contact" className="text-gray-700 hover:text-gray-900 text-sm">Contact</Link>
                             <div className="pt-2 border-t border-gray-200">

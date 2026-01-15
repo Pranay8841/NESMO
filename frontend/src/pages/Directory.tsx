@@ -1,6 +1,6 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import {
-    MapPin, X, ChevronDown, Check, Search
+    MapPin, X, ChevronDown, Search, Check
 } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../redux/hooks';
 import {
@@ -11,7 +11,9 @@ import {
     setSearchQuery,
     setPage,
 } from '../redux/slices/alumniSlice';
+import type { AlumniMember } from '../redux/slices/alumniSlice';
 import { fetchAlumniDirectory } from '../services/alumniService';
+import AlumniProfileModal from '../components/Directory/AlumniProfileModal';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 const BATCH_OPTIONS = Array.from({ length: 30 }, (_, i) => `${1990 + i}`);
@@ -19,7 +21,9 @@ const LIMIT = 12;
 
 export default function Directory() {
     const dispatch = useAppDispatch();
-    
+    const [selectedMember, setSelectedMember] = useState<AlumniMember | null>(null);
+    const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+
     const {
         alumni,
         loading,
@@ -30,14 +34,15 @@ export default function Directory() {
         searchQuery,
     } = useAppSelector((state) => state.alumni);
 
-    // Fetch alumni when page or applied filters change
+    // Fetch alumni when page, applied filters, or search query changes
     useEffect(() => {
         dispatch(fetchAlumniDirectory({
             page,
             limit: LIMIT,
             filters: appliedFilters,
+            search: searchQuery,
         }));
-    }, [dispatch, page, appliedFilters]);
+    }, [dispatch, page, appliedFilters, searchQuery]);
 
     const handleApplyFilters = () => {
         dispatch(applyFilters());
@@ -61,17 +66,15 @@ export default function Directory() {
         dispatch(setPage(newPage));
     };
 
-    // Client-side search filtering
-    const filteredAlumni = useMemo(() => {
-        if (!searchQuery) return alumni;
-        const query = searchQuery.toLowerCase();
-        return alumni.filter(member =>
-            member.name.toLowerCase().includes(query) ||
-            member.email.toLowerCase().includes(query) ||
-            member.city?.toLowerCase().includes(query) ||
-            member.occupation?.toLowerCase().includes(query)
-        );
-    }, [alumni, searchQuery]);
+    const handleViewProfile = (member: AlumniMember) => {
+        setSelectedMember(member);
+        setIsProfileModalOpen(true);
+    };
+
+    const handleCloseProfileModal = () => {
+        setIsProfileModalOpen(false);
+        setSelectedMember(null);
+    };
 
     const activeFilterCount = Object.values(appliedFilters).filter(Boolean).length;
     const totalPages = Math.ceil(totalCount / LIMIT) || 1;
@@ -151,11 +154,10 @@ export default function Directory() {
                                             <button
                                                 key={bg}
                                                 onClick={() => handleBloodGroupSelect(bg)}
-                                                className={`px-2 py-2 border rounded-lg text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors cursor-pointer ${
-                                                    filters.bloodGroup === bg
-                                                        ? 'bg-blue-600 border-blue-600 text-white'
-                                                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                                                }`}
+                                                className={`px-2 py-2 border rounded-lg text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors cursor-pointer ${filters.bloodGroup === bg
+                                                    ? 'bg-blue-600 border-blue-600 text-white'
+                                                    : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                                                    }`}
                                             >
                                                 {bg}
                                             </button>
@@ -266,25 +268,22 @@ export default function Directory() {
 
                         {/* Loading State */}
                         {loading && (
-                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-                                {[1, 2, 3, 4, 5, 6].map((i) => (
-                                    <div key={`skeleton-${i}`} className="bg-white rounded-xl p-6 border border-gray-200 animate-pulse">
-                                        <div className="flex justify-center mb-4">
-                                            <div className="w-24 h-24 rounded-full bg-gray-200"></div>
-                                        </div>
-                                        <div className="text-center mb-2">
-                                            <div className="h-5 bg-gray-200 rounded w-32 mx-auto"></div>
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-12">
+                                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                                    <div key={`skeleton-${i}`} className="bg-white rounded-lg p-4 border border-gray-200 animate-pulse">
+                                        <div className="flex justify-center mb-3">
+                                            <div className="w-16 h-16 rounded-full bg-gray-200"></div>
                                         </div>
                                         <div className="text-center mb-1">
-                                            <div className="h-4 bg-gray-200 rounded w-40 mx-auto"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-24 mx-auto"></div>
                                         </div>
-                                        <div className="flex justify-center mb-4">
-                                            <div className="h-3 bg-gray-200 rounded w-28"></div>
+                                        <div className="text-center mb-1">
+                                            <div className="h-3 bg-gray-200 rounded w-20 mx-auto"></div>
                                         </div>
-                                        <div className="text-center mb-4">
-                                            <div className="h-6 bg-gray-200 rounded w-32 mx-auto"></div>
+                                        <div className="flex justify-center mb-2">
+                                            <div className="h-3 bg-gray-200 rounded w-16"></div>
                                         </div>
-                                        <div className="h-10 bg-gray-200 rounded"></div>
+                                        <div className="h-8 bg-gray-200 rounded"></div>
                                     </div>
                                 ))}
                             </div>
@@ -293,7 +292,7 @@ export default function Directory() {
                         {/* Alumni Grid */}
                         {!loading && (
                             <>
-                                {filteredAlumni.length === 0 ? (
+                                {alumni.length === 0 ? (
                                     <div className="bg-white rounded-xl p-12 border border-gray-200 text-center">
                                         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                             <Search className="w-8 h-8 text-gray-400" />
@@ -308,77 +307,79 @@ export default function Directory() {
                                         </button>
                                     </div>
                                 ) : (
-                                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-                                        {filteredAlumni.map((member) => (
-                                            <div key={member.id} className="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer">
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-12">
+                                        {alumni.map((member) => (
+                                            <div key={member.id} className="bg-white rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow cursor-pointer relative overflow-hidden">
+                                                {/* NESMO Status Badge - Top Right */}
+                                                <div className={`absolute top-0 right-0 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide rounded-bl-md ${
+                                                    member.nesmoStatus === 'NESMO Member'
+                                                        ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+                                                        : 'bg-gray-100 text-gray-500'
+                                                }`}>
+                                                    {member.nesmoStatus === 'NESMO Member' ? '✓ Member' : 'Alumni'}
+                                                </div>
+
                                                 {/* Avatar */}
-                                                <div className="flex justify-center mb-4">
+                                                <div className="flex justify-center mb-3 mt-2">
                                                     <div className="relative">
                                                         {member.photo ? (
                                                             <img
                                                                 src={member.photo}
                                                                 alt={member.name}
-                                                                className="w-24 h-24 rounded-full object-cover"
+                                                                className={`w-16 h-16 rounded-full object-cover ${
+                                                                    member.nesmoStatus === 'NESMO Member' ? 'ring-2 ring-blue-400' : ''
+                                                                }`}
                                                             />
                                                         ) : (
-                                                            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-2xl font-bold">
+                                                            <div className={`w-16 h-16 rounded-full flex items-center justify-center text-white text-lg font-bold ${
+                                                                member.nesmoStatus === 'NESMO Member'
+                                                                    ? 'bg-gradient-to-br from-blue-500 to-blue-600 ring-2 ring-blue-400'
+                                                                    : 'bg-gradient-to-br from-gray-400 to-gray-500'
+                                                            }`}>
                                                                 {member.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                                                            </div>
-                                                        )}
-                                                        {member.nesmoStatus === 'NESMO Member' && (
-                                                            <div className="absolute bottom-0 right-0 w-6 h-6 bg-blue-600 rounded-full border-2 border-white flex items-center justify-center">
-                                                                <Check className="w-3 h-3 text-white" />
                                                             </div>
                                                         )}
                                                     </div>
                                                 </div>
 
                                                 {/* Name */}
-                                                <div className="text-center mb-2">
-                                                    <h3 className="text-lg font-bold text-gray-900">{member.name}</h3>
+                                                <div className="text-center mb-1">
+                                                    <h3 className="text-sm font-bold text-gray-900 truncate">{member.name}</h3>
                                                 </div>
 
                                                 {/* Occupation */}
                                                 {member.occupation && (
-                                                    <div className="text-center text-sm text-gray-600 font-medium mb-1">
+                                                    <div className="text-center text-xs text-gray-600 font-medium mb-1 truncate">
                                                         {member.occupation}
                                                     </div>
                                                 )}
 
                                                 {/* Location & Batch */}
-                                                <div className="flex items-center justify-center gap-1 text-xs text-gray-500 mb-4">
+                                                <div className="flex items-center justify-center gap-1 text-xs text-gray-500 mb-2">
                                                     {member.city && (
                                                         <>
-                                                            <MapPin className="w-3 h-3" />
-                                                            <span>{member.city}</span>
+                                                            <MapPin className="w-2.5 h-2.5" />
+                                                            <span className="truncate max-w-[100px]">{member.city}</span>
                                                         </>
                                                     )}
                                                     {member.city && member.batch && <span>•</span>}
-                                                    {member.batch && <span>Batch {member.batch}</span>}
+                                                    {member.batch && <span className="font-semibold">{member.batch}</span>}
                                                 </div>
 
                                                 {/* Blood Group */}
                                                 {member.bloodGroup && (
-                                                    <div className="text-center mb-3">
-                                                        <span className="inline-block px-2 py-0.5 bg-red-50 text-red-600 rounded text-xs font-semibold">
+                                                    <div className="text-center mb-2">
+                                                        <span className="inline-block px-1.5 py-0.5 bg-red-50 text-red-600 rounded text-[10px] font-semibold">
                                                             🩸 {member.bloodGroup}
                                                         </span>
                                                     </div>
                                                 )}
 
-                                                {/* Member Badge */}
-                                                <div className="text-center mb-4">
-                                                    <span className={`inline-block px-3 py-1 rounded text-xs font-bold uppercase tracking-wider ${
-                                                        member.nesmoStatus === 'NESMO Member'
-                                                            ? 'bg-blue-100 text-blue-700'
-                                                            : 'bg-gray-100 text-gray-700'
-                                                    }`}>
-                                                        {member.nesmoStatus}
-                                                    </span>
-                                                </div>
-
                                                 {/* View Profile Button */}
-                                                <button className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors cursor-pointer">
+                                                <button 
+                                                    onClick={() => handleViewProfile(member)}
+                                                    className="w-full py-2 bg-blue-600 text-white rounded-md font-semibold text-xs hover:bg-blue-700 transition-colors cursor-pointer"
+                                                >
                                                     View Profile
                                                 </button>
                                             </div>
@@ -398,7 +399,7 @@ export default function Directory() {
                                                 <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                             </svg>
                                         </button>
-                                        
+
                                         {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                                             let pageNum: number;
                                             if (totalPages <= 5) {
@@ -414,17 +415,16 @@ export default function Directory() {
                                                 <button
                                                     key={pageNum}
                                                     onClick={() => handlePageChange(pageNum)}
-                                                    className={`w-8 h-8 flex items-center justify-center rounded font-bold text-sm transition-colors cursor-pointer ${
-                                                        page === pageNum
-                                                            ? 'bg-blue-600 text-white'
-                                                            : 'hover:bg-gray-100 text-gray-700'
-                                                    }`}
+                                                    className={`w-8 h-8 flex items-center justify-center rounded font-bold text-sm transition-colors cursor-pointer ${page === pageNum
+                                                        ? 'bg-blue-600 text-white'
+                                                        : 'hover:bg-gray-100 text-gray-700'
+                                                        }`}
                                                 >
                                                     {pageNum}
                                                 </button>
                                             );
                                         })}
-                                        
+
                                         {totalPages > 5 && page < totalPages - 2 && (
                                             <>
                                                 <span className="text-gray-400 font-bold">...</span>
@@ -436,7 +436,7 @@ export default function Directory() {
                                                 </button>
                                             </>
                                         )}
-                                        
+
                                         <button
                                             onClick={() => handlePageChange(Math.min(totalPages, page + 1))}
                                             disabled={page === totalPages}
@@ -453,6 +453,13 @@ export default function Directory() {
                     </main>
                 </div>
             </div>
+
+            {/* Alumni Profile Modal */}
+            <AlumniProfileModal
+                isOpen={isProfileModalOpen}
+                onClose={handleCloseProfileModal}
+                member={selectedMember}
+            />
         </div>
     );
 }
