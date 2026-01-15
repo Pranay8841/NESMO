@@ -86,6 +86,7 @@ export const alumniSlice = createSlice({
         },
         setSearchQuery: (state, action: PayloadAction<string>) => {
             state.searchQuery = action.payload;
+            state.page = 1; // Reset to page 1 when searching
         },
         resetAlumniState: () => initialState,
     },
