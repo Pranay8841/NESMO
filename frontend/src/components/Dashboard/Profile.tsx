@@ -20,33 +20,33 @@ export default function Profile() {
     const membershipStatus = user?.isMember ? 'MEMBER' : 'VISITOR';
 
     return (
-        <div className="max-w-7xl mx-auto">
-            <div className="flex gap-6">
-                {/* Left Column */}
-                <div className="flex-1">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4">
+            <div className="flex flex-col xl:flex-row gap-6 xl:gap-6">
+                {/* Left/Main Column */}
+                <div className="w-full xl:flex-1">
                     {/* Profile Header */}
-                    <div className="bg-white rounded-2xl p-8 mb-6 border border-gray-200">
-                        <div className="flex items-start gap-6">
+                    <div className="bg-white rounded-2xl p-4 sm:p-6 md:p-8 mb-6 border border-gray-200">
+                        <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
                             {/* Avatar */}
-                            <div className="relative flex-shrink-0">
-                                <div className="w-32 h-32 rounded-full overflow-hidden">
+                            <div className="relative flex-shrink-0 mx-auto sm:mx-0">
+                                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden">
                                     <img
                                         src={profileImage}
                                         alt={fullName}
                                         className="w-full h-full object-cover"
                                     />
                                 </div>
-                                <button className="absolute bottom-0 right-0 w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center border-4 border-white shadow-lg hover:bg-blue-700">
+                                <button className="absolute bottom-0 right-0 w-9 h-9 sm:w-10 sm:h-10 bg-blue-600 rounded-full flex items-center justify-center border-4 border-white shadow-lg hover:bg-blue-700">
                                     <Camera className="w-5 h-5 text-white" />
                                 </button>
                             </div>
 
                             {/* Profile Info */}
-                            <div className="flex-1">
-                                <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1 w-full">
+                                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-3 gap-3">
                                     <div>
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <h1 className="text-3xl font-black text-gray-900">{fullName}</h1>
+                                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+                                            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 break-words">{fullName}</h1>
                                             <span className="px-3 py-1 bg-orange-100 text-orange-600 text-xs font-bold rounded flex items-center gap-1.5">
                                                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                     <circle cx="6" cy="6" r="5" fill="currentColor" />
@@ -54,8 +54,8 @@ export default function Profile() {
                                                 {membershipStatus}
                                             </span>
                                         </div>
-                                        <h2 className="text-xl font-bold text-blue-600 mb-3">Senior Software Engineer</h2>
-                                        <div className="flex items-center gap-4 text-sm text-gray-600 flex-wrap">
+                                        <h2 className="text-base sm:text-xl font-bold text-blue-600 mb-2 sm:mb-3">Senior Software Engineer</h2>
+                                        <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm text-gray-600">
                                             <div className="flex items-center gap-1.5">
                                                 <GraduationCap className="w-4 h-4 text-gray-400" />
                                                 <span>Batch of 2012</span>
@@ -65,7 +65,7 @@ export default function Profile() {
                                                 <span>Bengaluru, Karnataka</span>
                                             </div>
                                             <div className="flex items-center gap-1.5">
-                                                <Building2 className="w-4 h-4 text-gray-400" />
+                                                <Building2 className="w-5 h-5 text-gray-400" />
                                                 <span>Global Tech Solutions</span>
                                             </div>
                                         </div>
@@ -73,7 +73,7 @@ export default function Profile() {
                                             <p className="text-sm text-gray-500 mt-2">{email}</p>
                                         )}
                                     </div>
-                                    <button className="px-5 py-2.5 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 flex items-center gap-2">
+                                    <button className="w-full sm:w-auto px-5 py-2.5 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 flex items-center gap-2 mt-3 sm:mt-0">
                                         <Pencil className="w-4 h-4" />
                                         Edit Profile
                                     </button>
@@ -83,7 +83,7 @@ export default function Profile() {
                     </div>
 
                     {/* Stats Cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-6">
                         {/* Profile Views */}
                         <div className="bg-white rounded-2xl p-6 border border-gray-200">
                             <div className="flex items-center gap-3 mb-3">
@@ -186,7 +186,7 @@ export default function Profile() {
                 </div>
 
                 {/* Right Sidebar */}
-                <div className="hidden xl:block w-80">
+                <div className="hidden xl:block w-80 flex-shrink-0">
                     <div className="sticky top-24 space-y-6">
                         {/* Quick Profile Stats */}
                         <div className="bg-white rounded-2xl p-6 border border-gray-200">
