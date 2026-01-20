@@ -1,4 +1,6 @@
-import { type JSX } from "react";
+import { type JSX, useEffect } from "react";
+import { useAppDispatch } from "./redux/hooks";
+import { fetchCurrentUser } from "./services/authService";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import Layout from "./components/Layout";
@@ -16,6 +18,15 @@ import Profile from "./components/Dashboard/Profile";
 import Directory from "./pages/Directory";
 
 function App(): JSX.Element {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      dispatch(fetchCurrentUser());
+    }
+  }, [dispatch]);
+
   return (
     <BrowserRouter>
       <Toaster

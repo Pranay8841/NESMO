@@ -24,20 +24,20 @@ export const registerUser = createAsyncThunk(
                 USER_API.REGISTER,
                 userData,
             );
-            
+
             // After registration, also log the user in
             if (response.data.user) {
                 const userImage = response.data.user.profile?.profilePhoto ||
                     `https://api.dicebear.com/5.x/initials/svg?seed=${response.data.user.firstName} ${response.data.user.lastName}`;
-                
+
                 dispatch(setUser({ ...response.data.user, profile: { ...response.data.user.profile, profilePhoto: userImage } }));
             }
-            
+
             if (response.data.token) {
                 dispatch(setToken(response.data.token));
                 localStorage.setItem('token', JSON.stringify(response.data.token));
             }
-            
+
             dispatch(setLoading(false));
             toast.success('Account created successfully!', { id: toastId });
             return response.data;
@@ -61,17 +61,17 @@ export const loginUser = createAsyncThunk(
                 USER_API.LOGIN,
                 credentials,
             );
-            
+
             const userImage = response.data?.user?.profile?.profilePhoto ||
                 `https://api.dicebear.com/5.x/initials/svg?seed=${response.data.user.firstName} ${response.data.user.lastName}`;
-            
+
             dispatch(setUser({ ...response.data.user, profile: { ...response.data.user.profile, profilePhoto: userImage } }));
             dispatch(setToken(response.data.token));
             dispatch(setLoading(false));
-            
+
             // Save token to localStorage
             localStorage.setItem('token', JSON.stringify(response.data.token));
-            
+
             toast.success('Welcome back!', { id: toastId });
             return response.data;
         } catch (error: any) {
@@ -119,3 +119,21 @@ export const logoutUser = createAsyncThunk(
     }
 );
 
+export const fetchCurrentUser = createAsyncThunk(
+  'auth/fetchCurrentUser',
+  async (_, { dispatch, rejectWithValue }) => {
+    try {
+      dispatch(setLoading(true));
+      const tokenStr = localStorage.getItem('token');
+      const token = tokenStr ? JSON.parse(tokenStr) : null;
+      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+      const response = await apiConnector('GET', USER_API.CURRENT_USER, null, headers as AxiosRequestHeaders);
+      dispatch(setUser(response.data.user));
+      dispatch(setLoading(false));
+      return response.data.user;
+    } catch (error: any) {
+      dispatch(setLoading(false));
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch user');
+    }
+  }
+);

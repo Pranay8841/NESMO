@@ -1,12 +1,18 @@
-import { Calendar, Ticket, Settings, LogOut, Medal } from 'lucide-react';
+import { Calendar, Ticket, Settings, LogOut, Medal, Menu, X } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../redux/hooks';
 import { logoutUser } from '../../services/authService';
+import { useState, useEffect } from 'react';
 
 interface SidebarItem {
     path: string;
     label: string;
     icon: React.ReactNode;
+}
+
+interface SidebarProps {
+    isMobileOpen?: boolean;
+    onMobileClose?: () => void;
 }
 
 const sidebarItems: SidebarItem[] = [
@@ -53,10 +59,17 @@ const sidebarItems: SidebarItem[] = [
     },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
     const location = useLocation();
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
+
+    // Close mobile sidebar when route changes
+    useEffect(() => {
+        if (isMobileOpen && onMobileClose) {
+            onMobileClose();
+        }
+    }, [location.pathname]);
 
     const handleLogout = async () => {
         await dispatch(logoutUser());
@@ -65,8 +78,8 @@ export default function Sidebar() {
 
     const isActive = (path: string) => location.pathname === path;
 
-    return (
-        <aside className="w-64 bg-white border-r border-gray-200 min-h-[calc(100vh-64px)] sticky top-16 hidden lg:block">
+    const sidebarContent = (
+        <>
             <nav className="p-4 space-y-1">
                 {sidebarItems.map((item) => (
                     <Link
@@ -94,6 +107,55 @@ export default function Sidebar() {
                     Logout
                 </button>
             </div>
-        </aside>
+        </>
+    );
+
+    return (
+        <>
+            {/* Desktop Sidebar */}
+            <aside className="w-64 bg-white border-r border-gray-200 min-h-[calc(100vh-64px)] sticky top-16 hidden lg:block">
+                {sidebarContent}
+            </aside>
+
+            {/* Mobile Overlay */}
+            {isMobileOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+                    onClick={onMobileClose}
+                />
+            )}
+
+            {/* Mobile Sidebar */}
+            <aside
+                className={`fixed top-0 left-0 h-full w-64 bg-white z-50 transform transition-transform duration-300 ease-in-out lg:hidden ${
+                    isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+                }`}
+            >
+                {/* Mobile Header */}
+                <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                    <span className="font-semibold text-lg text-gray-800">Menu</span>
+                    <button
+                        onClick={onMobileClose}
+                        className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                        <X className="w-5 h-5 text-gray-600" />
+                    </button>
+                </div>
+                {sidebarContent}
+            </aside>
+        </>
+    );
+}
+
+// Mobile Menu Toggle Button Component
+export function MobileMenuButton({ onClick }: { onClick: () => void }) {
+    return (
+        <button
+            onClick={onClick}
+            className="lg:hidden w-14 h-14 flex items-center justify-center bg-blue-600 rounded-full shadow-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-300"
+            aria-label="Open menu"
+        >
+            <Menu className="w-7 h-7 text-white" />
+        </button>
     );
 }
