@@ -19,6 +19,10 @@ const profileSchema = new mongoose.Schema(
             type: String
         },
 
+        organization: {
+            type: String  // Company/School/Hospital name
+        },
+
         sector: {
             type: String
         },
@@ -42,6 +46,7 @@ const profileSchema = new mongoose.Schema(
 
 profileSchema.index({ currentAddress: 1 });
 profileSchema.index({ occupation: 1 });
+profileSchema.index({ organization: 1 });
 profileSchema.index({ jnvBatch: 1 });
 profileSchema.index({ bloodGroup: 1 });
 

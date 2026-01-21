@@ -102,7 +102,7 @@ export default function AlumniProfileModal({ isOpen, onClose, member }: AlumniPr
                                 </div>
                                 {member.occupation && (
                                     <p className="text-lg text-blue-100 font-medium mb-3">
-                                        {member.occupation}
+                                        {member.occupation}{member.organization ? ` at ${member.organization}` : ''}
                                     </p>
                                 )}
                                 <div className="flex items-center gap-4">
@@ -167,21 +167,43 @@ export default function AlumniProfileModal({ isOpen, onClose, member }: AlumniPr
                             )}
 
                             {/* Professional Details */}
-                            {member.occupation && (
+                            {(member.occupation || member.organization || member.sector) && (
                                 <div>
                                     <div className="flex items-center gap-2 mb-4">
                                         <Briefcase className="w-5 h-5 text-blue-600" />
                                         <h2 className="text-lg font-black text-gray-900">Professional Details</h2>
                                     </div>
                                     <div className="grid grid-cols-2 gap-6">
-                                        <div>
-                                            <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">
-                                                OCCUPATION
+                                        {member.occupation && (
+                                            <div>
+                                                <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">
+                                                    OCCUPATION
+                                                </div>
+                                                <div className="text-base font-bold text-gray-900">
+                                                    {member.occupation}
+                                                </div>
                                             </div>
-                                            <div className="text-base font-bold text-gray-900">
-                                                {member.occupation}
+                                        )}
+                                        {member.organization && (
+                                            <div>
+                                                <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">
+                                                    ORGANIZATION
+                                                </div>
+                                                <div className="text-base font-bold text-gray-900">
+                                                    {member.organization}
+                                                </div>
                                             </div>
-                                        </div>
+                                        )}
+                                        {member.sector && (
+                                            <div>
+                                                <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">
+                                                    SECTOR / INDUSTRY
+                                                </div>
+                                                <div className="text-base font-bold text-gray-900">
+                                                    {member.sector}
+                                                </div>
+                                            </div>
+                                        )}
                                         {member.city && (
                                             <div>
                                                 <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">
