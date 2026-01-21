@@ -112,6 +112,8 @@ export const getAlumniDirectory = async (req, res) => {
       phone: user.profile?.phone || null,
       city: user.profile?.currentAddress || null,
       occupation: user.profile?.occupation || null,
+      organization: user.profile?.organization || null,
+      sector: user.profile?.sector || null,
       batch: user.profile?.jnvBatch || null,
       bloodGroup: user.profile?.bloodGroup || null,
       about: user.profile?.about || null,

@@ -8,9 +8,10 @@ import DashboardLayout from "./components/DashboardLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import About from "./pages/About";
-import Events from "./pages/Events";
-import Contact from "./pages/Contact";
-import Membership from "./pages/Membership";
+// V1 Release: Commenting out pages not part of first release
+// import Events from "./pages/Events";
+// import Contact from "./pages/Contact";
+// import Membership from "./pages/Membership";
 import OAuthSuccess from "./pages/OAuthSuccess";
 import OAuthError from "./pages/OAuthError";
 import EmailVerification from "./pages/EmailVerification";
@@ -59,9 +60,10 @@ function App(): JSX.Element {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/directory" element={<ProtectedRoute><Directory /></ProtectedRoute>} />
-          <Route path="/events" element={<Events />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/membership" element={<Membership />} />
+          {/* V1 Release: Commenting out routes not part of first release */}
+          {/* <Route path="/events" element={<Events />} /> */}
+          {/* <Route path="/contact" element={<Contact />} /> */}
+          {/* <Route path="/membership" element={<Membership />} /> */}
         </Route>
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />

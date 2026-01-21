@@ -1,8 +1,10 @@
-import { Calendar, Ticket, Settings, LogOut, Medal, Menu, X } from 'lucide-react';
+// V1 Release: Commenting out icons not used in first release
+// import { Calendar, Ticket, Settings, LogOut, Medal, Menu, X } from 'lucide-react';
+import { LogOut, Menu, X } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../redux/hooks';
 import { logoutUser } from '../../services/authService';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 
 interface SidebarItem {
     path: string;
@@ -37,26 +39,27 @@ const sidebarItems: SidebarItem[] = [
             </div>
         ),
     },
-    {
-        path: '/my-membership',
-        label: 'My Membership',
-        icon: <Medal className="w-5 h-5" />,
-    },
-    {
-        path: '/tickets',
-        label: 'My Tickets',
-        icon: <Ticket className="w-5 h-5" />,
-    },
-    {
-        path: '/my-events',
-        label: 'My Events',
-        icon: <Calendar className="w-5 h-5" />,
-    },
-    {
-        path: '/settings',
-        label: 'Account Settings',
-        icon: <Settings className="w-5 h-5" />,
-    },
+    // V1 Release: Commenting out sidebar items not part of first release
+    // {
+    //     path: '/my-membership',
+    //     label: 'My Membership',
+    //     icon: <Medal className="w-5 h-5" />,
+    // },
+    // {
+    //     path: '/tickets',
+    //     label: 'My Tickets',
+    //     icon: <Ticket className="w-5 h-5" />,
+    // },
+    // {
+    //     path: '/my-events',
+    //     label: 'My Events',
+    //     icon: <Calendar className="w-5 h-5" />,
+    // },
+    // {
+    //     path: '/settings',
+    //     label: 'Account Settings',
+    //     icon: <Settings className="w-5 h-5" />,
+    // },
 ];
 
 export default function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {

@@ -8,6 +8,8 @@ export interface AlumniMember {
     phone: string | null;
     city: string | null;
     occupation: string | null;
+    organization: string | null;
+    sector: string | null;
     batch: string | null;
     bloodGroup: string | null;
     about: string | null;

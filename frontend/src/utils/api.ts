@@ -22,7 +22,7 @@ export const ALUMNI_API = {
 export const PROFILE_API = {
   GET_PROFILE:`${BASE_URL}/profile/me`,
   UPDATE_PROFILE: `${BASE_URL}/profile/update`,
-  UPLOAD_PROFILE_PHOTO:`${BASE_URL}/profile/profile-photo`,
+  UPLOAD_PROFILE_PHOTO:`${BASE_URL}/profile/profilePhoto`,
   GET_PROFILE_COMPLETENESS:`${BASE_URL}/profile/profileCompleteness`,
 };
 
