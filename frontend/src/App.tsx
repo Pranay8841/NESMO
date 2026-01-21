@@ -13,6 +13,7 @@ import Contact from "./pages/Contact";
 import Membership from "./pages/Membership";
 import OAuthSuccess from "./pages/OAuthSuccess";
 import OAuthError from "./pages/OAuthError";
+import EmailVerification from "./pages/EmailVerification";
 import Dashboard from "./components/Dashboard/Dashboard";
 import Profile from "./components/Dashboard/Profile";
 import Directory from "./pages/Directory";
@@ -68,6 +69,7 @@ function App(): JSX.Element {
         </Route>
         <Route path="/oauth-success" element={<OAuthSuccess />} />
         <Route path="/oauth-error" element={<OAuthError />} />
+        <Route path="/verify-email/:token" element={<EmailVerification />} />
       </Routes>
     </BrowserRouter>
   );

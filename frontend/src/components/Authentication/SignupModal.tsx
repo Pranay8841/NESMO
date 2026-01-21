@@ -5,9 +5,10 @@ import Signup from './Signup';
 interface SignupModalProps {
     isOpen: boolean;
     onClose: () => void;
+    onOpenLogin?: () => void;
 }
 
-export default function SignupModal({ isOpen, onClose }: SignupModalProps): JSX.Element | null {
+export default function SignupModal({ isOpen, onClose, onOpenLogin }: SignupModalProps): JSX.Element | null {
     // Prevent body scroll when modal is open
     useEffect(() => {
         if (isOpen) {
@@ -60,7 +61,7 @@ export default function SignupModal({ isOpen, onClose }: SignupModalProps): JSX.
 
                 {/* Signup Component */}
                 <div className="max-h-[90vh] overflow-y-auto">
-                    <Signup onSuccess={onClose} />
+                    <Signup onSuccess={onClose} onOpenLogin={onOpenLogin} />
                 </div>
             </div>
         </div>

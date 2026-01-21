@@ -1,5 +1,5 @@
-import { type JSX, useState } from "react";
-import { Outlet } from "react-router-dom";
+import { type JSX, useState, useEffect } from "react";
+import { Outlet, useSearchParams } from "react-router-dom";
 import Navbar from "./LandingPage/Navbar";
 import Footer from "./LandingPage/Footer";
 import SignupModal from "./Authentication/SignupModal";
@@ -8,11 +8,36 @@ import LoginModal from "./Authentication/LoginModal";
 export default function Layout(): JSX.Element {
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const openSignupModal = () => setIsSignupModalOpen(true);
-  const closeSignupModal = () => setIsSignupModalOpen(false);
+  const closeSignupModal = () => {
+    setIsSignupModalOpen(false);
+    // Clear the query param when modal is closed
+    if (searchParams.has('openSignup')) {
+      searchParams.delete('openSignup');
+      setSearchParams(searchParams);
+    }
+  };
   const openLoginModal = () => setIsLoginModalOpen(true);
-  const closeLoginModal = () => setIsLoginModalOpen(false);
+  const closeLoginModal = () => {
+    setIsLoginModalOpen(false);
+    // Clear the query param when modal is closed
+    if (searchParams.has('openLogin')) {
+      searchParams.delete('openLogin');
+      setSearchParams(searchParams);
+    }
+  };
+
+  // Check for openLogin/openSignup query param to auto-open modals
+  useEffect(() => {
+    if (searchParams.get('openLogin') === 'true') {
+      setIsLoginModalOpen(true);
+    }
+    if (searchParams.get('openSignup') === 'true') {
+      setIsSignupModalOpen(true);
+    }
+  }, [searchParams]);
 
   const isAnyModalOpen = isSignupModalOpen || isLoginModalOpen;
 
@@ -27,7 +52,7 @@ export default function Layout(): JSX.Element {
           <Footer />
         </footer>
       </div>
-      <SignupModal isOpen={isSignupModalOpen} onClose={closeSignupModal} />
+      <SignupModal isOpen={isSignupModalOpen} onClose={closeSignupModal} onOpenLogin={() => { closeSignupModal(); openLoginModal(); }} />
       <LoginModal isOpen={isLoginModalOpen} onClose={closeLoginModal} />
     </>
   );
