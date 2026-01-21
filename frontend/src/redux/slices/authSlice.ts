@@ -18,6 +18,7 @@ export interface User {
     profile: string; // ObjectId reference to Profile
     isBlocked: boolean;
     isVerified: boolean;
+    isEmailVerified: boolean;
     blockedReason?: string;
     blockedAt?: string;
     createdAt: string;
@@ -28,12 +29,14 @@ interface AuthState {
     user: User | null;
     loading: boolean;
     token: string | null;
+    pendingVerificationEmail: string | null; // Email awaiting verification
 }
 
 const initialState: AuthState = {
     user: null,
     loading: false,
     token: localStorage.getItem("token") ? JSON.parse(localStorage.getItem("token") as string) : null,
+    pendingVerificationEmail: null,
 };
 
 export const authSlice = createSlice({
@@ -49,14 +52,21 @@ export const authSlice = createSlice({
         setUser: (state, action: PayloadAction<User | null>) => {
             state.user = action.payload;
         },
+        setPendingVerificationEmail: (state, action: PayloadAction<string | null>) => {
+            state.pendingVerificationEmail = action.payload;
+        },
+        clearPendingVerification: (state) => {
+            state.pendingVerificationEmail = null;
+        },
         logout: (state) => {
             state.user = null;
             state.token = null;
+            state.pendingVerificationEmail = null;
             localStorage.removeItem('token');
         }
     },
 });
 
-export const { setLoading, setToken, setUser, logout } = authSlice.actions;
+export const { setLoading, setToken, setUser, setPendingVerificationEmail, clearPendingVerification, logout } = authSlice.actions;
 
 export default authSlice.reducer;

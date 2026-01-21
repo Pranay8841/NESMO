@@ -1,20 +1,24 @@
 import { User, Mail, Lock, Eye, EyeOff, Shield } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { registerUser } from '../../services/authService';
 import type { RootState } from '../../redux/store';
 import AuthLoading from './AuthLoading';
+import VerifyEmailPrompt from './VerifyEmailPrompt';
 
 const backgroundImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDW4vPiCeZ4gsaK4aZaETJJ3s7KjcDPRsqa2pFP5nSuDlstKJ8fOPWpwRzXqrJcJ9GcoZ0oBUoNup6lHsLZtGCzhs371PlWmu2XmsCf6fzcEZPJNamEgpZ9D76ksuY4QRByODUcgXY98BJEZYBZRWwQgADiYxmWC-bwJIcUWeb9IOF5tcNWEMdznncRi4caQYg0w-3VkGp5SS9pk8WHk_8KDl5sGQLHpo6QZND5BEM-6tZ6if2Gmydi-43Bm1OGjW5akJnhYtm0txDb';
 
 interface SignupProps {
     onSuccess?: () => void;
+    onOpenLogin?: () => void;
 }
 
-export default function App({ onSuccess }: SignupProps) {
+export default function App({ onSuccess, onOpenLogin }: SignupProps) {
     const dispatch = useAppDispatch();
-    const { loading } = useAppSelector((state: RootState) => state.auth);
+    const navigate = useNavigate();
+    const { loading, pendingVerificationEmail } = useAppSelector((state: RootState) => state.auth);
 
     const [formData, setFormData] = useState({
         firstName: '',
@@ -25,6 +29,7 @@ export default function App({ onSuccess }: SignupProps) {
     const [termsAccepted, setTermsAccepted] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [isAuthenticating, setIsAuthenticating] = useState(false);
+    const [showVerificationPrompt, setShowVerificationPrompt] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -47,9 +52,14 @@ export default function App({ onSuccess }: SignupProps) {
         const result = await dispatch(registerUser(formData));
         
         if (registerUser.fulfilled.match(result)) {
-            // Registration successful
             setIsAuthenticating(false);
-            onSuccess?.();
+            // Check if email verification is required
+            if (result.payload?.requiresEmailVerification) {
+                setShowVerificationPrompt(true);
+            } else {
+                // Fallback for backwards compatibility
+                onSuccess?.();
+            }
         } else {
             setIsAuthenticating(false);
         }
@@ -64,6 +74,22 @@ export default function App({ onSuccess }: SignupProps) {
     // Show full-screen loading when authenticating
     if (isAuthenticating) {
         return <AuthLoading message="Creating your account..." subMessage="Please wait while we set up your profile." />;
+    }
+
+    // Show verification prompt after successful registration
+    if (showVerificationPrompt || pendingVerificationEmail) {
+        return (
+            <VerifyEmailPrompt 
+                email={pendingVerificationEmail || formData.email} 
+                onBackToLogin={() => {
+                    if (onOpenLogin) {
+                        onOpenLogin();
+                    } else {
+                        navigate('/login');
+                    }
+                }}
+            />
+        );
     }
 
     return (

@@ -1,7 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosRequestHeaders } from 'axios';
 import toast from 'react-hot-toast';
-import { setLoading, setToken, setUser } from '../redux/slices/authSlice';
+import { setLoading, setToken, setUser, setPendingVerificationEmail, clearPendingVerification } from '../redux/slices/authSlice';
 
 import { apiConnector } from '../utils/APIsConnector';
 import { USER_API } from '../utils/api';
@@ -25,7 +25,16 @@ export const registerUser = createAsyncThunk(
                 userData,
             );
 
-            // After registration, also log the user in
+            // Registration now requires email verification
+            // Don't auto-login - set pending verification email instead
+            if (response.data.requiresEmailVerification) {
+                dispatch(setPendingVerificationEmail(response.data.email));
+                dispatch(setLoading(false));
+                toast.success('Please check your email to verify your account.', { id: toastId });
+                return { ...response.data, requiresEmailVerification: true };
+            }
+
+            // Fallback for backwards compatibility (shouldn't happen with new flow)
             if (response.data.user) {
                 const userImage = response.data.user.profile?.profilePhoto ||
                     `https://api.dicebear.com/5.x/initials/svg?seed=${response.data.user.firstName} ${response.data.user.lastName}`;
@@ -67,6 +76,7 @@ export const loginUser = createAsyncThunk(
 
             dispatch(setUser({ ...response.data.user, profile: { ...response.data.user.profile, profilePhoto: userImage } }));
             dispatch(setToken(response.data.token));
+            dispatch(clearPendingVerification());
             dispatch(setLoading(false));
 
             // Save token to localStorage
@@ -76,6 +86,19 @@ export const loginUser = createAsyncThunk(
             return response.data;
         } catch (error: any) {
             dispatch(setLoading(false));
+            
+            // Check if error is due to unverified email
+            if (error.response?.data?.code === 'EMAIL_NOT_VERIFIED') {
+                const email = error.response?.data?.email;
+                dispatch(setPendingVerificationEmail(email));
+                toast.error('Please verify your email before logging in.', { id: toastId });
+                return rejectWithValue({ 
+                    message: 'Email not verified', 
+                    code: 'EMAIL_NOT_VERIFIED',
+                    email 
+                });
+            }
+            
             const errorMessage = error.response?.data?.message || 'Login failed';
             toast.error(errorMessage, { id: toastId });
             return rejectWithValue(errorMessage);
@@ -134,6 +157,65 @@ export const fetchCurrentUser = createAsyncThunk(
     } catch (error: any) {
       dispatch(setLoading(false));
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch user');
+    }
+  }
+);
+
+// Verify email with token
+export const verifyEmail = createAsyncThunk(
+  'auth/verifyEmail',
+  async (token: string, { dispatch, rejectWithValue }) => {
+    const toastId = toast.loading('Verifying your email...');
+    try {
+      dispatch(setLoading(true));
+      const response = await apiConnector(
+        'GET',
+        `${USER_API.VERIFY_EMAIL}/${token}`,
+      );
+      
+      dispatch(clearPendingVerification());
+      dispatch(setLoading(false));
+      toast.success('Email verified successfully! You can now log in.', { id: toastId });
+      return response.data;
+    } catch (error: any) {
+      dispatch(setLoading(false));
+      const errorMessage = error.response?.data?.message || 'Email verification failed';
+      const errorCode = error.response?.data?.code;
+      
+      // Check if this is an "already used" case - show info toast instead of error
+      if (errorMessage?.includes('already been used') || errorMessage?.includes('already verified')) {
+        toast.dismiss(toastId);
+        // Don't show any toast - the UI will handle this gracefully
+      } else {
+        toast.error(errorMessage, { id: toastId });
+      }
+      
+      return rejectWithValue({ message: errorMessage, code: errorCode });
+    }
+  }
+);
+
+// Resend verification email
+export const resendVerificationEmail = createAsyncThunk(
+  'auth/resendVerificationEmail',
+  async (email: string, { dispatch, rejectWithValue }) => {
+    const toastId = toast.loading('Sending verification email...');
+    try {
+      dispatch(setLoading(true));
+      const response = await apiConnector(
+        'POST',
+        USER_API.RESEND_VERIFICATION,
+        { email },
+      );
+      
+      dispatch(setLoading(false));
+      toast.success('Verification email sent! Please check your inbox.', { id: toastId });
+      return response.data;
+    } catch (error: any) {
+      dispatch(setLoading(false));
+      const errorMessage = error.response?.data?.message || 'Failed to send verification email';
+      toast.error(errorMessage, { id: toastId });
+      return rejectWithValue(errorMessage);
     }
   }
 );

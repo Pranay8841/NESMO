@@ -2,6 +2,7 @@ import User from "../models/user.js"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import Profile from "../models/profile.js"
+import { sendVerificationEmail, generateVerificationToken } from "../utils/emailSender.js"
 
 export const register = async (
     req,
@@ -30,29 +31,39 @@ export const register = async (
 
         const profile = await Profile.create({});
 
+        // Generate email verification token
+        const verificationToken = generateVerificationToken();
+        const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
         const user = await User.create({
             firstName,
             lastName,
             email,
             password: hashedPassword,
             authProvider: "LOCAL",
-            profile: profile._id
+            profile: profile._id,
+            isEmailVerified: false,
+            emailVerificationToken: verificationToken,
+            emailVerificationExpires: verificationExpires
         });
 
-        // Generate token for auto-login after registration
-        const token = jwt.sign(
-            { userId: user._id.toString() },
-            process.env.JWT_SECRET,
-            { expiresIn: "7d" }
-        );
+        // Send verification email
+        try {
+            await sendVerificationEmail(email, firstName, verificationToken);
+        } catch (emailError) {
+            console.error("Failed to send verification email:", emailError);
+            // Continue registration even if email fails - user can resend later
+        }
 
-        // Don't return password
+        // Don't return password or token - user must verify email first
         user.password = undefined;
+        user.emailVerificationToken = undefined;
+        user.emailVerificationExpires = undefined;
 
         res.status(201).json({
-            message: "User registered successfully",
-            token,
-            user
+            message: "Registration successful. Please check your email to verify your account.",
+            requiresEmailVerification: true,
+            email: user.email
         });
     } catch(error) {
         res.status(500).json({
@@ -87,6 +98,15 @@ export const login  = async (
             return res.status(401).json({
                 message: "Invalid Credentials - password mismatch"
             })
+        }
+
+        // Check if email is verified
+        if (!user.isEmailVerified) {
+            return res.status(403).json({
+                message: "Please verify your email before logging in.",
+                code: "EMAIL_NOT_VERIFIED",
+                email: user.email
+            });
         }
 
         const token = jwt.sign(
@@ -174,6 +194,120 @@ export const logoutUser = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             message: "Logout failed: " + error
+        });
+    }
+};
+
+// Verify email with token
+export const verifyEmail = async (req, res) => {
+    try {
+        const { token } = req.params;
+
+        if (!token) {
+            return res.status(400).json({
+                message: "Verification token is required"
+            });
+        }
+
+        // First, try to find user with matching token that hasn't expired
+        let user = await User.findOne({
+            emailVerificationToken: token,
+            emailVerificationExpires: { $gt: Date.now() }
+        }).select("+emailVerificationToken +emailVerificationExpires");
+
+        if (!user) {
+            // Token not found or expired - check if there's a user who is already verified
+            // This handles the case where user clicks verification link again after already verifying
+            const verifiedUser = await User.findOne({
+                isEmailVerified: true,
+                emailVerificationToken: { $exists: false }
+            });
+
+            // Check if token might have been used (user already verified)
+            // We can't directly link token to user after verification, but we can give helpful message
+            return res.status(400).json({
+                message: "This verification link is invalid or has already been used. If you've already verified your email, please proceed to login.",
+                code: "INVALID_TOKEN"
+            });
+        }
+
+        // Check if already verified (edge case)
+        if (user.isEmailVerified) {
+            return res.status(200).json({
+                success: true,
+                message: "Email is already verified. You can log in.",
+                alreadyVerified: true
+            });
+        }
+
+        // Mark email as verified and clear verification fields
+        user.isEmailVerified = true;
+        user.emailVerificationToken = undefined;
+        user.emailVerificationExpires = undefined;
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Email verified successfully. You can now log in."
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Email verification failed: " + error
+        });
+    }
+};
+
+// Resend verification email
+export const resendVerificationEmail = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                message: "Email is required"
+            });
+        }
+
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            // Return success even if user not found for security (prevent email enumeration)
+            return res.status(200).json({
+                success: true,
+                message: "If an account exists with this email, a verification link has been sent."
+            });
+        }
+
+        if (user.isEmailVerified) {
+            return res.status(400).json({
+                message: "Email is already verified. Please log in."
+            });
+        }
+
+        if (user.authProvider !== "LOCAL") {
+            return res.status(400).json({
+                message: "This account uses Google sign-in. No email verification needed."
+            });
+        }
+
+        // Generate new verification token
+        const verificationToken = generateVerificationToken();
+        const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+        user.emailVerificationToken = verificationToken;
+        user.emailVerificationExpires = verificationExpires;
+        await user.save();
+
+        // Send verification email
+        await sendVerificationEmail(email, user.firstName, verificationToken);
+
+        res.status(200).json({
+            success: true,
+            message: "Verification email sent. Please check your inbox."
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to resend verification email: " + error
         });
     }
 };

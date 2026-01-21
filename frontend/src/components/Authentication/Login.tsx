@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { loginUser } from '../../services/authService';
 import AuthLoading from './AuthLoading';
+import VerifyEmailPrompt from './VerifyEmailPrompt';
 
 const backgroundImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCIIuthEqIFJvMsr1O6clwVW6l7p5zYh3zKbWu_kdTxkqYJGfZwlnZaKhNXblwnWRoYSeiSEjmsi-u0NfEsOqBdPylHvS1KCXxpGbF8wpqaz8IJilF81WtaIv4U1yyAlVE_iSV7jHcWOuut8GF5MGnIH-nAq78XbzOYS1PFYay9OXrwLSe6Sk4eKgX0kLAOh2QFNgEBoVNU87rSaF8iSgFpXZxPXzutwwHqNMHBLEOHPMMYsROFDkGTu075tTQFbFvoWwwxC7Sx89OU';
 
@@ -13,7 +14,7 @@ interface LoginProps {
 
 export default function App({ onSuccess }: LoginProps) {
     const dispatch = useAppDispatch();
-    const { loading } = useAppSelector((state) => state.auth);
+    const { loading, pendingVerificationEmail } = useAppSelector((state) => state.auth);
 
     const [formData, setFormData] = useState({
         email: '',
@@ -22,6 +23,7 @@ export default function App({ onSuccess }: LoginProps) {
     const [showPassword, setShowPassword] = useState(false);
     const [stayLoggedIn, setStayLoggedIn] = useState(false);
     const [isAuthenticating, setIsAuthenticating] = useState(false);
+    const [showVerificationPrompt, setShowVerificationPrompt] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -44,6 +46,11 @@ export default function App({ onSuccess }: LoginProps) {
             onSuccess?.();
         } else {
             setIsAuthenticating(false);
+            // Check if error is due to unverified email
+            const payload = result.payload as { code?: string; email?: string } | string;
+            if (typeof payload === 'object' && payload?.code === 'EMAIL_NOT_VERIFIED') {
+                setShowVerificationPrompt(true);
+            }
         }
     };
 
@@ -56,6 +63,16 @@ export default function App({ onSuccess }: LoginProps) {
     // Show full-screen loading when authenticating
     if (isAuthenticating) {
         return <AuthLoading message="Signing you in..." subMessage="Please wait while we verify your credentials." />;
+    }
+
+    // Show verification prompt if email not verified
+    if (showVerificationPrompt || pendingVerificationEmail) {
+        return (
+            <VerifyEmailPrompt 
+                email={pendingVerificationEmail || formData.email} 
+                onBackToLogin={() => setShowVerificationPrompt(false)}
+            />
+        );
     }
 
     return (

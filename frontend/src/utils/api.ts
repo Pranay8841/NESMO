@@ -4,6 +4,8 @@ const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 export const USER_API = {
   LOGIN: `${BASE_URL}/auth/login`,
   REGISTER: `${BASE_URL}/auth/register`,
+  VERIFY_EMAIL: `${BASE_URL}/auth/verify-email`, // Token appended as path param
+  RESEND_VERIFICATION: `${BASE_URL}/auth/resend-verification`,
   GOOGLE_AUTH: `${BASE_URL}/auth/google`,
   GOOGLE_CALLBACK: `${BASE_URL}/auth/google/callback`,
   CURRENT_USER: `${BASE_URL}/auth/me`,
