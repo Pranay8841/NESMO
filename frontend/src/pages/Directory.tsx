@@ -16,7 +16,9 @@ import { fetchAlumniDirectory } from '../services/alumniService';
 import AlumniProfileModal from '../components/Directory/AlumniProfileModal';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-const BATCH_OPTIONS = Array.from({ length: 30 }, (_, i) => `${1990 + i}`);
+// JNV first batch joined in 1986, passout after 7 years (1993)
+const JOIN_BATCH_OPTIONS = Array.from({ length: 41 }, (_, i) => `${1986 + i}`); // 1986 to 2026
+const PASSOUT_BATCH_OPTIONS = Array.from({ length: 41 }, (_, i) => `${1993 + i}`); // 1993 to 2033
 const LIMIT = 12;
 
 export default function Directory() {
@@ -52,7 +54,7 @@ export default function Directory() {
         dispatch(clearFilters());
     };
 
-    const handleRemoveFilter = (key: 'jnvBatch' | 'city' | 'occupation' | 'bloodGroup' | 'isMember') => {
+    const handleRemoveFilter = (key: 'joinBatch' | 'passoutBatch' | 'city' | 'occupation' | 'bloodGroup' | 'isMember') => {
         dispatch(removeFilter(key));
     };
 
@@ -90,19 +92,39 @@ export default function Directory() {
                             <p className="text-xs text-gray-500 mb-6">Refine the alumni list</p>
 
                             <div className="space-y-6">
-                                {/* JNV Batch */}
+                                {/* Join Batch */}
                                 <div>
                                     <label className="block text-xs text-gray-500 uppercase tracking-wider font-semibold mb-2">
-                                        JNV BATCH
+                                        JOIN BATCH
                                     </label>
                                     <div className="relative">
                                         <select
-                                            value={filters.jnvBatch}
-                                            onChange={(e) => dispatch(setFilters({ jnvBatch: e.target.value }))}
+                                            value={filters.joinBatch}
+                                            onChange={(e) => dispatch(setFilters({ joinBatch: e.target.value }))}
                                             className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 appearance-none cursor-pointer"
                                         >
-                                            <option value="">All Batches</option>
-                                            {BATCH_OPTIONS.map(batch => (
+                                            <option value="">All Years</option>
+                                            {JOIN_BATCH_OPTIONS.map(batch => (
+                                                <option key={batch} value={batch}>{batch}</option>
+                                            ))}
+                                        </select>
+                                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                    </div>
+                                </div>
+
+                                {/* Passout Batch */}
+                                <div>
+                                    <label className="block text-xs text-gray-500 uppercase tracking-wider font-semibold mb-2">
+                                        PASSOUT BATCH
+                                    </label>
+                                    <div className="relative">
+                                        <select
+                                            value={filters.passoutBatch}
+                                            onChange={(e) => dispatch(setFilters({ passoutBatch: e.target.value }))}
+                                            className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 appearance-none cursor-pointer"
+                                        >
+                                            <option value="">All Years</option>
+                                            {PASSOUT_BATCH_OPTIONS.map(batch => (
                                                 <option key={batch} value={batch}>{batch}</option>
                                             ))}
                                         </select>
@@ -232,10 +254,16 @@ export default function Directory() {
                             {/* Active Filters */}
                             {activeFilterCount > 0 && (
                                 <div className="flex flex-wrap items-center gap-2">
-                                    {appliedFilters.jnvBatch && (
+                                    {appliedFilters.joinBatch && (
                                         <span className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg text-sm font-semibold flex items-center gap-2">
-                                            Batch {appliedFilters.jnvBatch}
-                                            <X className="w-3.5 h-3.5 cursor-pointer" onClick={() => handleRemoveFilter('jnvBatch')} />
+                                            Join {appliedFilters.joinBatch}
+                                            <X className="w-3.5 h-3.5 cursor-pointer" onClick={() => handleRemoveFilter('joinBatch')} />
+                                        </span>
+                                    )}
+                                    {appliedFilters.passoutBatch && (
+                                        <span className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg text-sm font-semibold flex items-center gap-2">
+                                            Passout {appliedFilters.passoutBatch}
+                                            <X className="w-3.5 h-3.5 cursor-pointer" onClick={() => handleRemoveFilter('passoutBatch')} />
                                         </span>
                                     )}
                                     {appliedFilters.city && (
@@ -354,24 +382,24 @@ export default function Directory() {
                                                     </div>
                                                 )}
 
-                                                {/* Location & Batch */}
-                                                <div className="flex items-center justify-center gap-1 text-xs text-gray-500 mb-2">
-                                                    {member.city && (
-                                                        <>
-                                                            <MapPin className="w-2.5 h-2.5" />
-                                                            <span className="truncate max-w-[100px]">{member.city}</span>
-                                                        </>
+                                                {/* Batch & Blood Group */}
+                                                <div className="flex items-center justify-center gap-2 text-xs mb-1">
+                                                    {(member.joinBatch || member.passoutBatch) && (
+                                                        <span className="font-semibold text-gray-700">{member.joinBatch || '?'} - {member.passoutBatch || '?'}</span>
                                                     )}
-                                                    {member.city && member.batch && <span>•</span>}
-                                                    {member.batch && <span className="font-semibold">{member.batch}</span>}
-                                                </div>
-
-                                                {/* Blood Group */}
-                                                {member.bloodGroup && (
-                                                    <div className="text-center mb-2">
-                                                        <span className="inline-block px-1.5 py-0.5 bg-red-50 text-red-600 rounded text-[10px] font-semibold">
+                                                    {(member.joinBatch || member.passoutBatch) && member.bloodGroup && <span className="text-gray-400">•</span>}
+                                                    {member.bloodGroup && (
+                                                        <span className="px-1.5 py-0.5 bg-red-50 text-red-600 rounded text-[10px] font-semibold">
                                                             🩸 {member.bloodGroup}
                                                         </span>
+                                                    )}
+                                                </div>
+
+                                                {/* Location */}
+                                                {member.city && (
+                                                    <div className="flex items-center justify-center gap-1 text-xs text-gray-500 mb-2">
+                                                        <MapPin className="w-2.5 h-2.5" />
+                                                        <span className="truncate max-w-[120px]">{member.city}</span>
                                                     </div>
                                                 )}
 

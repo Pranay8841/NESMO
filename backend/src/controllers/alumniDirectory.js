@@ -3,7 +3,7 @@ import User from "../models/user.js";
 /**
  * GET /api/alumni-directory
  * Access: Authenticated users only
- * Filters: city, occupation, jnvBatch, bloodGroup, isMember, search
+ * Filters: city, occupation, joinBatch, passoutBatch, bloodGroup, isMember, search
  * Pagination: page, limit
  */
 export const getAlumniDirectory = async (req, res) => {
@@ -52,8 +52,12 @@ export const getAlumniDirectory = async (req, res) => {
       profileMatch["profileData.occupation"] = new RegExp(req.query.occupation, "i");
     }
 
-    if (req.query.jnvBatch) {
-      profileMatch["profileData.jnvBatch"] = req.query.jnvBatch;
+    if (req.query.joinBatch) {
+      profileMatch["profileData.joinBatch"] = req.query.joinBatch;
+    }
+
+    if (req.query.passoutBatch) {
+      profileMatch["profileData.passoutBatch"] = req.query.passoutBatch;
     }
 
     if (req.query.bloodGroup) {
@@ -114,7 +118,8 @@ export const getAlumniDirectory = async (req, res) => {
       occupation: user.profile?.occupation || null,
       organization: user.profile?.organization || null,
       sector: user.profile?.sector || null,
-      batch: user.profile?.jnvBatch || null,
+      joinBatch: user.profile?.joinBatch || null,
+      passoutBatch: user.profile?.passoutBatch || null,
       bloodGroup: user.profile?.bloodGroup || null,
       about: user.profile?.about || null,
       photo: user.profile?.profilePhoto || null,

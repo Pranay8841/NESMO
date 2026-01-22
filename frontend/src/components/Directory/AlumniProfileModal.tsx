@@ -140,7 +140,7 @@ export default function AlumniProfileModal({ isOpen, onClose, member }: AlumniPr
                             )}
 
                             {/* Alumni & Education */}
-                            {member.batch && (
+                            {(member.joinBatch || member.passoutBatch) && (
                                 <div>
                                     <div className="flex items-center gap-2 mb-4">
                                         <GraduationCap className="w-5 h-5 text-blue-600" />
@@ -156,8 +156,8 @@ export default function AlumniProfileModal({ isOpen, onClose, member }: AlumniPr
                                             </div>
                                         </div>
                                         <div>
-                                            <h3 className="text-base font-bold text-gray-900 mb-1">Jawahar Navodaya Vidyalaya</h3>
-                                            <p className="text-sm text-gray-600 mb-1">Batch {member.batch}</p>
+                                            <h3 className="text-base font-bold text-gray-900 mb-1">Jawahar Navodaya Vidyalaya, Gadchiroli</h3>
+                                            <p className="text-sm text-gray-600 mb-1">{member.joinBatch || '?'} - {member.passoutBatch || '?'}</p>
                                             {isMember && (
                                                 <p className="text-sm text-green-600 font-semibold">NESMO Member</p>
                                             )}
@@ -233,10 +233,10 @@ export default function AlumniProfileModal({ isOpen, onClose, member }: AlumniPr
                                             <span className="text-xl font-black text-white">{member.bloodGroup}</span>
                                         </div>
                                     )}
-                                    {member.batch && (
+                                    {(member.joinBatch || member.passoutBatch) && (
                                         <div className="flex items-center justify-between">
                                             <span className="text-sm text-gray-300 font-medium">JNV Batch</span>
-                                            <span className="text-xl font-black text-white">{member.batch}</span>
+                                            <span className="text-lg font-black text-white">{member.joinBatch || '?'} - {member.passoutBatch || '?'}</span>
                                         </div>
                                     )}
                                     <div className="flex items-center justify-between">

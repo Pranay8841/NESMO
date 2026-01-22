@@ -10,7 +10,8 @@ export interface AlumniMember {
     occupation: string | null;
     organization: string | null;
     sector: string | null;
-    batch: string | null;
+    joinBatch: string | null;
+    passoutBatch: string | null;
     bloodGroup: string | null;
     about: string | null;
     photo: string | null;
@@ -18,7 +19,8 @@ export interface AlumniMember {
 }
 
 export interface AlumniFilters {
-    jnvBatch: string;
+    joinBatch: string;
+    passoutBatch: string;
     city: string;
     occupation: string;
     bloodGroup: string;
@@ -36,7 +38,8 @@ interface AlumniState {
 }
 
 const initialFilters: AlumniFilters = {
-    jnvBatch: '',
+    joinBatch: '',
+    passoutBatch: '',
     city: '',
     occupation: '',
     bloodGroup: '',

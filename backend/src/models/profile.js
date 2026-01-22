@@ -11,7 +11,11 @@ const profileSchema = new mongoose.Schema(
             type: String
         },
 
-        jnvBatch: {
+        joinBatch: {
+            type: String
+        },
+
+        passoutBatch: {
             type: String
         },
 
@@ -47,7 +51,8 @@ const profileSchema = new mongoose.Schema(
 profileSchema.index({ currentAddress: 1 });
 profileSchema.index({ occupation: 1 });
 profileSchema.index({ organization: 1 });
-profileSchema.index({ jnvBatch: 1 });
+profileSchema.index({ joinBatch: 1 });
+profileSchema.index({ passoutBatch: 1 });
 profileSchema.index({ bloodGroup: 1 });
 
 export default mongoose.model("Profile", profileSchema);

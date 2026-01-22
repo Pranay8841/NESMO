@@ -37,7 +37,8 @@ export const fetchAlumniDirectory = createAsyncThunk(
                 limit,
             };
 
-            if (filters.jnvBatch) params.jnvBatch = filters.jnvBatch;
+            if (filters.joinBatch) params.joinBatch = filters.joinBatch;
+            if (filters.passoutBatch) params.passoutBatch = filters.passoutBatch;
             if (filters.city) params.city = filters.city;
             if (filters.occupation) params.occupation = filters.occupation;
             if (filters.bloodGroup) params.bloodGroup = filters.bloodGroup;
