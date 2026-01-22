@@ -22,7 +22,8 @@ export default function Profile() {
     const [formData, setFormData] = useState<ProfileUpdateData>({
         about: '',
         phone: '',
-        jnvBatch: '',
+        joinBatch: '',
+        passoutBatch: '',
         occupation: '',
         organization: '',
         sector: '',
@@ -42,7 +43,8 @@ export default function Profile() {
             setFormData({
                 about: profile.about || '',
                 phone: profile.phone || '',
-                jnvBatch: profile.jnvBatch || '',
+                joinBatch: profile.joinBatch || '',
+                passoutBatch: profile.passoutBatch || '',
                 occupation: profile.occupation || '',
                 organization: profile.organization || '',
                 sector: profile.sector || '',
@@ -73,7 +75,8 @@ export default function Profile() {
                 setFormData({
                     about: profile.about || '',
                     phone: profile.phone || '',
-                    jnvBatch: profile.jnvBatch || '',
+                    joinBatch: profile.joinBatch || '',
+                    passoutBatch: profile.passoutBatch || '',
                     occupation: profile.occupation || '',
                     organization: profile.organization || '',
                     sector: profile.sector || '',
@@ -107,7 +110,7 @@ export default function Profile() {
     // Calculate profile completeness based on filled fields
     const calculateCompleteness = () => {
         if (!profile) return 0;
-        const fields = ['about', 'phone', 'jnvBatch', 'occupation', 'sector', 'currentAddress', 'bloodGroup', 'profilePhoto'];
+        const fields = ['about', 'phone', 'joinBatch', 'passoutBatch', 'occupation', 'sector', 'currentAddress', 'bloodGroup', 'profilePhoto'];
         const filledFields = fields.filter(field => profile[field as keyof typeof profile]);
         return Math.round((filledFields.length / fields.length) * 100);
     };
@@ -164,14 +167,16 @@ export default function Profile() {
                                         </div>
                                         {(profile?.occupation || isEditing) && (
                                             <h2 className="text-base sm:text-xl font-bold text-blue-600 mb-2 sm:mb-3">
-                                                {profile?.occupation || 'Add your occupation'}
+                                                {profile?.occupation 
+                                                    ? `${profile.occupation}${profile.organization ? ` at ${profile.organization}` : ''}`
+                                                    : 'Add your occupation'}
                                             </h2>
                                         )}
                                         <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-4 text-sm text-gray-600">
-                                            {profile?.jnvBatch && (
+                                            {(profile?.joinBatch || profile?.passoutBatch) && (
                                                 <div className="flex items-center gap-1.5">
                                                     <GraduationCap className="w-4 h-4 text-gray-400" />
-                                                    <span>Batch of {profile.jnvBatch}</span>
+                                                    <span>{profile.joinBatch || '?'} - {profile.passoutBatch || '?'}</span>
                                                 </div>
                                             )}
                                             {profile?.currentAddress && (
@@ -334,18 +339,40 @@ export default function Profile() {
                                 </div>
                             </div>
 
-                            {/* Row 2: JNV Batch and Occupation */}
+                            {/* Row 2: Join Batch and Passout Batch */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
-                                {/* JNV Batch */}
+                                {/* Join Batch */}
                                 <div>
                                     <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">
-                                        JNV BATCH YEAR
+                                        JOIN BATCH
                                     </div>
                                     {isEditing ? (
                                         <input
                                             type="text"
-                                            name="jnvBatch"
-                                            value={formData.jnvBatch}
+                                            name="joinBatch"
+                                            value={formData.joinBatch}
+                                            onChange={handleInputChange}
+                                            placeholder="e.g., 2005"
+                                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                        />
+                                    ) : (
+                                        <div className="flex items-center gap-2 text-gray-900 font-semibold">
+                                            <GraduationCap className="w-4 h-4 text-gray-400" />
+                                            <span>{profile?.joinBatch || 'Not provided'}</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Passout Batch */}
+                                <div>
+                                    <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">
+                                        PASSOUT BATCH
+                                    </div>
+                                    {isEditing ? (
+                                        <input
+                                            type="text"
+                                            name="passoutBatch"
+                                            value={formData.passoutBatch}
                                             onChange={handleInputChange}
                                             placeholder="e.g., 2012"
                                             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
@@ -353,11 +380,14 @@ export default function Profile() {
                                     ) : (
                                         <div className="flex items-center gap-2 text-gray-900 font-semibold">
                                             <GraduationCap className="w-4 h-4 text-gray-400" />
-                                            <span>{profile?.jnvBatch ? `Class of ${profile.jnvBatch}` : 'Not provided'}</span>
+                                            <span>{profile?.passoutBatch || 'Not provided'}</span>
                                         </div>
                                     )}
                                 </div>
+                            </div>
 
+                            {/* Row 3: Occupation and Organization */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
                                 {/* Occupation */}
                                 <div>
                                     <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">
@@ -379,10 +409,7 @@ export default function Profile() {
                                         </div>
                                     )}
                                 </div>
-                            </div>
 
-                            {/* Row 3: Organization and Sector */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
                                 {/* Organization */}
                                 <div>
                                     <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">
@@ -404,7 +431,10 @@ export default function Profile() {
                                         </div>
                                     )}
                                 </div>
+                            </div>
 
+                            {/* Row 4: Sector */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
                                 {/* Sector */}
                                 <div>
                                     <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">
@@ -428,7 +458,7 @@ export default function Profile() {
                                 </div>
                             </div>
 
-                            {/* Row 4: Current Address */}
+                            {/* Row 5: Current Address */}
                             <div>
                                 <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">
                                     CURRENT ADDRESS
@@ -493,7 +523,7 @@ export default function Profile() {
                                             JNV BATCH
                                         </div>
                                         <div className="text-base font-black text-gray-900">
-                                            {profile?.jnvBatch ? `Class of ${profile.jnvBatch}` : 'Not set'}
+                                            {(profile?.joinBatch || profile?.passoutBatch) ? `${profile?.joinBatch || '?'} - ${profile?.passoutBatch || '?'}` : 'Not set'}
                                         </div>
                                     </div>
                                 </div>

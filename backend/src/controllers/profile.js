@@ -16,7 +16,8 @@ export const updateProfile = async (req, res) => {
       occupation,
       organization,
       sector,
-      jnvBatch,
+      joinBatch,
+      passoutBatch,
       bloodGroup
     } = req.body;
 
@@ -37,7 +38,8 @@ export const updateProfile = async (req, res) => {
         occupation,
         organization,
         sector,
-        jnvBatch,
+        joinBatch,
+        passoutBatch,
         bloodGroup
       },
       { new: true }
@@ -83,7 +85,7 @@ export const getProfileCompleteness = async (req, res) => {
     let filledFields = 0;
     const profile = user.profile;
     
-    // Count filled fields (9 total fields in profile)
+    // Count filled fields (10 total fields in profile)
     if (profile.profilePhoto) filledFields++;
     if (profile.phone) filledFields++;
     if (profile.currentAddress) filledFields++;
@@ -91,11 +93,12 @@ export const getProfileCompleteness = async (req, res) => {
     if (profile.organization) filledFields++;
     if (profile.sector) filledFields++;
     if (profile.about) filledFields++;
-    if (profile.jnvBatch) filledFields++;
+    if (profile.joinBatch) filledFields++;
+    if (profile.passoutBatch) filledFields++;
     if (profile.bloodGroup) filledFields++;
     
-    // Calculate percentage (9 fields = 100%)
-    const completeness = Math.round((filledFields / 9) * 100);
+    // Calculate percentage (10 fields = 100%)
+    const completeness = Math.round((filledFields / 10) * 100);
 
     res.status(200).json({
       success: true,

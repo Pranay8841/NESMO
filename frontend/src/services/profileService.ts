@@ -8,7 +8,8 @@ export interface Profile {
     _id: string;
     about?: string;
     phone?: string;
-    jnvBatch?: string;
+    joinBatch?: string;
+    passoutBatch?: string;
     occupation?: string;
     organization?: string;
     sector?: string;
@@ -22,7 +23,8 @@ export interface Profile {
 export interface ProfileUpdateData {
     about?: string;
     phone?: string;
-    jnvBatch?: string;
+    joinBatch?: string;
+    passoutBatch?: string;
     occupation?: string;
     organization?: string;
     sector?: string;
