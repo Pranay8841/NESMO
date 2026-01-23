@@ -9,6 +9,8 @@
  * POST   /api/auth/login             - Login with email/password
  * GET    /api/auth/verify-email/:token - Verify email address
  * POST   /api/auth/resend-verification - Resend verification email
+ * POST   /api/auth/forgot-password   - Request password reset email
+ * POST   /api/auth/reset-password/:token - Reset password with token
  * POST   /api/auth/logout            - Logout user (protected)
  * GET    /api/auth/me                - Get current user (protected)
  * GET    /api/auth/google            - Initiate Google OAuth
@@ -17,7 +19,7 @@
 
 import express from 'express';
 import passport from 'passport';
-import { register, login, googleAuthCallback, getCurrentUser, logoutUser, verifyEmail, resendVerificationEmail } from "../controllers/auth.js";
+import { register, login, googleAuthCallback, getCurrentUser, logoutUser, verifyEmail, resendVerificationEmail, forgotPassword, resetPassword } from "../controllers/auth.js";
 import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -35,6 +37,12 @@ router.get('/verify-email/:token', verifyEmail);
 
 // Resend Verification Email
 router.post('/resend-verification', resendVerificationEmail);
+
+// Forgot Password - Request reset email
+router.post('/forgot-password', forgotPassword);
+
+// Reset Password - Set new password with token
+router.post('/reset-password/:token', resetPassword);
 
 /* ==================== Protected Routes ==================== */
 

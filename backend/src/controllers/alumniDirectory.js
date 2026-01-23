@@ -6,6 +6,7 @@
  */
 
 import User from "../models/user.js";
+import mongoose from "mongoose";
 
 /**
  * Get paginated alumni directory with filtering and search.
@@ -51,8 +52,11 @@ export const getAlumniDirectory = async (req, res) => {
     /* ------------------ Build Aggregation Pipeline ------------------ */
     const pipeline = [];
 
-    // Stage 1: Match active users
-    const userMatch = { status: "ACTIVE" };
+    // Stage 1: Match active users (excluding the current logged-in user)
+    const userMatch = { 
+      status: "ACTIVE",
+      _id: { $ne: new mongoose.Types.ObjectId(req.user.id) } // Exclude current user
+    };
     if (req.query.isMember !== undefined) {
       userMatch.isMember = req.query.isMember === "true";
     }

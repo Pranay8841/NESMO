@@ -26,6 +26,10 @@ export const USER_API = {
   VERIFY_EMAIL: `${BASE_URL}/auth/verify-email`,
   /** POST - Resend verification email */
   RESEND_VERIFICATION: `${BASE_URL}/auth/resend-verification`,
+  /** POST - Request password reset email */
+  FORGOT_PASSWORD: `${BASE_URL}/auth/forgot-password`,
+  /** POST - Reset password with token (append /:token) */
+  RESET_PASSWORD: `${BASE_URL}/auth/reset-password`,
   /** GET - Initiate Google OAuth flow */
   GOOGLE_AUTH: `${BASE_URL}/auth/google`,
   /** GET - Google OAuth callback (handled by backend) */

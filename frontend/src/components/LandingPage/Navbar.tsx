@@ -24,6 +24,9 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
     };
 
     const userInitials = user ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase() : '';
+    
+    // Get profile photo from user.profile (which can be populated object or just ID)
+    const profilePhoto = user && typeof user.profile === 'object' ? user.profile.profilePhoto : null;
 
     return (
         <>
@@ -42,6 +45,7 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
 
                     {/* Navigation */}
                     <nav className="hidden md:flex items-center gap-6 lg:gap-8">
+                        <Link to="/" className="text-gray-700 text-sm hover:text-gray-900 transition">Home</Link>
                         <Link to="/about" className="text-gray-700 text-sm hover:text-gray-900 transition">About</Link>
                         <Link to="/directory" className="text-gray-700 text-sm hover:text-gray-900 transition">Directory</Link>
                         {/* V1 Release: Commenting out nav links not part of first release */}
@@ -60,9 +64,17 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
                                     <div className="text-sm font-bold text-gray-900">{user.firstName} {user.lastName}</div>
                                     <div className="text-xs text-gray-500 uppercase">{user.isMember ? 'Member' : 'Visitor'}</div>
                                 </div>
-                                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                                    {userInitials}
-                                </div>
+                                {profilePhoto ? (
+                                    <img 
+                                        src={profilePhoto} 
+                                        alt={`${user.firstName} ${user.lastName}`}
+                                        className="w-10 h-10 rounded-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                        {userInitials}
+                                    </div>
+                                )}
                             </Link>
                         ) : (
                             <>
@@ -108,9 +120,17 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
                                         className="flex items-center gap-3 px-3 py-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
                                         onClick={() => setIsMenuOpen(false)}
                                     >
-                                        <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
-                                            {userInitials}
-                                        </div>
+                                        {profilePhoto ? (
+                                            <img 
+                                                src={profilePhoto} 
+                                                alt={`${user.firstName} ${user.lastName}`}
+                                                className="w-10 h-10 rounded-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                                                {userInitials}
+                                            </div>
+                                        )}
                                         <div>
                                             <div className="text-sm font-bold text-gray-900">{user.firstName} {user.lastName}</div>
                                             <div className="text-xs text-gray-500 uppercase">{user.isMember ? 'Member' : 'Visitor'}</div>
