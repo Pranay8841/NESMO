@@ -61,16 +61,6 @@ const userSchema = new mongoose.Schema(
       required: true
     },
 
-    isBlocked: {
-      type: Boolean,
-      default: false
-    },
-
-    isVerified: {
-      type: Boolean,
-      default: false
-    },
-
     // Email verification fields
     isEmailVerified: {
       type: Boolean,

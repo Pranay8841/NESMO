@@ -16,8 +16,6 @@ export interface User {
     isMember: boolean;
     status: UserStatus;
     profile: string; // ObjectId reference to Profile
-    isBlocked: boolean;
-    isVerified: boolean;
     isEmailVerified: boolean;
     blockedReason?: string;
     blockedAt?: string;

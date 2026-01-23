@@ -10,7 +10,6 @@ export const USER_API = {
   GOOGLE_CALLBACK: `${BASE_URL}/auth/google/callback`,
   CURRENT_USER: `${BASE_URL}/auth/me`,
   LOGOUT: `${BASE_URL}/auth/logout`,
-  GET_PUBLISHED_NEWS: `${BASE_URL}/auth/news/published`,
 };
 
 // ALUMNI DIRECTORY ENDPOINTS

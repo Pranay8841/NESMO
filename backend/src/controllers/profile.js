@@ -1,7 +1,6 @@
 import User from "../models/user.js";
 import Profile from "../models/profile.js";
 import uploadImageToCloudinary from "../utils/imageUploader.js";
-import News from "../models/news.js";
 
 /**
  * UPDATE PROFILE
@@ -156,13 +155,4 @@ export const uploadProfilePhoto = async (req, res) => {
   }
 };
 
-export const getPublishedNews = async (req, res) => {
-  const news = await News.find({
-    status: "PUBLISHED"
-  }).sort({ publishedAt: -1 });
 
-  res.json({
-    success: true,
-    data: news
-  });
-};

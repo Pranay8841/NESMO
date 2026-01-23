@@ -3,8 +3,7 @@ import {
   updateProfile,
   getMyProfile,
   uploadProfilePhoto,
-  getProfileCompleteness,
-  getPublishedNews
+  getProfileCompleteness
 } from "../controllers/profile.js";
 import { getAlumniDirectory } from "../controllers/alumniDirectory.js";
 import { protect } from "../middleware/auth.js";
@@ -18,7 +17,5 @@ router.get("/profileCompleteness", protect, getProfileCompleteness);
 
 // Alumni Directory Route
 router.get("/alumni", protect, getAlumniDirectory);
-
-router.get("/news/published", protect, getPublishedNews);
 
 export default router;
