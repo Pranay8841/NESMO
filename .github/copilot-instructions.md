@@ -14,19 +14,11 @@ cd frontend && npm run dev  # Vite on :5173 with HMR
 ## Backend Patterns
 
 ### Route Structure
-All routes mount under `/api/*` in [backend/src/app.js](backend/src/app.js):
-```javascript
-app.use("/api/auth", authRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/profile", profileRoutes);
-app.use("/api/alumni-directory", profileRoutes);  // Shares profile routes
-app.use("/api/membership", membershipRoutes);
-app.use("/api/helpline", helplineRoutes);
-app.use("/api/events", eventRoutes);
-app.use("/api/albums", albumRoutes);
-```
+All routes mount under `/api/*` in `backend/src/app.js`. Add new routes by:
+1. Creating route file in `backend/src/routes/`
+2. Importing and mounting in app.js: `app.use("/api/newroute", newRoutes);`
 
-### Auth Middleware ([backend/src/middleware/auth.js](backend/src/middleware/auth.js))
+### Auth Middleware (`backend/src/middleware/auth.js`)
 ```javascript
 // Protected route pattern
 router.get("/resource", protect, someController);
@@ -62,18 +54,18 @@ const result = await uploadImageToCloudinary(req.files.image, "folder-name");
 
 ## Frontend Patterns
 
-### Redux State ([frontend/src/redux/](frontend/src/redux/))
+### Redux State (`frontend/src/redux/`)
 ```typescript
 import { useAppSelector, useAppDispatch } from '../redux/hooks';
 const { user, token } = useAppSelector(state => state.auth);
 ```
 - Token persisted to `localStorage` as **JSON string**: `JSON.stringify(token)`
-- Slices: `authSlice` (user/token/loading), `alumniSlice` (directory data)
+- Slices: `authSlice` (user/token/loading/pendingVerificationEmail), `alumniSlice`, `profileSlice`
 - Use `createAsyncThunk` for async actions in `services/`
 
 ### API Layer (CRITICAL)
-1. Define ALL endpoints in [frontend/src/utils/api.ts](frontend/src/utils/api.ts) — never hardcode URLs
-2. Use `apiConnector(method, url, body, headers, params)` from [APIsConnector.ts](frontend/src/utils/APIsConnector.ts)
+1. Define ALL endpoints in `frontend/src/utils/api.ts` — never hardcode URLs
+2. Use `apiConnector(method, url, body, headers, params)` from `frontend/src/utils/APIsConnector.ts`
 3. Services dispatch Redux actions and show toasts via `react-hot-toast`
 
 ```typescript
@@ -103,17 +95,15 @@ try {
 - User status: `ACTIVE` or `BLOCKED` (blocked users get 403 on all protected routes)
 
 ### Email Verification Flow
-Registration creates user with `isEmailVerified: false` and sends verification email. User cannot login until verified. Handle `EMAIL_NOT_VERIFIED` error code on frontend.
+Registration creates user with `isEmailVerified: false` and sends verification email. User cannot login until verified. Frontend handles `EMAIL_NOT_VERIFIED` error code via `pendingVerificationEmail` state.
 
 ### Razorpay Payment Flow
 1. Backend creates order via `razorpay.orders.create()` → returns `orderId`
 2. Frontend opens Razorpay checkout modal with key from env
 3. Backend verifies: `HMAC_SHA256(orderId|paymentId, secret) === signature`
 
-See [backend/src/controllers/membership.js](backend/src/controllers/membership.js) for implementation.
-
 ### Admin Bootstrap
-One-time admin creation via `POST /api/admin/bootstrap` (no auth required) — see [backend/src/routes/admin.js](backend/src/routes/admin.js).
+One-time admin creation via `POST /api/admin/bootstrap` (no auth required).
 
 ## Environment Variables
 **Backend** (`backend/.env`): `PORT`, `JWT_SECRET`, `MONGO_URI`, `CLOUDINARY_*`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
@@ -121,5 +111,5 @@ One-time admin creation via `POST /api/admin/bootstrap` (no auth required) — s
 **Frontend** (`frontend/.env`): `VITE_API_URL` (default: `http://localhost:5000/api`), `VITE_RAZORPAY_KEY_ID`
 
 ## Adding New Features Checklist
-1. **Backend**: Model → Controller → Route (import in app.js) → Add auth middleware
-2. **Frontend**: Add endpoint to `api.ts` → Create service with thunk → Add Redux slice if needed → Build component
+1. **Backend**: Model (`models/`) → Controller (`controllers/`) → Route (`routes/`, import in app.js) → Add auth middleware
+2. **Frontend**: Add endpoint to `api.ts` → Create service with thunk (`services/`) → Add Redux slice if needed → Build component
