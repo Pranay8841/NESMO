@@ -27,7 +27,7 @@ router.use(protect);
 router.use(authorize("ADMIN"));
 ```
 - `protect`: Validates JWT Bearer token, attaches `req.user = { id, role }`, blocks `BLOCKED` users with 403
-- `authorize(...roles)`: Roles are `VISITOR`, `MEMBER`, `EVENT_LEAD`, `ADMIN`
+- `authorize(...roles)`: Roles are `ALUMNI`, `MEMBER`, `EVENT_LEAD`, `ADMIN`
 
 ### Model Conventions
 - Password uses `select: false` — include explicitly: `User.findOne({ email }).select("+password")`
@@ -90,12 +90,12 @@ try {
 ## Key Domain Logic
 
 ### User Lifecycle & Roles
-- `VISITOR` (signup) → email verification required → pay membership → `MEMBER`
+- `ALUMNI` (signup) → email verification required → pay membership → `MEMBER`
 - Can be promoted to `EVENT_LEAD` or `ADMIN`
 - User status: `ACTIVE` or `BLOCKED` (blocked users get 403 on all protected routes)
 
 ### Email Verification Flow
-Registration creates user with `isEmailVerified: false` and sends verification email. User cannot login until verified. Frontend handles `EMAIL_NOT_VERIFIED` error code via `pendingVerificationEmail` state.
+Registration creates user with `isEmailVerified: false` and sends verification email (24h expiry). User cannot login until verified. Frontend handles via `pendingVerificationEmail` Redux state.
 
 ### Razorpay Payment Flow
 1. Backend creates order via `razorpay.orders.create()` → returns `orderId`
@@ -113,3 +113,8 @@ One-time admin creation via `POST /api/admin/bootstrap` (no auth required).
 ## Adding New Features Checklist
 1. **Backend**: Model (`models/`) → Controller (`controllers/`) → Route (`routes/`, import in app.js) → Add auth middleware
 2. **Frontend**: Add endpoint to `api.ts` → Create service with thunk (`services/`) → Add Redux slice if needed → Build component
+
+## Code Style & Documentation
+- All backend/frontend files use JSDoc-style comments with `@fileoverview`, `@module`, `@param`, `@returns`
+- TypeScript interfaces in frontend match backend model structures (see `authSlice.ts` User interface)
+- Default profile photos use DiceBear API: `https://api.dicebear.com/5.x/initials/svg?seed={name}`

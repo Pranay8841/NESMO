@@ -28,6 +28,17 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
     // Get profile photo from user.profile (which can be populated object or just ID)
     const profilePhoto = user && typeof user.profile === 'object' ? user.profile.profilePhoto : null;
 
+    // Display role based on user.role - show proper role hierarchy
+    const getRoleDisplay = () => {
+        if (!user) return 'Alumni';
+        switch (user.role) {
+            case 'ADMIN': return 'Admin';
+            case 'EVENT_LEAD': return 'Event Lead';
+            case 'MEMBER': return 'Member';
+            default: return 'Alumni';
+        }
+    };
+
     return (
         <>
             {/* Header */}
@@ -62,7 +73,7 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
                             >
                                 <div className="text-right hidden md:block">
                                     <div className="text-sm font-bold text-gray-900">{user.firstName} {user.lastName}</div>
-                                    <div className="text-xs text-gray-500 uppercase">{user.isMember ? 'Member' : 'Visitor'}</div>
+                                    <div className="text-xs text-gray-500 uppercase">{getRoleDisplay()}</div>
                                 </div>
                                 {profilePhoto ? (
                                     <img 
@@ -133,7 +144,7 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
                                         )}
                                         <div>
                                             <div className="text-sm font-bold text-gray-900">{user.firstName} {user.lastName}</div>
-                                            <div className="text-xs text-gray-500 uppercase">{user.isMember ? 'Member' : 'Visitor'}</div>
+                                            <div className="text-xs text-gray-500 uppercase">{getRoleDisplay()}</div>
                                         </div>
                                     </Link>
                                 ) : (

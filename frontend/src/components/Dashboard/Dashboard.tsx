@@ -22,8 +22,17 @@ export default function Dashboard() {
 
     // Derive user info
     const firstName = user?.firstName || 'User';
-    const membershipStatus = user?.isMember ? 'MEMBER' : 'VISITOR';
-    const isVerified = user?.isVerified || false;
+    // Display role based on user.role - show proper role hierarchy
+    const getRoleDisplay = () => {
+        if (!user) return 'ALUMNI';
+        switch (user.role) {
+            case 'ADMIN': return 'ADMIN';
+            case 'EVENT_LEAD': return 'EVENT LEAD';
+            case 'MEMBER': return 'MEMBER';
+            default: return 'ALUMNI';
+        }
+    };
+    const membershipStatus = getRoleDisplay();
     const profileCompleteness = completeness || 0;
 
     return (
@@ -40,7 +49,7 @@ export default function Dashboard() {
                                 </svg>
                             </div>
                             <span className="text-xs font-bold text-yellow-600 uppercase tracking-wide">
-                                {membershipStatus} {isVerified && '• Verified'}
+                                {membershipStatus}
                             </span>
                         </div>
                         <h1 className="text-3xl font-black text-gray-900 mb-2">

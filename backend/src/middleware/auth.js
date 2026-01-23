@@ -27,7 +27,7 @@ import User from '../models/user.js';
  * router.get('/protected-route', protect, controllerFunction);
  * 
  * // After middleware, req.user contains:
- * // { id: ObjectId, role: "VISITOR" | "MEMBER" | "EVENT_LEAD" | "ADMIN" }
+ * // { id: ObjectId, role: "ALUMNI" | "MEMBER" | "EVENT_LEAD" | "ADMIN" }
  */
 export const protect = async (req, res, next) => {
     let token;
