@@ -302,3 +302,76 @@ export const resendVerificationEmail = createAsyncThunk(
     }
   }
 );
+
+/**
+ * Request password reset email.
+ * Sends password reset link to user's email.
+ * 
+ * @async
+ * @function forgotPassword
+ * @param {string} email - User's email address
+ * @returns {Promise<Object>} Send status
+ * 
+ * @dispatches setLoading
+ */
+export const forgotPassword = createAsyncThunk(
+  'auth/forgotPassword',
+  async (email: string, { dispatch, rejectWithValue }) => {
+    const toastId = toast.loading('Sending password reset email...');
+    try {
+      dispatch(setLoading(true));
+      const response = await apiConnector(
+        'POST',
+        USER_API.FORGOT_PASSWORD,
+        { email },
+      );
+      
+      dispatch(setLoading(false));
+      toast.success('Password reset email sent! Please check your inbox.', { id: toastId });
+      return response.data;
+    } catch (error: any) {
+      dispatch(setLoading(false));
+      const errorMessage = error.response?.data?.message || 'Failed to send password reset email';
+      toast.error(errorMessage, { id: toastId });
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+/**
+ * Reset password with token from reset link.
+ * Updates user's password using the reset token.
+ * 
+ * @async
+ * @function resetPassword
+ * @param {Object} data - Reset password data
+ * @param {string} data.token - Password reset token from URL
+ * @param {string} data.password - New password
+ * @returns {Promise<Object>} Reset status
+ * 
+ * @dispatches setLoading
+ */
+export const resetPassword = createAsyncThunk(
+  'auth/resetPassword',
+  async ({ token, password }: { token: string; password: string }, { dispatch, rejectWithValue }) => {
+    const toastId = toast.loading('Resetting your password...');
+    try {
+      dispatch(setLoading(true));
+      const response = await apiConnector(
+        'POST',
+        `${USER_API.RESET_PASSWORD}/${token}`,
+        { password },
+      );
+      
+      dispatch(setLoading(false));
+      toast.success('Password reset successfully! You can now log in.', { id: toastId });
+      return response.data;
+    } catch (error: any) {
+      dispatch(setLoading(false));
+      const errorMessage = error.response?.data?.message || 'Password reset failed';
+      const errorCode = error.response?.data?.code;
+      toast.error(errorMessage, { id: toastId });
+      return rejectWithValue({ message: errorMessage, code: errorCode });
+    }
+  }
+);

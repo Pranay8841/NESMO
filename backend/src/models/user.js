@@ -113,6 +113,17 @@ const userSchema = new mongoose.Schema(
       select: false
     },
 
+    // Password reset fields
+    passwordResetToken: {
+      type: String,
+      select: false
+    },
+
+    passwordResetExpires: {
+      type: Date,
+      select: false
+    },
+
     blockedReason: {
       type: String
     },

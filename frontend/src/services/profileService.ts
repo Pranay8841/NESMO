@@ -11,6 +11,7 @@ import type { AxiosRequestHeaders } from 'axios';
 import toast from 'react-hot-toast';
 import { apiConnector } from '../utils/APIsConnector';
 import { PROFILE_API } from '../utils/api';
+import { updateUserProfilePhoto } from '../redux/slices/authSlice';
 
 /**
  * User profile data structure.
@@ -143,7 +144,7 @@ export const updateProfile = createAsyncThunk(
  */
 export const uploadProfilePhoto = createAsyncThunk(
     'profile/uploadProfilePhoto',
-    async (file: File, { rejectWithValue }) => {
+    async (file: File, { dispatch, rejectWithValue }) => {
         const toastId = toast.loading('Uploading photo...');
         try {
             const headers = getAuthHeaders();
@@ -158,7 +159,12 @@ export const uploadProfilePhoto = createAsyncThunk(
             );
             toast.success('Profile photo updated!', { id: toastId });
             console.log('Upload response:', response.data);
-            return response.data.data?.image || response.data.profilePhoto;
+            const photoUrl = response.data.data?.image || response.data.profilePhoto;
+            
+            // Also update the user's profile photo in authSlice for navbar display
+            dispatch(updateUserProfilePhoto(photoUrl));
+            
+            return photoUrl;
         } catch (error: any) {
             const errorMessage = error.response?.data?.message || 'Failed to upload photo';
             toast.error(errorMessage, { id: toastId });

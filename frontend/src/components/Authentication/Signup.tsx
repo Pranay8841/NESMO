@@ -185,9 +185,13 @@ export default function App({ onSuccess, onOpenLogin }: SignupProps) {
                         </h2>
                         <p className="text-gray-600 text-sm">
                             Already have an account?{' '}
-                            <a href="#" className="text-blue-600 font-semibold hover:underline">
+                            <button 
+                                type="button"
+                                onClick={onOpenLogin}
+                                className="text-blue-600 font-semibold hover:underline cursor-pointer"
+                            >
                                 Log in here
-                            </a>
+                            </button>
                         </p>
                     </div>
 

@@ -1,8 +1,9 @@
 import { type JSX, useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAppSelector } from "../redux/hooks";
 import toast from "react-hot-toast";
 import LoginModal from "./Authentication/LoginModal";
+import SignupModal from "./Authentication/SignupModal";
 
 interface ProtectedRouteProps {
     children: JSX.Element;
@@ -13,6 +14,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps): JSX.E
     const navigate = useNavigate();
     const hasShownToast = useRef(false);
     const [showLoginModal, setShowLoginModal] = useState(false);
+    const [showSignupModal, setShowSignupModal] = useState(false);
 
     const isAuthenticated = token && user;
 
@@ -44,11 +46,19 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps): JSX.E
     // If not authenticated, show login modal
     if (!isAuthenticated) {
         return (
-            <LoginModal 
-                isOpen={showLoginModal} 
-                onClose={handleCloseModal}
-                onSuccess={handleLoginSuccess}
-            />
+            <>
+                <LoginModal 
+                    isOpen={showLoginModal} 
+                    onClose={handleCloseModal}
+                    onSuccess={handleLoginSuccess}
+                    onOpenSignup={() => { setShowLoginModal(false); setShowSignupModal(true); }}
+                />
+                <SignupModal 
+                    isOpen={showSignupModal} 
+                    onClose={() => { setShowSignupModal(false); navigate('/', { replace: true }); }}
+                    onOpenLogin={() => { setShowSignupModal(false); setShowLoginModal(true); }}
+                />
+            </>
         );
     }
 

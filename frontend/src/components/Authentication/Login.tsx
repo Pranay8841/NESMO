@@ -5,14 +5,16 @@ import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { loginUser } from '../../services/authService';
 import AuthLoading from './AuthLoading';
 import VerifyEmailPrompt from './VerifyEmailPrompt';
+import ForgotPassword from './ForgotPassword';
 
 const backgroundImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCIIuthEqIFJvMsr1O6clwVW6l7p5zYh3zKbWu_kdTxkqYJGfZwlnZaKhNXblwnWRoYSeiSEjmsi-u0NfEsOqBdPylHvS1KCXxpGbF8wpqaz8IJilF81WtaIv4U1yyAlVE_iSV7jHcWOuut8GF5MGnIH-nAq78XbzOYS1PFYay9OXrwLSe6Sk4eKgX0kLAOh2QFNgEBoVNU87rSaF8iSgFpXZxPXzutwwHqNMHBLEOHPMMYsROFDkGTu075tTQFbFvoWwwxC7Sx89OU';
 
 interface LoginProps {
     onSuccess?: () => void;
+    onSwitchToSignup?: () => void;
 }
 
-export default function App({ onSuccess }: LoginProps) {
+export default function App({ onSuccess, onSwitchToSignup }: LoginProps) {
     const dispatch = useAppDispatch();
     const { loading, pendingVerificationEmail } = useAppSelector((state) => state.auth);
 
@@ -24,6 +26,7 @@ export default function App({ onSuccess }: LoginProps) {
     const [stayLoggedIn, setStayLoggedIn] = useState(false);
     const [isAuthenticating, setIsAuthenticating] = useState(false);
     const [showVerificationPrompt, setShowVerificationPrompt] = useState(false);
+    const [showForgotPassword, setShowForgotPassword] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -71,6 +74,15 @@ export default function App({ onSuccess }: LoginProps) {
             <VerifyEmailPrompt 
                 email={pendingVerificationEmail || formData.email} 
                 onBackToLogin={() => setShowVerificationPrompt(false)}
+            />
+        );
+    }
+
+    // Show forgot password screen
+    if (showForgotPassword) {
+        return (
+            <ForgotPassword 
+                onBackToLogin={() => setShowForgotPassword(false)}
             />
         );
     }
@@ -209,9 +221,13 @@ export default function App({ onSuccess }: LoginProps) {
                                     <label htmlFor="password" className="block text-sm font-bold text-gray-900">
                                         Password
                                     </label>
-                                    <a href="#" className="text-sm font-bold text-blue-600 hover:underline">
+                                    <button 
+                                        type="button"
+                                        onClick={() => setShowForgotPassword(true)}
+                                        className="text-sm font-bold text-blue-600 hover:underline cursor-pointer"
+                                    >
                                         Forgot Password?
-                                    </a>
+                                    </button>
                                 </div>
                                 <div className="relative">
                                     <input
@@ -263,9 +279,13 @@ export default function App({ onSuccess }: LoginProps) {
                         {/* Sign Up Link */}
                         <p className="text-center text-sm text-gray-600 mt-6">
                             Don't have an account?{' '}
-                            <a href="#" className="text-blue-600 font-bold hover:underline">
+                            <button 
+                                type="button"
+                                onClick={onSwitchToSignup}
+                                className="text-blue-600 font-bold hover:underline cursor-pointer"
+                            >
                                 Create a new account
-                            </a>
+                            </button>
                         </p>
                     </div>
 

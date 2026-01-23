@@ -60,7 +60,7 @@ export default function Layout(): JSX.Element {
         </footer>
       </div>
       <SignupModal isOpen={isSignupModalOpen} onClose={closeSignupModal} onOpenLogin={() => { closeSignupModal(); openLoginModal(); }} />
-      <LoginModal isOpen={isLoginModalOpen} onClose={closeLoginModal} />
+      <LoginModal isOpen={isLoginModalOpen} onClose={closeLoginModal} onOpenSignup={() => { closeLoginModal(); openSignupModal(); }} />
     </>
   );
 }

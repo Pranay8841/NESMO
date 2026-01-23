@@ -39,8 +39,8 @@ export interface User {
     isMember: boolean;
     /** Account status */
     status: UserStatus;
-    /** Reference to Profile document */
-    profile: string;
+    /** Reference to Profile document (can be string ID or populated object) */
+    profile: string | { _id?: string; profilePhoto?: string; [key: string]: any };
     /** Email verification status */
     isEmailVerified: boolean;
     /** Reason for account block (if blocked) */
@@ -98,10 +98,18 @@ export const authSlice = createSlice({
             state.token = null;
             state.pendingVerificationEmail = null;
             localStorage.removeItem('token');
+        },
+        updateUserProfilePhoto: (state, action: PayloadAction<string>) => {
+            if (state.user && typeof state.user.profile === 'object') {
+                state.user.profile.profilePhoto = action.payload;
+            } else if (state.user) {
+                // If profile is a string, convert it to an object with profilePhoto
+                state.user.profile = { profilePhoto: action.payload };
+            }
         }
     },
 });
 
-export const { setLoading, setToken, setUser, setPendingVerificationEmail, clearPendingVerification, logout } = authSlice.actions;
+export const { setLoading, setToken, setUser, setPendingVerificationEmail, clearPendingVerification, logout, updateUserProfilePhoto } = authSlice.actions;
 
 export default authSlice.reducer;

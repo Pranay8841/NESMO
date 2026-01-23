@@ -7,9 +7,10 @@ interface LoginModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess?: () => void;
+    onOpenSignup?: () => void;
 }
 
-export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps): JSX.Element | null {
+export default function LoginModal({ isOpen, onClose, onSuccess, onOpenSignup }: LoginModalProps): JSX.Element | null {
     const navigate = useNavigate();
 
     const handleLoginSuccess = () => {
@@ -73,7 +74,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
 
                 {/* Login Component */}
                 <div className="max-h-[90vh] overflow-y-auto">
-                    <Login onSuccess={handleLoginSuccess} />
+                    <Login onSuccess={handleLoginSuccess} onSwitchToSignup={onOpenSignup} />
                 </div>
             </div>
         </div>
