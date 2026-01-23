@@ -1,39 +1,83 @@
+/**
+ * @fileoverview Alumni Directory Redux Slice
+ * Manages alumni directory state including list, pagination, filters, and search.
+ * 
+ * @module redux/slices/alumniSlice
+ */
+
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
+/**
+ * Alumni member data structure.
+ * Represents a single alumni in the directory.
+ */
 export interface AlumniMember {
+    /** MongoDB ObjectId */
     id: string;
+    /** Full name (firstName + lastName) */
     name: string;
+    /** Email address */
     email: string;
+    /** Contact phone number */
     phone: string | null;
+    /** Current city/location */
     city: string | null;
+    /** Current occupation */
     occupation: string | null;
+    /** Company/organization name */
     organization: string | null;
+    /** Work sector */
     sector: string | null;
+    /** Year of joining JNV */
     joinBatch: string | null;
+    /** Year of passing out from JNV */
     passoutBatch: string | null;
+    /** Blood group */
     bloodGroup: string | null;
+    /** User bio/about section */
     about: string | null;
+    /** Profile photo URL */
     photo: string | null;
+    /** Membership status display ("NESMO Member" or "JNV Alumni") */
     nesmoStatus: string;
 }
 
+/**
+ * Filter options for alumni directory.
+ */
 export interface AlumniFilters {
+    /** Filter by JNV joining batch year */
     joinBatch: string;
+    /** Filter by JNV passout batch year */
     passoutBatch: string;
+    /** Filter by city (case-insensitive) */
     city: string;
+    /** Filter by occupation (case-insensitive) */
     occupation: string;
+    /** Filter by blood group */
     bloodGroup: string;
+    /** Filter by NESMO membership ("true"/"false") */
     isMember: string;
 }
 
+/**
+ * Alumni directory state structure.
+ */
 interface AlumniState {
+    /** List of alumni members */
     alumni: AlumniMember[];
+    /** Loading state for directory operations */
     loading: boolean;
+    /** Current page number (1-indexed) */
     page: number;
+    /** Total count of alumni matching filters */
     totalCount: number;
+    /** Current filter values (in filter form) */
     filters: AlumniFilters;
+    /** Applied filter values (used in API call) */
     appliedFilters: AlumniFilters;
+    /** Current search query */
     searchQuery: string;
 }
 

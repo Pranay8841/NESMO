@@ -1,9 +1,28 @@
+/**
+ * @fileoverview Authentication Routes
+ * Defines all authentication-related API endpoints.
+ * 
+ * @module routes/auth
+ * 
+ * @routes
+ * POST   /api/auth/register          - Register new user
+ * POST   /api/auth/login             - Login with email/password
+ * GET    /api/auth/verify-email/:token - Verify email address
+ * POST   /api/auth/resend-verification - Resend verification email
+ * POST   /api/auth/logout            - Logout user (protected)
+ * GET    /api/auth/me                - Get current user (protected)
+ * GET    /api/auth/google            - Initiate Google OAuth
+ * GET    /api/auth/google/callback   - Google OAuth callback
+ */
+
 import express from 'express';
 import passport from 'passport';
 import { register, login, googleAuthCallback, getCurrentUser, logoutUser, verifyEmail, resendVerificationEmail } from "../controllers/auth.js";
 import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
+
+/* ==================== Public Routes ==================== */
 
 // User Registration
 router.post('/register', register);
@@ -17,11 +36,15 @@ router.get('/verify-email/:token', verifyEmail);
 // Resend Verification Email
 router.post('/resend-verification', resendVerificationEmail);
 
+/* ==================== Protected Routes ==================== */
+
 // User Logout (protected)
 router.post('/logout', protect, logoutUser);
 
 // Get Current User (protected)
 router.get('/me', protect, getCurrentUser);
+
+/* ==================== Google OAuth Routes ==================== */
 
 // Google OAuth Login
 router.get(

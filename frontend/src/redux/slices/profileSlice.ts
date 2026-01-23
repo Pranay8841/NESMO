@@ -1,13 +1,28 @@
+/**
+ * @fileoverview Profile Redux Slice
+ * Manages user profile state with async thunk handlers.
+ * 
+ * @module redux/slices/profileSlice
+ */
+
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { fetchProfile, updateProfile, uploadProfilePhoto, fetchProfileCompleteness } from "../../services/profileService";
 import type { Profile } from "../../services/profileService";
 
+/**
+ * Profile state structure.
+ */
 interface ProfileState {
+    /** User's profile data or null if not loaded */
     profile: Profile | null;
+    /** Loading state for profile operations */
     loading: boolean;
+    /** Error message from failed operations */
     error: string | null;
+    /** Profile completeness percentage (0-100) */
     completeness: number;
+    /** Whether profile edit mode is active */
     isEditing: boolean;
 }
 

@@ -1,10 +1,45 @@
+/**
+ * @fileoverview Alumni Directory Controller
+ * Handles fetching and filtering the alumni directory with pagination.
+ * 
+ * @module controllers/alumniDirectory
+ */
+
 import User from "../models/user.js";
 
 /**
- * GET /api/alumni-directory
- * Access: Authenticated users only
- * Filters: city, occupation, joinBatch, passoutBatch, bloodGroup, isMember, search
- * Pagination: page, limit
+ * Get paginated alumni directory with filtering and search.
+ * Uses MongoDB aggregation pipeline for efficient querying.
+ * 
+ * @async
+ * @function getAlumniDirectory
+ * @param {Object} req - Express request object
+ * @param {Object} req.query - Query parameters
+ * @param {number} [req.query.page=1] - Page number (min: 1)
+ * @param {number} [req.query.limit=20] - Items per page (max: 50)
+ * @param {string} [req.query.city] - Filter by city (case-insensitive)
+ * @param {string} [req.query.occupation] - Filter by occupation (case-insensitive)
+ * @param {string} [req.query.joinBatch] - Filter by JNV joining batch
+ * @param {string} [req.query.passoutBatch] - Filter by JNV passout batch
+ * @param {string} [req.query.bloodGroup] - Filter by blood group
+ * @param {string} [req.query.isMember] - Filter by NESMO membership ("true"/"false")
+ * @param {string} [req.query.search] - Search across name, email, city, occupation
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with alumni list, pagination info
+ * 
+ * @requires protect middleware
+ * 
+ * @example
+ * // GET /api/profile/alumni?page=1&limit=10&city=Delhi&passoutBatch=2015
+ * // Response
+ * {
+ *   "success": true,
+ *   "page": 1,
+ *   "limit": 10,
+ *   "count": 5,
+ *   "totalCount": 25,
+ *   "data": [{ "id": "...", "name": "John Doe", ... }]
+ * }
  */
 export const getAlumniDirectory = async (req, res) => {
   try {
