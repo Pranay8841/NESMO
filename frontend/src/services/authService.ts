@@ -1,3 +1,11 @@
+/**
+ * @fileoverview Authentication Service
+ * Redux async thunks for user authentication operations.
+ * Handles registration, login, logout, email verification, and session management.
+ * 
+ * @module services/authService
+ */
+
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { AxiosRequestHeaders } from 'axios';
 import toast from 'react-hot-toast';
@@ -6,6 +14,7 @@ import { setLoading, setToken, setUser, setPendingVerificationEmail, clearPendin
 import { apiConnector } from '../utils/APIsConnector';
 import { USER_API } from '../utils/api';
 
+/** Registration data structure */
 interface RegisterData {
     firstName: string;
     lastName: string;
@@ -13,6 +22,20 @@ interface RegisterData {
     password: string;
 }
 
+/**
+ * Register a new user account.
+ * Creates account, triggers verification email, and updates Redux state.
+ * 
+ * @async
+ * @function registerUser
+ * @param {RegisterData} userData - User registration data
+ * @returns {Promise<Object>} Registration response with email verification status
+ * 
+ * @dispatches setLoading, setPendingVerificationEmail, setUser, setToken
+ * 
+ * @example
+ * dispatch(registerUser({ firstName: 'John', lastName: 'Doe', email: 'john@example.com', password: 'secret123' }))
+ */
 export const registerUser = createAsyncThunk(
     'auth/registerUser',
     async (userData: RegisterData, { dispatch, rejectWithValue }) => {
@@ -59,6 +82,23 @@ export const registerUser = createAsyncThunk(
     }
 );
 
+/**
+ * Authenticate user with email and password.
+ * Validates credentials, stores JWT token, and updates Redux state.
+ * Handles email verification errors gracefully.
+ * 
+ * @async
+ * @function loginUser
+ * @param {Object} credentials - Login credentials
+ * @param {string} credentials.email - User's email address
+ * @param {string} credentials.password - User's password
+ * @returns {Promise<Object>} Login response with user data and token
+ * 
+ * @dispatches setLoading, setUser, setToken, clearPendingVerification, setPendingVerificationEmail
+ * 
+ * @example
+ * dispatch(loginUser({ email: 'john@example.com', password: 'secret123' }))
+ */
 export const loginUser = createAsyncThunk(
     'auth/loginUser',
     async (credentials: { email: string; password: string }, { dispatch, rejectWithValue }) => {
@@ -106,6 +146,18 @@ export const loginUser = createAsyncThunk(
     }
 );
 
+/**
+ * Log out current user.
+ * Clears JWT token from localStorage and resets Redux state.
+ * Optionally notifies backend for logging/analytics.
+ * 
+ * @async
+ * @function logoutUser
+ * @returns {Promise<Object>} Logout confirmation
+ * 
+ * @dispatches setUser(null), setToken(null)
+ * @clears localStorage token
+ */
 export const logoutUser = createAsyncThunk(
     'auth/logoutUser',
     async (_, { dispatch, getState, rejectWithValue }) => {
@@ -142,6 +194,17 @@ export const logoutUser = createAsyncThunk(
     }
 );
 
+/**
+ * Fetch current authenticated user's data.
+ * Retrieves user info from backend using stored JWT token.
+ * Used for session restoration on app load.
+ * 
+ * @async
+ * @function fetchCurrentUser
+ * @returns {Promise<Object>} Current user data
+ * 
+ * @dispatches setLoading, setUser
+ */
 export const fetchCurrentUser = createAsyncThunk(
   'auth/fetchCurrentUser',
   async (_, { dispatch, rejectWithValue }) => {
@@ -161,7 +224,17 @@ export const fetchCurrentUser = createAsyncThunk(
   }
 );
 
-// Verify email with token
+/**
+ * Verify user's email address with token from verification link.
+ * Called when user clicks email verification link.
+ * 
+ * @async
+ * @function verifyEmail
+ * @param {string} token - Email verification token from URL
+ * @returns {Promise<Object>} Verification status
+ * 
+ * @dispatches setLoading, clearPendingVerification
+ */
 export const verifyEmail = createAsyncThunk(
   'auth/verifyEmail',
   async (token: string, { dispatch, rejectWithValue }) => {
@@ -195,7 +268,17 @@ export const verifyEmail = createAsyncThunk(
   }
 );
 
-// Resend verification email
+/**
+ * Resend email verification link.
+ * Generates new verification token and sends email.
+ * 
+ * @async
+ * @function resendVerificationEmail
+ * @param {string} email - User's email address
+ * @returns {Promise<Object>} Send status
+ * 
+ * @dispatches setLoading
+ */
 export const resendVerificationEmail = createAsyncThunk(
   'auth/resendVerificationEmail',
   async (email: string, { dispatch, rejectWithValue }) => {

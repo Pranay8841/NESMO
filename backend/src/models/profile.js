@@ -1,5 +1,38 @@
+/**
+ * @fileoverview Profile Model
+ * Defines the Profile schema for storing user's personal and professional details.
+ * 
+ * @module models/profile
+ * 
+ * @description
+ * Profile document stores extended user information like contact details,
+ * education batch info, occupation, and profile photo.
+ * Linked 1:1 with User model.
+ * 
+ * @indexes
+ * - currentAddress, occupation, organization, joinBatch, passoutBatch, bloodGroup
+ *   for optimized alumni directory queries
+ */
+
 import mongoose from "mongoose";
 
+/**
+ * Profile Schema Definition
+ * 
+ * @typedef {Object} Profile
+ * @property {string} about - User bio/description (max 500 chars)
+ * @property {string} phone - Contact phone number
+ * @property {string} joinBatch - Year of joining JNV
+ * @property {string} passoutBatch - Year of passing out from JNV
+ * @property {string} occupation - Current occupation/profession
+ * @property {string} organization - Company/School/Hospital name
+ * @property {string} sector - Work sector (e.g., IT, Education, Healthcare)
+ * @property {string} currentAddress - Current city/location
+ * @property {string} bloodGroup - Blood group (enum: A+, A-, B+, B-, AB+, AB-, O+, O-)
+ * @property {string} profilePhoto - Cloudinary URL of profile photo
+ * @property {Date} createdAt - Document creation timestamp
+ * @property {Date} updatedAt - Document update timestamp
+ */
 const profileSchema = new mongoose.Schema(
     {
         about: {

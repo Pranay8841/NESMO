@@ -1,9 +1,38 @@
+/**
+ * @fileoverview Authentication Controller
+ * Handles user registration, login, email verification, and OAuth authentication.
+ * 
+ * @module controllers/auth
+ */
+
 import User from "../models/user.js"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import Profile from "../models/profile.js"
 import { sendVerificationEmail, generateVerificationToken } from "../utils/emailSender.js"
 
+/**
+ * Register a new user with email/password authentication.
+ * Creates a profile, sends verification email, and returns success message.
+ * 
+ * @async
+ * @function register
+ * @param {Object} req - Express request object
+ * @param {Object} req.body - Request body
+ * @param {string} req.body.firstName - User's first name
+ * @param {string} req.body.lastName - User's last name
+ * @param {string} req.body.email - User's email address
+ * @param {string} req.body.password - User's password (will be hashed)
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with registration status
+ * 
+ * @example
+ * // Request body
+ * { "firstName": "John", "lastName": "Doe", "email": "john@example.com", "password": "secret123" }
+ * 
+ * // Success response (201)
+ * { "message": "Registration successful...", "requiresEmailVerification": true, "email": "john@example.com" }
+ */
 export const register = async (
     req,
     res
@@ -72,6 +101,22 @@ export const register = async (
     }
 }
 
+/**
+ * Authenticate user with email and password.
+ * Validates credentials, checks email verification, and returns JWT token.
+ * 
+ * @async
+ * @function login
+ * @param {Object} req - Express request object
+ * @param {Object} req.body - Request body
+ * @param {string} req.body.email - User's email address
+ * @param {string} req.body.password - User's password
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with token and user data
+ * 
+ * @throws {401} Invalid credentials (user not found or password mismatch)
+ * @throws {403} User blocked or email not verified
+ */
 export const login  = async (
     req,
     res
@@ -129,7 +174,17 @@ export const login  = async (
     }
 }
 
-// Google OAuth Callback Handler
+/**
+ * Handle Google OAuth callback after successful authentication.
+ * Generates JWT token and redirects to frontend with token.
+ * 
+ * @async
+ * @function googleAuthCallback
+ * @param {Object} req - Express request object
+ * @param {Object} req.user - Authenticated user from Passport
+ * @param {Object} res - Express response object
+ * @returns {void} Redirects to frontend with token or error
+ */
 export const googleAuthCallback = async (req, res) => {
     try {
         const user = req.user;
@@ -160,7 +215,20 @@ export const googleAuthCallback = async (req, res) => {
     }
 };
 
-// Get current user from token
+/**
+ * Get current authenticated user's data.
+ * Retrieves user info with populated profile from JWT token.
+ * 
+ * @async
+ * @function getCurrentUser
+ * @param {Object} req - Express request object
+ * @param {Object} req.user - User object from auth middleware
+ * @param {string} req.user.id - Authenticated user's ID
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with user data and profile
+ * 
+ * @requires protect middleware
+ */
 export const getCurrentUser = async (req, res) => {
     try {
         const user = await User.findById(req.user.id).populate("profile");
@@ -182,7 +250,19 @@ export const getCurrentUser = async (req, res) => {
     }
 };
 
-// Logout user
+/**
+ * Log out the current user.
+ * For JWT-based auth, logout is primarily client-side (token removal).
+ * This endpoint can be used for logging, analytics, or future token blacklisting.
+ * 
+ * @async
+ * @function logoutUser
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response confirming logout
+ * 
+ * @requires protect middleware
+ */
 export const logoutUser = async (req, res) => {
     try {
         // For JWT, logout is primarily client-side (token removal)
@@ -198,7 +278,20 @@ export const logoutUser = async (req, res) => {
     }
 };
 
-// Verify email with token
+/**
+ * Verify user's email address using verification token.
+ * Marks email as verified and clears verification token fields.
+ * 
+ * @async
+ * @function verifyEmail
+ * @param {Object} req - Express request object
+ * @param {Object} req.params - URL parameters
+ * @param {string} req.params.token - Email verification token
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with verification status
+ * 
+ * @throws {400} Token missing, invalid, or expired
+ */
 export const verifyEmail = async (req, res) => {
     try {
         const { token } = req.params;
@@ -257,7 +350,21 @@ export const verifyEmail = async (req, res) => {
     }
 };
 
-// Resend verification email
+/**
+ * Resend email verification link to user.
+ * Generates new token and sends verification email.
+ * Returns success even if user not found (prevents email enumeration).
+ * 
+ * @async
+ * @function resendVerificationEmail
+ * @param {Object} req - Express request object
+ * @param {Object} req.body - Request body
+ * @param {string} req.body.email - User's email address
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with send status
+ * 
+ * @throws {400} Email already verified or Google OAuth account
+ */
 export const resendVerificationEmail = async (req, res) => {
     try {
         const { email } = req.body;
