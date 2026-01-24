@@ -39,7 +39,7 @@ export default function Dashboard() {
     const profileCompleteness = completeness || 0;
 
     return (
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto pb-8">
             <div className="flex gap-6">
                 {/* Left Column */}
                 <div className="flex-1">

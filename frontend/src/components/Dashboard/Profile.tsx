@@ -125,7 +125,7 @@ export default function Profile() {
     const displayCompleteness = completeness || calculateCompleteness();
 
     return (
-        <div className="max-w-7xl mx-auto px-2 sm:px-4">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 pb-8">
             {/* Hidden file input for photo upload */}
             <input
                 ref={fileInputRef}
