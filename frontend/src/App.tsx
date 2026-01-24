@@ -19,6 +19,8 @@ import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./components/Dashboard/Dashboard";
 import Profile from "./components/Dashboard/Profile";
 import Directory from "./pages/Directory";
+import UserModeration from "./components/Admin/UserModeration";
+import AdminRoute from "./components/AdminRoute";
 
 function App(): JSX.Element {
   const dispatch = useAppDispatch();
@@ -69,6 +71,8 @@ function App(): JSX.Element {
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<Profile />} />
+          {/* Admin Routes - Protected for Admin only */}
+          <Route path="/admin/users" element={<AdminRoute><UserModeration /></AdminRoute>} />
         </Route>
         <Route path="/oauth-success" element={<OAuthSuccess />} />
         <Route path="/oauth-error" element={<OAuthError />} />

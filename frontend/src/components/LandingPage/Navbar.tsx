@@ -59,9 +59,6 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
                         <Link to="/" className="text-gray-700 text-sm hover:text-gray-900 transition">Home</Link>
                         <Link to="/about" className="text-gray-700 text-sm hover:text-gray-900 transition">About</Link>
                         <Link to="/directory" className="text-gray-700 text-sm hover:text-gray-900 transition">Directory</Link>
-                        {/* V1 Release: Commenting out nav links not part of first release */}
-                        {/* <Link to="/events" className="text-gray-700 text-sm hover:text-gray-900 transition">Events</Link> */}
-                        {/* <Link to="/contact" className="text-gray-700 text-sm hover:text-gray-900 transition">Contact</Link> */}
                     </nav>
 
                     {/* Auth Buttons - Desktop */}

@@ -1,8 +1,13 @@
-// V1 Release: Commenting out icons not used in first release
-// import { Calendar, Ticket, Settings, LogOut, Medal, Menu, X } from 'lucide-react';
-import { LogOut, Menu, X } from 'lucide-react';
+/**
+ * @fileoverview Dashboard Sidebar Component
+ * Renders navigation sidebar with role-based menu items for regular users and admins.
+ * 
+ * @module components/Dashboard/Sidebar
+ */
+
+import { LogOut, Menu, X, Users, CreditCard, LifeBuoy, Newspaper } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAppDispatch } from '../../redux/hooks';
+import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { logoutUser } from '../../services/authService';
 import { useEffect } from 'react';
 
@@ -17,7 +22,8 @@ interface SidebarProps {
     onMobileClose?: () => void;
 }
 
-const sidebarItems: SidebarItem[] = [
+/** Regular user sidebar items - unchanged */
+const userSidebarItems: SidebarItem[] = [
     {
         path: '/dashboard',
         label: 'Dashboard',
@@ -39,33 +45,40 @@ const sidebarItems: SidebarItem[] = [
             </div>
         ),
     },
-    // V1 Release: Commenting out sidebar items not part of first release
-    // {
-    //     path: '/my-membership',
-    //     label: 'My Membership',
-    //     icon: <Medal className="w-5 h-5" />,
-    // },
-    // {
-    //     path: '/tickets',
-    //     label: 'My Tickets',
-    //     icon: <Ticket className="w-5 h-5" />,
-    // },
-    // {
-    //     path: '/my-events',
-    //     label: 'My Events',
-    //     icon: <Calendar className="w-5 h-5" />,
-    // },
-    // {
-    //     path: '/settings',
-    //     label: 'Account Settings',
-    //     icon: <Settings className="w-5 h-5" />,
-    // },
+];
+
+/** Admin-only sidebar items (additional items for admins) */
+const adminOnlyItems: SidebarItem[] = [
+    {
+        path: '/admin/users',
+        label: 'User Moderation',
+        icon: <Users className="w-5 h-5" />,
+    },
+    {
+        path: '/admin/payments',
+        label: 'Payment Audit',
+        icon: <CreditCard className="w-5 h-5" />,
+    },
+    {
+        path: '/admin/support',
+        label: 'Support Tickets',
+        icon: <LifeBuoy className="w-5 h-5" />,
+    },
+    {
+        path: '/admin/news',
+        label: 'News & Articles',
+        icon: <Newspaper className="w-5 h-5" />,
+    },
 ];
 
 export default function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
     const location = useLocation();
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
+    const { user } = useAppSelector((state) => state.auth);
+
+    // Check if user is admin
+    const isAdmin = user?.role === 'ADMIN';
 
     // Close mobile sidebar when route changes
     useEffect(() => {
@@ -79,12 +92,19 @@ export default function Sidebar({ isMobileOpen = false, onMobileClose }: Sidebar
         navigate('/');
     };
 
-    const isActive = (path: string) => location.pathname === path;
+    const isActive = (path: string) => {
+        // Exact match for regular items, startsWith for admin routes
+        if (path.startsWith('/admin/')) {
+            return location.pathname.startsWith(path);
+        }
+        return location.pathname === path;
+    };
 
     const sidebarContent = (
         <>
             <nav className="p-4 space-y-1">
-                {sidebarItems.map((item) => (
+                {/* Regular sidebar items for all users */}
+                {userSidebarItems.map((item) => (
                     <Link
                         key={item.path}
                         to={item.path}
@@ -98,13 +118,38 @@ export default function Sidebar({ isMobileOpen = false, onMobileClose }: Sidebar
                         {item.label}
                     </Link>
                 ))}
+
+                {/* Admin-only items - Only visible for Admin users */}
+                {isAdmin && (
+                    <>
+                        <div className="pt-4 pb-2">
+                            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide px-4">
+                                Admin Panel
+                            </div>
+                        </div>
+                        {adminOnlyItems.map((item) => (
+                            <Link
+                                key={item.path}
+                                to={item.path}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-sm transition-colors ${
+                                    isActive(item.path)
+                                        ? 'bg-blue-50 text-blue-600 font-semibold'
+                                        : 'text-gray-700 hover:bg-gray-50'
+                                }`}
+                            >
+                                {item.icon}
+                                {item.label}
+                            </Link>
+                        ))}
+                    </>
+                )}
             </nav>
 
             {/* Logout */}
             <div className="absolute bottom-6 left-4 right-4">
                 <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg font-medium text-sm cursor-pointer"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg font-medium text-sm cursor-pointer transition-colors"
                 >
                     <LogOut className="w-5 h-5" />
                     Logout
@@ -115,10 +160,12 @@ export default function Sidebar({ isMobileOpen = false, onMobileClose }: Sidebar
 
     return (
         <>
-            {/* Desktop Sidebar */}
-            <aside className="w-64 bg-white border-r border-gray-200 min-h-[calc(100vh-64px)] sticky top-16 hidden lg:block">
+            {/* Desktop Sidebar - Fixed position */}
+            <aside className="w-64 bg-white border-r border-gray-200 fixed top-16 left-0 h-[calc(100vh-64px)] hidden lg:block overflow-y-auto">
                 {sidebarContent}
             </aside>
+            {/* Spacer for fixed sidebar */}
+            <div className="w-64 flex-shrink-0 hidden lg:block" />
 
             {/* Mobile Overlay */}
             {isMobileOpen && (

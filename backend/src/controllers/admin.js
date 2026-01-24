@@ -1,7 +1,139 @@
 import User from "../models/user.js";
 import EventRequest from "../models/eventRequest.js";
 import News from "../models/news.js";
+import Payment from "../models/payment.js";
+import SupportTicket from "../models/supportTicket.js";
 import { sendNotifications } from "../service/notification.js";
+
+/**
+ * Get Admin Dashboard Stats
+ * Returns aggregated statistics for the admin dashboard
+ */
+export const getDashboardStats = async (req, res) => {
+  try {
+    // User Statistics
+    const totalUsers = await User.countDocuments();
+    const usersByRole = await User.aggregate([
+      { $group: { _id: "$role", count: { $sum: 1 } } }
+    ]);
+    const blockedUsers = await User.countDocuments({ status: "BLOCKED" });
+    const unverifiedUsers = await User.countDocuments({ isEmailVerified: false });
+
+    // Payment Statistics
+    const totalPayments = await Payment.countDocuments();
+    const paymentsByStatus = await Payment.aggregate([
+      { $group: { _id: "$status", count: { $sum: 1 }, total: { $sum: "$amount" } } }
+    ]);
+    const totalPaymentAmount = await Payment.aggregate([
+      { $match: { status: "SUCCESS" } },
+      { $group: { _id: null, total: { $sum: "$amount" } } }
+    ]);
+
+    // Support Ticket Statistics
+    const totalTickets = await SupportTicket.countDocuments();
+    const ticketsByPriority = await SupportTicket.aggregate([
+      { $group: { _id: "$priority", count: { $sum: 1 } } }
+    ]);
+    const openTickets = await SupportTicket.countDocuments({ 
+      status: { $in: ["OPEN", "IN_PROGRESS"] } 
+    });
+    const emergencyTickets = await SupportTicket.countDocuments({ priority: "EMERGENCY" });
+
+    // News Statistics
+    const totalNews = await News.countDocuments();
+    const publishedNews = await News.countDocuments({ status: "PUBLISHED" });
+    const draftNews = await News.countDocuments({ status: "DRAFT" });
+
+    // Recent Activity (last 10 items from various collections)
+    const recentUsers = await User.find()
+      .select("firstName lastName role createdAt isEmailVerified")
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    const recentPayments = await Payment.find()
+      .populate("user", "firstName lastName")
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    const recentTickets = await SupportTicket.find()
+      .populate("createdBy", "firstName lastName")
+      .select("subject priority status createdAt")
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    const recentNews = await News.find()
+      .select("title status publishedAt createdAt")
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    // Build recent activity feed
+    const recentActivity = [
+      ...recentUsers.map(u => ({
+        id: u._id,
+        timestamp: u.createdAt,
+        eventType: "New Registration",
+        userEntity: `${u.firstName} ${u.lastName} (${u.role})`,
+        status: u.isEmailVerified ? "Verified" : "Pending"
+      })),
+      ...recentPayments.map(p => ({
+        id: p._id,
+        timestamp: p.createdAt,
+        eventType: "Payment Received",
+        userEntity: `TXN-${p._id.toString().slice(-4)} (${p.user?.firstName || 'Unknown'} ${p.user?.lastName?.charAt(0) || ''})`,
+        status: p.status === "SUCCESS" ? "Success" : p.status === "FAILED" ? "Failed" : "Pending"
+      })),
+      ...recentTickets.map(t => ({
+        id: t._id,
+        timestamp: t.createdAt,
+        eventType: "Support Ticket",
+        userEntity: t.subject,
+        status: t.priority === "EMERGENCY" ? "Emergency" : t.status === "OPEN" ? "Active" : "Pending"
+      })),
+      ...recentNews.filter(n => n.status === "PUBLISHED").map(n => ({
+        id: n._id,
+        timestamp: n.publishedAt || n.createdAt,
+        eventType: "Article Published",
+        userEntity: n.title,
+        status: "Active"
+      }))
+    ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 10);
+
+    res.json({
+      success: true,
+      data: {
+        users: {
+          total: totalUsers,
+          byRole: usersByRole.reduce((acc, r) => ({ ...acc, [r._id]: r.count }), {}),
+          blocked: blockedUsers,
+          unverified: unverifiedUsers
+        },
+        payments: {
+          total: totalPayments,
+          byStatus: paymentsByStatus.reduce((acc, p) => ({ ...acc, [p._id]: { count: p.count, total: p.total } }), {}),
+          totalAmount: totalPaymentAmount[0]?.total || 0
+        },
+        tickets: {
+          total: totalTickets,
+          open: openTickets,
+          emergency: emergencyTickets,
+          byPriority: ticketsByPriority.reduce((acc, t) => ({ ...acc, [t._id]: t.count }), {})
+        },
+        news: {
+          total: totalNews,
+          published: publishedNews,
+          draft: draftNews
+        },
+        recentActivity
+      }
+    });
+  } catch (error) {
+    console.error("Dashboard Stats Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Unable to fetch dashboard stats"
+    });
+  }
+};
 
 /**
  * One-time Admin Bootstrap
@@ -80,68 +212,143 @@ export const updateUserStatus = async (req, res) => {
 };
 
 /**
- * List users (Admin view)
+ * List users (Admin view) with advanced filtering
  */
 export const getAllUsers = async (req, res) => {
-  const page = Number(req.query.page) || 1;
-  const limit = Number(req.query.limit) || 20;
+  try {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 20;
+    const { status, role, search, verified } = req.query;
 
-  const query = {};
-  if (req.query.status === "blocked") query.isBlocked = true;
+    const query = {};
+    
+    // Filter by blocked status
+    if (status === "blocked") query.status = "BLOCKED";
+    else if (status === "active") query.status = "ACTIVE";
+    
+    // Filter by role
+    if (role && ["ALUMNI", "MEMBER", "EVENT_LEAD", "ADMIN"].includes(role)) {
+      query.role = role;
+    }
+    
+    // Filter by email verification
+    if (verified === "true") query.isEmailVerified = true;
+    else if (verified === "false") query.isEmailVerified = false;
+    
+    // Search by name or email
+    if (search) {
+      query.$or = [
+        { firstName: { $regex: search, $options: "i" } },
+        { lastName: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } }
+      ];
+    }
 
-  const users = await User.find(query)
-    .select("firstName lastName email isMember isBlocked isVerified createdAt")
-    .skip((page - 1) * limit)
-    .limit(limit)
-    .sort({ createdAt: -1 });
+    const users = await User.find(query)
+      .select("firstName lastName email role isMember status isEmailVerified blockedReason blockedAt createdAt")
+      .populate("profile", "profilePhoto city currentCompany")
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .sort({ createdAt: -1 });
 
-  const total = await User.countDocuments(query);
+    const total = await User.countDocuments(query);
 
-  res.json({
-    success: true,
-    page,
-    total,
-    users
-  });
+    res.json({
+      success: true,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      },
+      users
+    });
+  } catch (error) {
+    console.error("Get All Users Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Unable to fetch users"
+    });
+  }
 };
 
 export const blockUser = async (req, res) => {
-  const { reason } = req.body;
+  try {
+    const { reason } = req.body;
+    const userId = req.params.id;
 
-  await User.findByIdAndUpdate(req.params.id, {
-    isBlocked: true,
-    blockedReason: reason,
-    blockedAt: new Date()
-  });
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
 
-  res.json({
-    success: true,
-    message: "User blocked successfully"
-  });
+    // Prevent blocking other admins
+    if (user.role === "ADMIN") {
+      return res.status(403).json({ success: false, message: "Cannot block an admin user" });
+    }
+
+    await User.findByIdAndUpdate(userId, {
+      status: "BLOCKED",
+      blockedReason: reason || "No reason provided",
+      blockedAt: new Date()
+    });
+
+    res.json({
+      success: true,
+      message: "User blocked successfully"
+    });
+  } catch (error) {
+    console.error("Block User Error:", error);
+    res.status(500).json({ success: false, message: "Failed to block user" });
+  }
 };
 
 export const unblockUser = async (req, res) => {
-  await User.findByIdAndUpdate(req.params.id, {
-    isBlocked: false,
-    blockedReason: null,
-    blockedAt: null
-  });
+  try {
+    const userId = req.params.id;
 
-  res.json({
-    success: true,
-    message: "User unblocked successfully"
-  });
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    await User.findByIdAndUpdate(userId, {
+      status: "ACTIVE",
+      blockedReason: null,
+      blockedAt: null
+    });
+
+    res.json({
+      success: true,
+      message: "User unblocked successfully"
+    });
+  } catch (error) {
+    console.error("Unblock User Error:", error);
+    res.status(500).json({ success: false, message: "Failed to unblock user" });
+  }
 };
 
 export const verifyUser = async (req, res) => {
-  await User.findByIdAndUpdate(req.params.id, {
-    isVerified: true
-  });
+  try {
+    const userId = req.params.id;
 
-  res.json({
-    success: true,
-    message: "User verified successfully"
-  });
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    await User.findByIdAndUpdate(userId, {
+      isEmailVerified: true
+    });
+
+    res.json({
+      success: true,
+      message: "User email verified successfully"
+    });
+  } catch (error) {
+    console.error("Verify User Error:", error);
+    res.status(500).json({ success: false, message: "Failed to verify user" });
+  }
 };
 
 export const getAllPayments = async (req, res) => {

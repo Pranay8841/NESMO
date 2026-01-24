@@ -1,6 +1,7 @@
 import express from "express";
 import {
   bootstrapAdmin,
+  getDashboardStats,
   updateUserRole,
   updateUserStatus,
   getAllUsers,
@@ -29,6 +30,9 @@ router.post("/bootstrap", bootstrapAdmin);
  */
 router.use(protect);
 router.use(authorize("ADMIN"));
+
+// Dashboard Stats
+router.get("/dashboard/stats", getDashboardStats);
 
 router.patch("/user/:id/role", updateUserRole);
 router.patch("/user/:id/status", updateUserStatus);
