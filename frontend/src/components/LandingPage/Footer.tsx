@@ -1,4 +1,4 @@
-import { Mail, MapPin, Phone, Shield, Twitter, Github, Linkedin, Instagram, CircleCheck } from 'lucide-react';
+import { Mail, MapPin, Phone, Twitter, Github, Linkedin, Instagram, CircleCheck } from 'lucide-react';
 
 export default function Footer() {
     return (
