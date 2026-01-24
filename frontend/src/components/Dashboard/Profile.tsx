@@ -57,7 +57,17 @@ export default function Profile() {
     // Derive user info
     const fullName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User' : 'User';
     const email = user?.email || '';
-    const membershipStatus = user?.isMember ? 'MEMBER' : 'VISITOR';
+    // Display role based on user.role - show proper role hierarchy
+    const getRoleDisplay = () => {
+        if (!user) return 'ALUMNI';
+        switch (user.role) {
+            case 'ADMIN': return 'ADMIN';
+            case 'EVENT_LEAD': return 'EVENT LEAD';
+            case 'MEMBER': return 'MEMBER';
+            default: return 'ALUMNI';
+        }
+    };
+    const membershipStatus = getRoleDisplay();
     
     // Generate avatar from user's initials or use uploaded photo
     const profileImage = profile?.profilePhoto || 

@@ -37,7 +37,7 @@ export const bootstrapAdmin = async (req, res) => {
  */
 export const updateUserRole = async (req, res) => {
   const { role } = req.body;
-  const validRoles = ["VISITOR", "MEMBER", "EVENT_LEAD", "ADMIN"];
+  const validRoles = ["ALUMNI", "MEMBER", "EVENT_LEAD", "ADMIN"];
 
   if (!validRoles.includes(role)) {
     return res.status(400).json({ message: "Invalid role" });

@@ -38,7 +38,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                             email,
                             googleId: profile.id,
                             authProvider: "GOOGLE",
-                            role: "VISITOR",
+                            role: "ALUMNI",
                             profile: newProfile._id
                         });
                     }

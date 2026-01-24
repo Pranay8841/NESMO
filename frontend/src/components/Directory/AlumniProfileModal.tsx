@@ -1,6 +1,6 @@
 import { type JSX, useEffect } from 'react';
 import {
-    X, MapPin, Send, UserPlus, User, GraduationCap, Briefcase
+    X, MapPin, MessageCircle, Phone, User, GraduationCap, Briefcase
 } from 'lucide-react';
 import type { AlumniMember } from '../../redux/slices/alumniSlice';
 
@@ -252,14 +252,16 @@ export default function AlumniProfileModal({ isOpen, onClose, member }: AlumniPr
                                 </div>
                             </div>
 
-                            {/* Send Message Button */}
-                            {member.email && (
+                            {/* WhatsApp Message Button */}
+                            {member.phone && (
                                 <a 
-                                    href={`mailto:${member.email}`}
-                                    className="w-full py-3 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 flex items-center justify-center gap-2 cursor-pointer"
+                                    href={`https://wa.me/${member.phone.replace(/[^0-9]/g, '')}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-full py-3 bg-green-500 text-white rounded-lg font-bold text-sm hover:bg-green-600 flex items-center justify-center gap-2 cursor-pointer"
                                 >
-                                    <Send className="w-4 h-4" />
-                                    Send Email
+                                    <MessageCircle className="w-4 h-4" />
+                                    WhatsApp Message
                                 </a>
                             )}
 
@@ -269,7 +271,7 @@ export default function AlumniProfileModal({ isOpen, onClose, member }: AlumniPr
                                     href={`tel:${member.phone}`}
                                     className="w-full py-3 bg-white border-2 border-gray-200 text-gray-900 rounded-lg font-bold text-sm hover:bg-gray-50 flex items-center justify-center gap-2 cursor-pointer"
                                 >
-                                    <UserPlus className="w-5 h-5" />
+                                    <Phone className="w-5 h-5" />
                                     Call Now
                                 </a>
                             )}

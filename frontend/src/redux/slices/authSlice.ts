@@ -11,8 +11,8 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 /** Authentication provider type */
 type AuthProvider = "LOCAL" | "GOOGLE";
 
-/** User role hierarchy: VISITOR < MEMBER < EVENT_LEAD < ADMIN */
-type UserRole = "VISITOR" | "MEMBER" | "EVENT_LEAD" | "ADMIN";
+/** User role hierarchy: ALUMNI < MEMBER < EVENT_LEAD < ADMIN */
+type UserRole = "ALUMNI" | "MEMBER" | "EVENT_LEAD" | "ADMIN";
 
 /** Account status */
 type UserStatus = "ACTIVE" | "BLOCKED";
