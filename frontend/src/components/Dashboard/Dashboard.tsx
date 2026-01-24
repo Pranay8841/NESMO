@@ -9,6 +9,7 @@ import { useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { Link } from 'react-router-dom';
 import { fetchProfileCompleteness } from '../../services/profileService';
+import AdminDashboard from '../Admin/AdminDashboard';
 
 export default function Dashboard() {
     const dispatch = useAppDispatch();
@@ -19,6 +20,11 @@ export default function Dashboard() {
     useEffect(() => {
         dispatch(fetchProfileCompleteness());
     }, [dispatch]);
+
+    // If user is admin, show Admin Dashboard
+    if (user?.role === 'ADMIN') {
+        return <AdminDashboard />;
+    }
 
     // Derive user info
     const firstName = user?.firstName || 'User';

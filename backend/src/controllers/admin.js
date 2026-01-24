@@ -1,7 +1,139 @@
 import User from "../models/user.js";
 import EventRequest from "../models/eventRequest.js";
 import News from "../models/news.js";
+import Payment from "../models/payment.js";
+import SupportTicket from "../models/supportTicket.js";
 import { sendNotifications } from "../service/notification.js";
+
+/**
+ * Get Admin Dashboard Stats
+ * Returns aggregated statistics for the admin dashboard
+ */
+export const getDashboardStats = async (req, res) => {
+  try {
+    // User Statistics
+    const totalUsers = await User.countDocuments();
+    const usersByRole = await User.aggregate([
+      { $group: { _id: "$role", count: { $sum: 1 } } }
+    ]);
+    const blockedUsers = await User.countDocuments({ status: "BLOCKED" });
+    const unverifiedUsers = await User.countDocuments({ isEmailVerified: false });
+
+    // Payment Statistics
+    const totalPayments = await Payment.countDocuments();
+    const paymentsByStatus = await Payment.aggregate([
+      { $group: { _id: "$status", count: { $sum: 1 }, total: { $sum: "$amount" } } }
+    ]);
+    const totalPaymentAmount = await Payment.aggregate([
+      { $match: { status: "SUCCESS" } },
+      { $group: { _id: null, total: { $sum: "$amount" } } }
+    ]);
+
+    // Support Ticket Statistics
+    const totalTickets = await SupportTicket.countDocuments();
+    const ticketsByPriority = await SupportTicket.aggregate([
+      { $group: { _id: "$priority", count: { $sum: 1 } } }
+    ]);
+    const openTickets = await SupportTicket.countDocuments({ 
+      status: { $in: ["OPEN", "IN_PROGRESS"] } 
+    });
+    const emergencyTickets = await SupportTicket.countDocuments({ priority: "EMERGENCY" });
+
+    // News Statistics
+    const totalNews = await News.countDocuments();
+    const publishedNews = await News.countDocuments({ status: "PUBLISHED" });
+    const draftNews = await News.countDocuments({ status: "DRAFT" });
+
+    // Recent Activity (last 10 items from various collections)
+    const recentUsers = await User.find()
+      .select("firstName lastName role createdAt isEmailVerified")
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    const recentPayments = await Payment.find()
+      .populate("user", "firstName lastName")
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    const recentTickets = await SupportTicket.find()
+      .populate("createdBy", "firstName lastName")
+      .select("subject priority status createdAt")
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    const recentNews = await News.find()
+      .select("title status publishedAt createdAt")
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    // Build recent activity feed
+    const recentActivity = [
+      ...recentUsers.map(u => ({
+        id: u._id,
+        timestamp: u.createdAt,
+        eventType: "New Registration",
+        userEntity: `${u.firstName} ${u.lastName} (${u.role})`,
+        status: u.isEmailVerified ? "Verified" : "Pending"
+      })),
+      ...recentPayments.map(p => ({
+        id: p._id,
+        timestamp: p.createdAt,
+        eventType: "Payment Received",
+        userEntity: `TXN-${p._id.toString().slice(-4)} (${p.user?.firstName || 'Unknown'} ${p.user?.lastName?.charAt(0) || ''})`,
+        status: p.status === "SUCCESS" ? "Success" : p.status === "FAILED" ? "Failed" : "Pending"
+      })),
+      ...recentTickets.map(t => ({
+        id: t._id,
+        timestamp: t.createdAt,
+        eventType: "Support Ticket",
+        userEntity: t.subject,
+        status: t.priority === "EMERGENCY" ? "Emergency" : t.status === "OPEN" ? "Active" : "Pending"
+      })),
+      ...recentNews.filter(n => n.status === "PUBLISHED").map(n => ({
+        id: n._id,
+        timestamp: n.publishedAt || n.createdAt,
+        eventType: "Article Published",
+        userEntity: n.title,
+        status: "Active"
+      }))
+    ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 10);
+
+    res.json({
+      success: true,
+      data: {
+        users: {
+          total: totalUsers,
+          byRole: usersByRole.reduce((acc, r) => ({ ...acc, [r._id]: r.count }), {}),
+          blocked: blockedUsers,
+          unverified: unverifiedUsers
+        },
+        payments: {
+          total: totalPayments,
+          byStatus: paymentsByStatus.reduce((acc, p) => ({ ...acc, [p._id]: { count: p.count, total: p.total } }), {}),
+          totalAmount: totalPaymentAmount[0]?.total || 0
+        },
+        tickets: {
+          total: totalTickets,
+          open: openTickets,
+          emergency: emergencyTickets,
+          byPriority: ticketsByPriority.reduce((acc, t) => ({ ...acc, [t._id]: t.count }), {})
+        },
+        news: {
+          total: totalNews,
+          published: publishedNews,
+          draft: draftNews
+        },
+        recentActivity
+      }
+    });
+  } catch (error) {
+    console.error("Dashboard Stats Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Unable to fetch dashboard stats"
+    });
+  }
+};
 
 /**
  * One-time Admin Bootstrap

@@ -123,20 +123,34 @@ export const NOTIFICATIONS_API = {
 
 /**
  * Admin panel API endpoints.
- * @future Not part of first release
  */
 export const ADMIN_API = {
+  /** GET - Dashboard stats for admin overview */
+  GET_DASHBOARD_STATS: `${BASE_URL}/admin/dashboard/stats`,
+  /** PATCH - Update user role */
   UPDATE_USER_ROLE: `${BASE_URL}/admin/user/:id/role`,
+  /** PATCH - Update user status */
   UPDATE_USER_STATUS: `${BASE_URL}/admin/user/:id/status`,
+  /** GET - Get all users (paginated) */
   GET_ALL_USERS: `${BASE_URL}/admin/users`,
+  /** PUT - Block a user */
   BLOCK_USER: `${BASE_URL}/admin/user/:id/block`,
+  /** PUT - Unblock a user */
   UNBLOCK_USER: `${BASE_URL}/admin/user/:id/unblock`,
+  /** PUT - Verify a user's email */
   VERIFY_USER: `${BASE_URL}/admin/user/:id/verify`,
+  /** GET - Get all payments */
   GET_ALL_PAYMENTS: `${BASE_URL}/admin/payments`,
+  /** PUT - Manually verify payment */
   MANUAL_VERIFY_PAYMENT: `${BASE_URL}/admin/payment/:id/verify`,
+  /** GET - Get all support tickets */
   GET_ALL_SUPPORT_TICKETS: `${BASE_URL}/admin/support/tickets`,
+  /** POST - Create news article */
   CREATE_NEWS: `${BASE_URL}/admin/news/create`,
+  /** PATCH - Publish news article */
   PUBLISH_NEWS: `${BASE_URL}/admin/news/:id/publish`,
+  /** GET - Get all news (admin view) */
   GET_ALL_NEWS_ADMIN: `${BASE_URL}/admin/news/all`,
+  /** POST - Broadcast notification to users */
   BROADCAST_NOTIFICATION: `${BASE_URL}/admin/notifications/broadcast`,
 };

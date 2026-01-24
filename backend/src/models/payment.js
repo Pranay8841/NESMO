@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 const paymentSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
@@ -23,3 +25,5 @@ const paymentSchema = new mongoose.Schema({
         default: Date.now 
     }
 });
+
+export default mongoose.model("Payment", paymentSchema);
