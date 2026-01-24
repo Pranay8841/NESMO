@@ -116,8 +116,9 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
                 {isMenuOpen && (
                     <div className="md:hidden border-t border-gray-200 bg-white">
                         <nav className="flex flex-col px-4 py-4 space-y-3">
-                            <Link to="/about" className="text-gray-700 hover:text-gray-900 text-sm">About</Link>
-                            <Link to="/directory" className="text-gray-700 hover:text-gray-900 text-sm">Directory</Link>
+                            <Link to="/" className="text-gray-700 hover:text-gray-900 text-sm" onClick={() => setIsMenuOpen(false)}>Home</Link>
+                            <Link to="/about" className="text-gray-700 hover:text-gray-900 text-sm" onClick={() => setIsMenuOpen(false)}>About</Link>
+                            <Link to="/directory" className="text-gray-700 hover:text-gray-900 text-sm" onClick={() => setIsMenuOpen(false)}>Directory</Link>
                             {/* V1 Release: Commenting out mobile nav links not part of first release */}
                             {/* <Link to="/events" className="text-gray-700 hover:text-gray-900 text-sm">Events</Link> */}
                             {/* <Link to="/contact" className="text-gray-700 hover:text-gray-900 text-sm">Contact</Link> */}
