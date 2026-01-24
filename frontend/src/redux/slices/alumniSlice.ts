@@ -39,8 +39,10 @@ export interface AlumniMember {
     about: string | null;
     /** Profile photo URL */
     photo: string | null;
-    /** Membership status display ("NESMO Member" or "JNV Alumni") */
-    nesmoStatus: string;
+    /** User role (ALUMNI, MEMBER, EVENT_LEAD, ADMIN) */
+    role: 'ALUMNI' | 'MEMBER' | 'EVENT_LEAD' | 'ADMIN';
+    /** Whether user is a paid member */
+    isMember: boolean;
 }
 
 /**

@@ -57,8 +57,16 @@ export const getAlumniDirectory = async (req, res) => {
       status: "ACTIVE",
       _id: { $ne: new mongoose.Types.ObjectId(req.user.id) } // Exclude current user
     };
-    if (req.query.isMember !== undefined) {
-      userMatch.isMember = req.query.isMember === "true";
+    if (req.query.isMember === "true") {
+      // Filter for paid members (MEMBER role or isMember flag)
+      userMatch.$or = [
+        { role: { $in: ["MEMBER", "EVENT_LEAD", "ADMIN"] } },
+        { isMember: true }
+      ];
+    } else if (req.query.isMember === "false") {
+      // Filter for non-members (ALUMNI role and isMember is false)
+      userMatch.role = "ALUMNI";
+      userMatch.isMember = false;
     }
     pipeline.push({ $match: userMatch });
 
@@ -134,6 +142,7 @@ export const getAlumniDirectory = async (req, res) => {
               firstName: 1,
               lastName: 1,
               email: 1,
+              role: 1,
               isMember: 1,
               profile: "$profileData"
             }
@@ -162,9 +171,8 @@ export const getAlumniDirectory = async (req, res) => {
       bloodGroup: user.profile?.bloodGroup || null,
       about: user.profile?.about || null,
       photo: user.profile?.profilePhoto || null,
-      nesmoStatus: user.isMember
-        ? "NESMO Member"
-        : "JNV Alumni"
+      role: user.role,
+      isMember: user.isMember
     }));
 
     /* ------------------ Response ------------------ */
