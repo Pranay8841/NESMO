@@ -92,7 +92,13 @@ export default function Sidebar({ isMobileOpen = false, onMobileClose }: Sidebar
         navigate('/');
     };
 
-    const isActive = (path: string) => location.pathname === path;
+    const isActive = (path: string) => {
+        // Exact match for regular items, startsWith for admin routes
+        if (path.startsWith('/admin/')) {
+            return location.pathname.startsWith(path);
+        }
+        return location.pathname === path;
+    };
 
     const sidebarContent = (
         <>
@@ -154,10 +160,12 @@ export default function Sidebar({ isMobileOpen = false, onMobileClose }: Sidebar
 
     return (
         <>
-            {/* Desktop Sidebar */}
-            <aside className="w-64 bg-white border-r border-gray-200 min-h-[calc(100vh-64px)] sticky top-16 hidden lg:block">
+            {/* Desktop Sidebar - Fixed position */}
+            <aside className="w-64 bg-white border-r border-gray-200 fixed top-16 left-0 h-[calc(100vh-64px)] hidden lg:block overflow-y-auto">
                 {sidebarContent}
             </aside>
+            {/* Spacer for fixed sidebar */}
+            <div className="w-64 flex-shrink-0 hidden lg:block" />
 
             {/* Mobile Overlay */}
             {isMobileOpen && (

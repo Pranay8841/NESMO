@@ -52,9 +52,16 @@ export interface AdminUser {
     email: string;
     role: 'ALUMNI' | 'MEMBER' | 'EVENT_LEAD' | 'ADMIN';
     isMember: boolean;
-    isBlocked: boolean;
-    isVerified: boolean;
+    status: 'ACTIVE' | 'BLOCKED';
+    isEmailVerified: boolean;
+    blockedReason?: string;
+    blockedAt?: string;
     createdAt: string;
+    profile?: {
+        profilePhoto?: string;
+        city?: string;
+        currentCompany?: string;
+    };
 }
 
 /** Payment record */
@@ -106,6 +113,7 @@ interface AdminState {
         data: AdminUser[];
         total: number;
         page: number;
+        pages: number;
         loading: boolean;
     };
     payments: {
@@ -130,7 +138,7 @@ interface AdminState {
 const initialState: AdminState = {
     dashboardStats: null,
     dashboardLoading: false,
-    users: { data: [], total: 0, page: 1, loading: false },
+    users: { data: [], total: 0, page: 1, pages: 1, loading: false },
     payments: { data: [], total: 0, page: 1, loading: false },
     tickets: { data: [], total: 0, page: 1, loading: false },
     news: { data: [], total: 0, loading: false },
@@ -149,10 +157,21 @@ export const adminSlice = createSlice({
         setUsersLoading: (state, action: PayloadAction<boolean>) => {
             state.users.loading = action.payload;
         },
-        setUsers: (state, action: PayloadAction<{ users: AdminUser[]; total: number; page: number }>) => {
+        setUsers: (state, action: PayloadAction<{ users: AdminUser[]; total: number; page: number; pages: number }>) => {
             state.users.data = action.payload.users;
             state.users.total = action.payload.total;
             state.users.page = action.payload.page;
+            state.users.pages = action.payload.pages;
+        },
+        updateUserInList: (state, action: PayloadAction<{ userId: string; updates: Partial<AdminUser> }>) => {
+            const index = state.users.data.findIndex(u => u._id === action.payload.userId);
+            if (index !== -1) {
+                state.users.data[index] = { ...state.users.data[index], ...action.payload.updates };
+            }
+        },
+        removeUserFromList: (state, action: PayloadAction<string>) => {
+            state.users.data = state.users.data.filter(u => u._id !== action.payload);
+            state.users.total -= 1;
         },
         setPaymentsLoading: (state, action: PayloadAction<boolean>) => {
             state.payments.loading = action.payload;
@@ -179,7 +198,7 @@ export const adminSlice = createSlice({
         },
         clearAdminState: (state) => {
             state.dashboardStats = null;
-            state.users = { data: [], total: 0, page: 1, loading: false };
+            state.users = { data: [], total: 0, page: 1, pages: 1, loading: false };
             state.payments = { data: [], total: 0, page: 1, loading: false };
             state.tickets = { data: [], total: 0, page: 1, loading: false };
             state.news = { data: [], total: 0, loading: false };
@@ -192,6 +211,8 @@ export const {
     setDashboardStats,
     setUsersLoading,
     setUsers,
+    updateUserInList,
+    removeUserFromList,
     setPaymentsLoading,
     setPayments,
     setTicketsLoading,

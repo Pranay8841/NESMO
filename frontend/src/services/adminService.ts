@@ -14,6 +14,7 @@ import {
     setDashboardStats,
     setUsersLoading,
     setUsers,
+    updateUserInList,
     setPaymentsLoading,
     setPayments,
     setTicketsLoading,
@@ -65,12 +66,23 @@ export const fetchDashboardStats = createAsyncThunk(
     }
 );
 
+/** User filter params interface */
+export interface UserFilterParams {
+    page?: number;
+    limit?: number;
+    status?: 'active' | 'blocked';
+    role?: 'ALUMNI' | 'MEMBER' | 'EVENT_LEAD' | 'ADMIN';
+    verified?: 'true' | 'false';
+    search?: string;
+    [key: string]: string | number | undefined;
+}
+
 /**
- * Fetch all users (paginated).
+ * Fetch all users (paginated with filters).
  */
 export const fetchAllUsers = createAsyncThunk(
     'admin/fetchAllUsers',
-    async (params: { page?: number; limit?: number; status?: string } = {}, { dispatch, rejectWithValue }) => {
+    async (params: UserFilterParams = {}, { dispatch, rejectWithValue }) => {
         try {
             dispatch(setUsersLoading(true));
             const response = await apiConnector(
@@ -84,8 +96,9 @@ export const fetchAllUsers = createAsyncThunk(
             if (response.data.success) {
                 dispatch(setUsers({
                     users: response.data.users,
-                    total: response.data.total,
-                    page: response.data.page
+                    total: response.data.pagination.total,
+                    page: response.data.pagination.page,
+                    pages: response.data.pagination.pages
                 }));
             }
             dispatch(setUsersLoading(false));
@@ -116,8 +129,15 @@ export const blockUser = createAsyncThunk(
             );
             
             toast.success('User blocked successfully', { id: toastId });
-            // Refresh the users list
-            dispatch(fetchAllUsers({}));
+            // Update the user in the list locally for immediate feedback
+            dispatch(updateUserInList({ 
+                userId, 
+                updates: { 
+                    status: 'BLOCKED', 
+                    blockedReason: reason,
+                    blockedAt: new Date().toISOString()
+                } 
+            }));
             return response.data;
         } catch (error: any) {
             const errorMessage = error.response?.data?.message || 'Failed to block user';
@@ -144,7 +164,14 @@ export const unblockUser = createAsyncThunk(
             );
             
             toast.success('User unblocked successfully', { id: toastId });
-            dispatch(fetchAllUsers({}));
+            dispatch(updateUserInList({ 
+                userId, 
+                updates: { 
+                    status: 'ACTIVE', 
+                    blockedReason: undefined,
+                    blockedAt: undefined
+                } 
+            }));
             return response.data;
         } catch (error: any) {
             const errorMessage = error.response?.data?.message || 'Failed to unblock user';
@@ -159,7 +186,7 @@ export const unblockUser = createAsyncThunk(
  */
 export const updateUserRole = createAsyncThunk(
     'admin/updateUserRole',
-    async ({ userId, role }: { userId: string; role: string }, { dispatch, rejectWithValue }) => {
+    async ({ userId, role }: { userId: string; role: 'ALUMNI' | 'MEMBER' | 'EVENT_LEAD' | 'ADMIN' }, { dispatch, rejectWithValue }) => {
         const toastId = toast.loading('Updating user role...');
         try {
             const url = ADMIN_API.UPDATE_USER_ROLE.replace(':id', userId);
@@ -171,7 +198,7 @@ export const updateUserRole = createAsyncThunk(
             );
             
             toast.success('User role updated successfully', { id: toastId });
-            dispatch(fetchAllUsers({}));
+            dispatch(updateUserInList({ userId, updates: { role } }));
             return response.data;
         } catch (error: any) {
             const errorMessage = error.response?.data?.message || 'Failed to update user role';
@@ -198,7 +225,7 @@ export const verifyUserEmail = createAsyncThunk(
             );
             
             toast.success('User verified successfully', { id: toastId });
-            dispatch(fetchAllUsers({}));
+            dispatch(updateUserInList({ userId, updates: { isEmailVerified: true } }));
             return response.data;
         } catch (error: any) {
             const errorMessage = error.response?.data?.message || 'Failed to verify user';

@@ -212,68 +212,143 @@ export const updateUserStatus = async (req, res) => {
 };
 
 /**
- * List users (Admin view)
+ * List users (Admin view) with advanced filtering
  */
 export const getAllUsers = async (req, res) => {
-  const page = Number(req.query.page) || 1;
-  const limit = Number(req.query.limit) || 20;
+  try {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 20;
+    const { status, role, search, verified } = req.query;
 
-  const query = {};
-  if (req.query.status === "blocked") query.isBlocked = true;
+    const query = {};
+    
+    // Filter by blocked status
+    if (status === "blocked") query.status = "BLOCKED";
+    else if (status === "active") query.status = "ACTIVE";
+    
+    // Filter by role
+    if (role && ["ALUMNI", "MEMBER", "EVENT_LEAD", "ADMIN"].includes(role)) {
+      query.role = role;
+    }
+    
+    // Filter by email verification
+    if (verified === "true") query.isEmailVerified = true;
+    else if (verified === "false") query.isEmailVerified = false;
+    
+    // Search by name or email
+    if (search) {
+      query.$or = [
+        { firstName: { $regex: search, $options: "i" } },
+        { lastName: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } }
+      ];
+    }
 
-  const users = await User.find(query)
-    .select("firstName lastName email isMember isBlocked isVerified createdAt")
-    .skip((page - 1) * limit)
-    .limit(limit)
-    .sort({ createdAt: -1 });
+    const users = await User.find(query)
+      .select("firstName lastName email role isMember status isEmailVerified blockedReason blockedAt createdAt")
+      .populate("profile", "profilePhoto city currentCompany")
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .sort({ createdAt: -1 });
 
-  const total = await User.countDocuments(query);
+    const total = await User.countDocuments(query);
 
-  res.json({
-    success: true,
-    page,
-    total,
-    users
-  });
+    res.json({
+      success: true,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      },
+      users
+    });
+  } catch (error) {
+    console.error("Get All Users Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Unable to fetch users"
+    });
+  }
 };
 
 export const blockUser = async (req, res) => {
-  const { reason } = req.body;
+  try {
+    const { reason } = req.body;
+    const userId = req.params.id;
 
-  await User.findByIdAndUpdate(req.params.id, {
-    isBlocked: true,
-    blockedReason: reason,
-    blockedAt: new Date()
-  });
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
 
-  res.json({
-    success: true,
-    message: "User blocked successfully"
-  });
+    // Prevent blocking other admins
+    if (user.role === "ADMIN") {
+      return res.status(403).json({ success: false, message: "Cannot block an admin user" });
+    }
+
+    await User.findByIdAndUpdate(userId, {
+      status: "BLOCKED",
+      blockedReason: reason || "No reason provided",
+      blockedAt: new Date()
+    });
+
+    res.json({
+      success: true,
+      message: "User blocked successfully"
+    });
+  } catch (error) {
+    console.error("Block User Error:", error);
+    res.status(500).json({ success: false, message: "Failed to block user" });
+  }
 };
 
 export const unblockUser = async (req, res) => {
-  await User.findByIdAndUpdate(req.params.id, {
-    isBlocked: false,
-    blockedReason: null,
-    blockedAt: null
-  });
+  try {
+    const userId = req.params.id;
 
-  res.json({
-    success: true,
-    message: "User unblocked successfully"
-  });
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    await User.findByIdAndUpdate(userId, {
+      status: "ACTIVE",
+      blockedReason: null,
+      blockedAt: null
+    });
+
+    res.json({
+      success: true,
+      message: "User unblocked successfully"
+    });
+  } catch (error) {
+    console.error("Unblock User Error:", error);
+    res.status(500).json({ success: false, message: "Failed to unblock user" });
+  }
 };
 
 export const verifyUser = async (req, res) => {
-  await User.findByIdAndUpdate(req.params.id, {
-    isVerified: true
-  });
+  try {
+    const userId = req.params.id;
 
-  res.json({
-    success: true,
-    message: "User verified successfully"
-  });
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    await User.findByIdAndUpdate(userId, {
+      isEmailVerified: true
+    });
+
+    res.json({
+      success: true,
+      message: "User email verified successfully"
+    });
+  } catch (error) {
+    console.error("Verify User Error:", error);
+    res.status(500).json({ success: false, message: "Failed to verify user" });
+  }
 };
 
 export const getAllPayments = async (req, res) => {
