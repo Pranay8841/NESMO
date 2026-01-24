@@ -18,8 +18,10 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                     let user = await User.findOne({ email });
 
                     if (user && !user.googleId) {
+                        // Existing user linking Google account - mark email as verified
                         user.googleId = profile.id;
                         user.authProvider = "GOOGLE";
+                        user.isEmailVerified = true; // Google has verified the email
                         await user.save();
                     }
 
@@ -39,7 +41,8 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                             googleId: profile.id,
                             authProvider: "GOOGLE",
                             role: "ALUMNI",
-                            profile: newProfile._id
+                            profile: newProfile._id,
+                            isEmailVerified: true // Google has already verified the email
                         });
                     }
 

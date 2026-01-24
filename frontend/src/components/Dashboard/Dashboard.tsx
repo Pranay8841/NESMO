@@ -28,34 +28,26 @@ export default function Dashboard() {
 
     // Derive user info
     const firstName = user?.firstName || 'User';
-    // Display role based on user.role - show proper role hierarchy
-    const getRoleDisplay = () => {
-        if (!user) return 'ALUMNI';
-        switch (user.role) {
-            case 'ADMIN': return 'ADMIN';
-            case 'EVENT_LEAD': return 'EVENT LEAD';
-            case 'MEMBER': return 'MEMBER';
-            default: return 'ALUMNI';
-        }
+    // Display role based on user.role - show proper role hierarchy with styling
+    const roleConfig: Record<string, { label: string; bgColor: string }> = {
+        ADMIN: { label: 'Admin', bgColor: 'bg-red-500' },
+        EVENT_LEAD: { label: 'Event Lead', bgColor: 'bg-purple-500' },
+        MEMBER: { label: 'Member', bgColor: 'bg-blue-500' },
+        ALUMNI: { label: 'Alumni', bgColor: 'bg-gray-500' },
     };
-    const membershipStatus = getRoleDisplay();
+    const roleInfo = roleConfig[user?.role || 'ALUMNI'] || roleConfig.ALUMNI;
     const profileCompleteness = completeness || 0;
 
     return (
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto pb-8">
             <div className="flex gap-6">
                 {/* Left Column */}
                 <div className="flex-1">
                     {/* Welcome Banner */}
                     <div className="bg-white rounded-xl p-6 mb-6 border border-gray-200">
                         <div className="flex items-center gap-2 mb-3">
-                            <div className="w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center">
-                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M6 1L7.5 4.5L11 5L8.5 7.5L9 11L6 9L3 11L3.5 7.5L1 5L4.5 4.5L6 1Z" fill="white" />
-                                </svg>
-                            </div>
-                            <span className="text-xs font-bold text-yellow-600 uppercase tracking-wide">
-                                {membershipStatus}
+                            <span className={`px-3 py-1 ${roleInfo.bgColor} text-white text-xs font-bold rounded-full uppercase tracking-wider`}>
+                                {roleInfo.label}
                             </span>
                         </div>
                         <h1 className="text-3xl font-black text-gray-900 mb-2">

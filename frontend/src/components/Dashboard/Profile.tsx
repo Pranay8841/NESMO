@@ -57,17 +57,14 @@ export default function Profile() {
     // Derive user info
     const fullName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User' : 'User';
     const email = user?.email || '';
-    // Display role based on user.role - show proper role hierarchy
-    const getRoleDisplay = () => {
-        if (!user) return 'ALUMNI';
-        switch (user.role) {
-            case 'ADMIN': return 'ADMIN';
-            case 'EVENT_LEAD': return 'EVENT LEAD';
-            case 'MEMBER': return 'MEMBER';
-            default: return 'ALUMNI';
-        }
+    // Display role based on user.role - show proper role hierarchy with styling
+    const roleConfig: Record<string, { label: string; bgColor: string }> = {
+        ADMIN: { label: 'Admin', bgColor: 'bg-red-500' },
+        EVENT_LEAD: { label: 'Event Lead', bgColor: 'bg-purple-500' },
+        MEMBER: { label: 'Member', bgColor: 'bg-blue-500' },
+        ALUMNI: { label: 'Alumni', bgColor: 'bg-gray-500' },
     };
-    const membershipStatus = getRoleDisplay();
+    const roleInfo = roleConfig[user?.role || 'ALUMNI'] || roleConfig.ALUMNI;
     
     // Generate avatar from user's initials or use uploaded photo
     const profileImage = profile?.profilePhoto || 
@@ -128,7 +125,7 @@ export default function Profile() {
     const displayCompleteness = completeness || calculateCompleteness();
 
     return (
-        <div className="max-w-7xl mx-auto px-2 sm:px-4">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 pb-8">
             {/* Hidden file input for photo upload */}
             <input
                 ref={fileInputRef}
@@ -168,11 +165,8 @@ export default function Profile() {
                                     <div className="text-center sm:text-left">
                                         <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3 mb-2">
                                             <h1 className="text-2xl sm:text-3xl font-black text-gray-900 break-words">{fullName}</h1>
-                                            <span className="px-3 py-1 bg-orange-100 text-orange-600 text-xs font-bold rounded flex items-center gap-1.5">
-                                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <circle cx="6" cy="6" r="5" fill="currentColor" />
-                                                </svg>
-                                                {membershipStatus}
+                                            <span className={`px-3 py-1 ${roleInfo.bgColor} text-white text-xs font-bold rounded-full uppercase tracking-wider`}>
+                                                {roleInfo.label}
                                             </span>
                                         </div>
                                         {(profile?.occupation || isEditing) && (
