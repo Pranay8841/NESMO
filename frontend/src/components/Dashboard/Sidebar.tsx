@@ -5,7 +5,7 @@
  * @module components/Dashboard/Sidebar
  */
 
-import { LogOut, Menu, X, Users, CreditCard, LifeBuoy, Newspaper } from 'lucide-react';
+import { LogOut, Menu, X, Users, CreditCard, LifeBuoy, Newspaper, Calendar, CalendarPlus, FileText } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { logoutUser } from '../../services/authService';
@@ -45,6 +45,20 @@ const userSidebarItems: SidebarItem[] = [
             </div>
         ),
     },
+    {
+        path: '/my-event-requests',
+        label: 'My Event Requests',
+        icon: <FileText className="w-5 h-5" />,
+    },
+];
+
+/** Event Lead sidebar items */
+const eventLeadItems: SidebarItem[] = [
+    {
+        path: '/my-events',
+        label: 'Manage Events',
+        icon: <CalendarPlus className="w-5 h-5" />,
+    },
 ];
 
 /** Admin-only sidebar items (additional items for admins) */
@@ -53,6 +67,11 @@ const adminOnlyItems: SidebarItem[] = [
         path: '/admin/users',
         label: 'User Moderation',
         icon: <Users className="w-5 h-5" />,
+    },
+    {
+        path: '/admin/events',
+        label: 'Event Requests',
+        icon: <Calendar className="w-5 h-5" />,
     },
     {
         path: '/admin/payments',
@@ -79,6 +98,9 @@ export default function Sidebar({ isMobileOpen = false, onMobileClose }: Sidebar
 
     // Check if user is admin
     const isAdmin = user?.role === 'ADMIN';
+    
+    // Check if user is Event Lead or Admin (both can manage events)
+    const isEventLead = user?.role === 'EVENT_LEAD' || user?.role === 'ADMIN';
 
     // Close mobile sidebar when route changes
     useEffect(() => {
@@ -118,6 +140,31 @@ export default function Sidebar({ isMobileOpen = false, onMobileClose }: Sidebar
                         {item.label}
                     </Link>
                 ))}
+
+                {/* Event Lead items - Only visible for Event Leads and Admins */}
+                {isEventLead && (
+                    <>
+                        <div className="pt-4 pb-2">
+                            <div className="text-xs font-semibold text-blue-600 uppercase tracking-wide px-4">
+                                Event Lead
+                            </div>
+                        </div>
+                        {eventLeadItems.map((item) => (
+                            <Link
+                                key={item.path}
+                                to={item.path}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-sm transition-colors ${
+                                    isActive(item.path)
+                                        ? 'bg-blue-50 text-blue-600 font-semibold'
+                                        : 'text-gray-700 hover:bg-gray-50'
+                                }`}
+                            >
+                                {item.icon}
+                                {item.label}
+                            </Link>
+                        ))}
+                    </>
+                )}
 
                 {/* Admin-only items - Only visible for Admin users */}
                 {isAdmin && (

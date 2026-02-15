@@ -8,10 +8,7 @@ import DashboardLayout from "./components/DashboardLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import About from "./pages/About";
-// V1 Release: Commenting out pages not part of first release
-// import Events from "./pages/Events";
-// import Contact from "./pages/Contact";
-// import Membership from "./pages/Membership";
+import Events from "./pages/Events";
 import OAuthSuccess from "./pages/OAuthSuccess";
 import OAuthError from "./pages/OAuthError";
 import EmailVerification from "./pages/EmailVerification";
@@ -20,7 +17,10 @@ import Dashboard from "./components/Dashboard/Dashboard";
 import Profile from "./components/Dashboard/Profile";
 import Directory from "./pages/Directory";
 import UserModeration from "./components/Admin/UserModeration";
+import EventRequests from "./components/Admin/EventRequests";
 import AdminRoute from "./components/AdminRoute";
+import MyEvents from "./components/Events/MyEvents";
+import MyEventRequests from "./components/Events/MyEventRequests";
 
 function App(): JSX.Element {
   const dispatch = useAppDispatch();
@@ -62,17 +62,18 @@ function App(): JSX.Element {
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
+          <Route path="/events" element={<Events />} />
           <Route path="/directory" element={<ProtectedRoute><Directory /></ProtectedRoute>} />
-          {/* V1 Release: Commenting out routes not part of first release */}
-          {/* <Route path="/events" element={<Events />} /> */}
-          {/* <Route path="/contact" element={<Contact />} /> */}
-          {/* <Route path="/membership" element={<Membership />} /> */}
         </Route>
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<Profile />} />
+          {/* Events Routes */}
+          <Route path="/my-events" element={<ProtectedRoute><MyEvents /></ProtectedRoute>} />
+          <Route path="/my-event-requests" element={<ProtectedRoute><MyEventRequests /></ProtectedRoute>} />
           {/* Admin Routes - Protected for Admin only */}
           <Route path="/admin/users" element={<AdminRoute><UserModeration /></AdminRoute>} />
+          <Route path="/admin/events" element={<AdminRoute><EventRequests /></AdminRoute>} />
         </Route>
         <Route path="/oauth-success" element={<OAuthSuccess />} />
         <Route path="/oauth-error" element={<OAuthError />} />

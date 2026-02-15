@@ -1,5 +1,6 @@
 import User from "../models/user.js";
 import EventRequest from "../models/eventRequest.js";
+import Event from "../models/event.js";
 import News from "../models/news.js";
 import Payment from "../models/payment.js";
 import SupportTicket from "../models/supportTicket.js";
@@ -449,6 +450,25 @@ export const getAllSupportTickets = async (req, res) => {
 };
 
 /**
+ * Admin: Get all event requests
+ * GET /api/admin/events/requests
+ */
+export const getAllEventRequests = async (req, res) => {
+  try {
+    const { status } = req.query;
+    const query = status ? { status } : {};
+    
+    const requests = await EventRequest.find(query)
+      .populate("requestedBy", "firstName lastName email")
+      .sort({ createdAt: -1 });
+    
+    res.json({ success: true, data: requests });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Unable to fetch event requests" });
+  }
+};
+
+/**
  * Admin: Approve / Reject event request
  * PUT /api/admin/events/request/:id
  */
@@ -467,8 +487,24 @@ export const reviewEventRequest = async (req, res) => {
   await request.save();
 
   if (status === "APPROVED") {
+    // Promote user to EVENT_LEAD if not already
     await User.findByIdAndUpdate(request.requestedBy, {
       role: "EVENT_LEAD"
+    });
+
+    // Create the actual Event from the approved request
+    await Event.create({
+      createdBy: request.requestedBy,
+      title: request.title,
+      description: request.description,
+      type: request.type,
+      mode: request.mode,
+      venue: request.venue,
+      eventDate: request.eventDate,
+      capacity: request.expectedCapacity,
+      isPaid: request.isPaid,
+      price: request.price,
+      status: "ACTIVE"
     });
   }
 
@@ -554,4 +590,55 @@ export const broadcastNotification = async (req, res) => {
     success: true,
     message: "Broadcast sent"
   });
+};
+
+/**
+ * Migration: Create events from approved requests that don't have events yet.
+ * POST /api/admin/events/migrate-approved
+ */
+export const migrateApprovedRequests = async (req, res) => {
+  try {
+    // Find all approved event requests
+    const approvedRequests = await EventRequest.find({ status: "APPROVED" });
+    
+    let created = 0;
+    let skipped = 0;
+    
+    for (const request of approvedRequests) {
+      // Check if event already exists for this request
+      const existingEvent = await Event.findOne({
+        createdBy: request.requestedBy,
+        title: request.title,
+        eventDate: request.eventDate
+      });
+      
+      if (existingEvent) {
+        skipped++;
+        continue;
+      }
+      
+      // Create the event
+      await Event.create({
+        createdBy: request.requestedBy,
+        title: request.title,
+        description: request.description,
+        type: request.type,
+        mode: request.mode,
+        venue: request.venue,
+        eventDate: request.eventDate,
+        capacity: request.expectedCapacity,
+        isPaid: request.isPaid,
+        price: request.price,
+        status: "ACTIVE"
+      });
+      created++;
+    }
+    
+    res.json({
+      success: true,
+      message: `Migration complete: ${created} events created, ${skipped} already existed`
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Migration failed", error: error.message });
+  }
 };

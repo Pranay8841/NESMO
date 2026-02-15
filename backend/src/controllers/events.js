@@ -55,6 +55,92 @@ export const getEvents = async (req, res) => {
 };
 
 /**
+ * Get single event by ID
+ * GET /api/events/:id
+ */
+export const getEventById = async (req, res) => {
+    try {
+        const event = await Event.findById(req.params.id)
+            .populate("createdBy", "firstName lastName");
+        
+        if (!event) {
+            return res.status(404).json({ success: false, message: "Event not found" });
+        }
+
+        res.json({ success: true, data: event });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Unable to fetch event" });
+    }
+};
+
+/**
+ * Get user's own event requests
+ * GET /api/events/my-requests
+ */
+export const getMyEventRequests = async (req, res) => {
+    try {
+        const requests = await EventRequest.find({ requestedBy: req.user.id })
+            .sort({ createdAt: -1 });
+        
+        res.json({ success: true, data: requests });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Unable to fetch requests" });
+    }
+};
+
+/**
+ * Get user's event registrations
+ * GET /api/events/my-registrations
+ */
+export const getMyRegistrations = async (req, res) => {
+    try {
+        const registrations = await EventRegistration.find({ user: req.user.id })
+            .populate("event")
+            .sort({ createdAt: -1 });
+        
+        res.json({ success: true, data: registrations });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Unable to fetch registrations" });
+    }
+};
+
+/**
+ * Check if user is registered for an event
+ * GET /api/events/:id/registration-status
+ */
+export const getRegistrationStatus = async (req, res) => {
+    try {
+        const registration = await EventRegistration.findOne({
+            event: req.params.id,
+            user: req.user.id
+        });
+        
+        res.json({ 
+            success: true, 
+            isRegistered: !!registration,
+            registration: registration || null
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Unable to check registration" });
+    }
+};
+
+/**
+ * Get events created by user (for Event Leads)
+ * GET /api/events/my-events
+ */
+export const getMyEvents = async (req, res) => {
+    try {
+        const events = await Event.find({ createdBy: req.user.id })
+            .sort({ createdAt: -1 });
+        
+        res.json({ success: true, data: events });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Unable to fetch events" });
+    }
+};
+
+/**
  * Event registrations overview (Event Lead)
  * GET /api/events/:id/dashboard
  */

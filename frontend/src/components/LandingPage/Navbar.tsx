@@ -58,6 +58,7 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
                     <nav className="hidden md:flex items-center gap-6 lg:gap-8">
                         <Link to="/" className="text-gray-700 text-sm hover:text-gray-900 transition">Home</Link>
                         <Link to="/about" className="text-gray-700 text-sm hover:text-gray-900 transition">About</Link>
+                        <Link to="/events" className="text-gray-700 text-sm hover:text-gray-900 transition">Events</Link>
                         <Link to="/directory" className="text-gray-700 text-sm hover:text-gray-900 transition">Directory</Link>
                     </nav>
 
@@ -118,10 +119,8 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
                         <nav className="flex flex-col px-4 py-4 space-y-3">
                             <Link to="/" className="text-gray-700 hover:text-gray-900 text-sm" onClick={() => setIsMenuOpen(false)}>Home</Link>
                             <Link to="/about" className="text-gray-700 hover:text-gray-900 text-sm" onClick={() => setIsMenuOpen(false)}>About</Link>
+                            <Link to="/events" className="text-gray-700 hover:text-gray-900 text-sm" onClick={() => setIsMenuOpen(false)}>Events</Link>
                             <Link to="/directory" className="text-gray-700 hover:text-gray-900 text-sm" onClick={() => setIsMenuOpen(false)}>Directory</Link>
-                            {/* V1 Release: Commenting out mobile nav links not part of first release */}
-                            {/* <Link to="/events" className="text-gray-700 hover:text-gray-900 text-sm">Events</Link> */}
-                            {/* <Link to="/contact" className="text-gray-700 hover:text-gray-900 text-sm">Contact</Link> */}
                             <div className="pt-2 border-t border-gray-200">
                                 {user ? (
                                     <Link
