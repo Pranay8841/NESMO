@@ -57,7 +57,7 @@ export default function App() {
                     {alumni.map((person, index) => (
                         <div key={index} className="bg-white rounded-lg sm:rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                             {/* Profile Image with Gradient Overlay */}
-                            <div className="relative h-40 sm:h-48 md:h-56 bg-gradient-to-br from-amber-200 to-amber-300">
+                            <div className="relative h-40 sm:h-48 md:h-56 bg-gradient-to-br from-blue-200 to-blue-300">
                                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70"></div>
                                 <img
                                     src={person.image}

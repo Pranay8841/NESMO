@@ -87,17 +87,34 @@ export const HELPLINE_API = {
 
 /**
  * Events management API endpoints.
- * @future Not part of first release
  */
 export const EVENTS_API = {
-  REQUEST_EVENT_CREATION: `${BASE_URL}/events/request`,
-  REVIEW_EVENT_REQUEST: `${BASE_URL}/events/admin/request/:id`,
-  CREATE_EVENT: `${BASE_URL}/events/create`,
+  /** GET - Get all public events */
   GET_EVENTS: `${BASE_URL}/events`,
-  REGISTER_FOR_EVENT: `${BASE_URL}/events/:id/register`,
-  EVENTS_DASHBOARD: `${BASE_URL}/events/:id/dashboard`,
-  CREATE_EVENT_PAYMENT_ORDER: `${BASE_URL}/events/:id/payment/createEventOrder`,
+  /** GET - Get single event by ID */
+  GET_EVENT_BY_ID: `${BASE_URL}/events`, // Append /:id
+  /** POST - Request to create an event */
+  REQUEST_EVENT_CREATION: `${BASE_URL}/events/request`,
+  /** GET - Get user's own event requests */
+  GET_MY_EVENT_REQUESTS: `${BASE_URL}/events/user/my-requests`,
+  /** GET - Get user's event registrations */
+  GET_MY_REGISTRATIONS: `${BASE_URL}/events/user/my-registrations`,
+  /** GET - Check registration status for an event */
+  GET_REGISTRATION_STATUS: `${BASE_URL}/events`, // Append /:id/registration-status
+  /** POST - Register for an event */
+  REGISTER_FOR_EVENT: `${BASE_URL}/events`, // Append /:id/register
+  /** POST - Create payment order for paid event */
+  CREATE_EVENT_PAYMENT_ORDER: `${BASE_URL}/events`, // Append /:id/payment/create-order
+  /** POST - Verify event payment */
   VERIFY_EVENT_PAYMENT: `${BASE_URL}/events/payment/verifyEventPayment`,
+  /** GET - Get events created by user (Event Lead) */
+  GET_MY_EVENTS: `${BASE_URL}/events/lead/my-events`,
+  /** POST - Create a new event (Event Lead) */
+  CREATE_EVENT: `${BASE_URL}/events/create`,
+  /** GET - Get event dashboard/registrations (Event Lead) */
+  GET_EVENT_DASHBOARD: `${BASE_URL}/events`, // Append /:id/dashboard
+  /** PUT - Admin review event request */
+  REVIEW_EVENT_REQUEST: `${BASE_URL}/events/admin/request`, // Append /:id
 };
 
 /**
@@ -145,6 +162,8 @@ export const ADMIN_API = {
   MANUAL_VERIFY_PAYMENT: `${BASE_URL}/admin/payment/:id/verify`,
   /** GET - Get all support tickets */
   GET_ALL_SUPPORT_TICKETS: `${BASE_URL}/admin/support/tickets`,
+  /** GET - Get all event requests */
+  GET_ALL_EVENT_REQUESTS: `${BASE_URL}/admin/events/requests`,
   /** POST - Create news article */
   CREATE_NEWS: `${BASE_URL}/admin/news/create`,
   /** PATCH - Publish news article */
