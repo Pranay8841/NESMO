@@ -4,6 +4,8 @@ import { protect, authorize } from "../middleware/auth.js";
 import {
     requestEventCreation,
     createEvent,
+    updateEvent,
+    deleteEvent,
     registerForEvent,
     unregisterFromEvent,
     getEvents,
@@ -14,7 +16,9 @@ import {
     getMyEvents,
     eventDashboard,
     createEventPaymentOrder,
-    verifyEventPayment
+    verifyEventPayment,
+    processReminders,
+    triggerEventReminder
 } from "../controllers/events.js"
 
 import {
@@ -38,6 +42,9 @@ router.post("/create", protect, authorize("EVENT_LEAD", "ADMIN"), createEvent);
 /* Payment verify (static path) */
 router.post("/payment/verifyEventPayment", protect, verifyEventPayment);
 
+/* Reminder processing (cron endpoint - protected by x-cron-secret header) */
+router.post("/reminders/process", processReminders);
+
 /* Admin (static path) */
 router.put(
     "/admin/request/:id",
@@ -53,5 +60,8 @@ router.post("/:id/register", protect, registerForEvent);
 router.delete("/:id/unregister", protect, unregisterFromEvent);
 router.post("/:id/payment/create-order", protect, createEventPaymentOrder);
 router.get("/:id/dashboard", protect, authorize("EVENT_LEAD", "ADMIN"), eventDashboard);
+router.put("/:id", protect, authorize("EVENT_LEAD", "ADMIN"), updateEvent);
+router.delete("/:id", protect, authorize("EVENT_LEAD", "ADMIN"), deleteEvent);
+router.post("/:id/send-reminder", protect, authorize("EVENT_LEAD", "ADMIN"), triggerEventReminder);
 
 export default router;

@@ -3,6 +3,8 @@ import Event from "../models/event.js";
 import EventRegistration from "../models/eventRegistration.js";
 import razorpay from "../config/razorpay.js";
 import crypto from "crypto";
+import uploadImageToCloudinary from "../utils/imageUploader.js";
+import { processEventReminders, sendManualReminder } from "../service/eventReminder.js";
 
 /**
  * Request to create event
@@ -31,16 +33,129 @@ export const requestEventCreation = async (req, res) => {
  * POST /api/events
  */
 export const createEvent = async (req, res) => {
-    const event = await Event.create({
-        createdBy: req.user.id,
-        ...req.body
-    });
+    try {
+        let imageUrl = null;
+        
+        // Handle image upload if provided
+        if (req.files && req.files.image) {
+            const result = await uploadImageToCloudinary(req.files.image, "event-images");
+            imageUrl = result.secure_url;
+        }
 
-    res.status(201).json({
-        success: true,
-        message: "Event created successfully",
-        data: event
-    });
+        const event = await Event.create({
+            createdBy: req.user.id,
+            ...req.body,
+            imageUrl
+        });
+
+        res.status(201).json({
+            success: true,
+            message: "Event created successfully",
+            data: event
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Unable to create event" });
+    }
+};
+
+/**
+ * Update Event (EVENT_LEAD/ADMIN only - must be creator or admin)
+ * PUT /api/events/:id
+ */
+export const updateEvent = async (req, res) => {
+    try {
+        const event = await Event.findById(req.params.id);
+        
+        if (!event) {
+            return res.status(404).json({ success: false, message: "Event not found" });
+        }
+
+        // Check ownership (creator or admin)
+        const isAdmin = req.user.role === "ADMIN";
+        const isCreator = event.createdBy.toString() === req.user.id.toString();
+        
+        if (!isAdmin && !isCreator) {
+            return res.status(403).json({ success: false, message: "Not authorized to update this event" });
+        }
+
+        // Handle image upload if provided
+        if (req.files && req.files.image) {
+            const result = await uploadImageToCloudinary(req.files.image, "event-images");
+            req.body.imageUrl = result.secure_url;
+        }
+
+        // Update allowed fields
+        const allowedUpdates = [
+            "title", "description", "type", "mode", "venue", "meetingLink",
+            "eventDate", "registrationDeadline", "capacity", "isPaid", "price",
+            "currency", "status", "imageUrl", "location"
+        ];
+
+        allowedUpdates.forEach(field => {
+            if (req.body[field] !== undefined) {
+                event[field] = req.body[field];
+            }
+        });
+
+        await event.save();
+
+        res.json({
+            success: true,
+            message: "Event updated successfully",
+            data: event
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Unable to update event" });
+    }
+};
+
+/**
+ * Delete Event (EVENT_LEAD/ADMIN only - must be creator or admin)
+ * DELETE /api/events/:id
+ */
+export const deleteEvent = async (req, res) => {
+    try {
+        const event = await Event.findById(req.params.id);
+        
+        if (!event) {
+            return res.status(404).json({ success: false, message: "Event not found" });
+        }
+
+        // Check ownership (creator or admin)
+        const isAdmin = req.user.role === "ADMIN";
+        const isCreator = event.createdBy.toString() === req.user.id.toString();
+        
+        if (!isAdmin && !isCreator) {
+            return res.status(403).json({ success: false, message: "Not authorized to delete this event" });
+        }
+
+        // Check if event has confirmed paid registrations
+        const paidRegistrations = await EventRegistration.countDocuments({
+            event: req.params.id,
+            isPaid: true,
+            status: "CONFIRMED"
+        });
+
+        if (paidRegistrations > 0) {
+            return res.status(400).json({ 
+                success: false, 
+                message: `Cannot delete event with ${paidRegistrations} paid registrations. Cancel the event instead.`
+            });
+        }
+
+        // Delete all registrations for this event
+        await EventRegistration.deleteMany({ event: req.params.id });
+        
+        // Delete the event
+        await Event.deleteOne({ _id: req.params.id });
+
+        res.json({
+            success: true,
+            message: "Event deleted successfully"
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Unable to delete event" });
+    }
 };
 
 /**
@@ -49,6 +164,7 @@ export const createEvent = async (req, res) => {
  */
 export const getEvents = async (req, res) => {
     const events = await Event.find({ status: "ACTIVE" })
+        .populate("createdBy", "firstName lastName")
         .sort({ eventDate: 1 });
 
     res.json({ success: true, data: events });
@@ -310,5 +426,59 @@ export const verifyEventPayment = async (req, res) => {
 
     } catch (error) {
         res.status(500).json({ success: false, message: "Payment verification error" });
+    }
+};
+
+/**
+ * Process Event Reminders (Cron endpoint)
+ * POST /api/events/reminders/process
+ * Can be called by external cron service or scheduled task
+ * Protected by API key in header: x-cron-secret
+ */
+export const processReminders = async (req, res) => {
+    try {
+        // Simple security: check for cron secret (set in env)
+        const cronSecret = req.headers["x-cron-secret"];
+        if (process.env.CRON_SECRET && cronSecret !== process.env.CRON_SECRET) {
+            return res.status(401).json({ success: false, message: "Unauthorized" });
+        }
+
+        const results = await processEventReminders();
+        
+        res.json({
+            success: true,
+            message: "Reminders processed",
+            data: results
+        });
+    } catch (error) {
+        console.error("Error processing reminders:", error);
+        res.status(500).json({ success: false, message: "Failed to process reminders" });
+    }
+};
+
+/**
+ * Send Manual Reminder for Event (Admin only)
+ * POST /api/events/:id/send-reminder
+ */
+export const triggerEventReminder = async (req, res) => {
+    try {
+        const { reminderType } = req.body; // "oneDay" or "oneHour"
+        
+        const results = await sendManualReminder(
+            req.params.id, 
+            reminderType || "oneHour"
+        );
+        
+        res.json({
+            success: true,
+            message: `Reminder sent to ${results.emailsSent} users`,
+            data: results
+        });
+    } catch (error) {
+        console.error("Error sending manual reminder:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: error.message || "Failed to send reminder" 
+        });
     }
 };

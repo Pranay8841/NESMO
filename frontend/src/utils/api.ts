@@ -113,8 +113,14 @@ export const EVENTS_API = {
   GET_MY_EVENTS: `${BASE_URL}/events/lead/my-events`,
   /** POST - Create a new event (Event Lead) */
   CREATE_EVENT: `${BASE_URL}/events/create`,
+  /** PUT - Update an event (Event Lead) */
+  UPDATE_EVENT: `${BASE_URL}/events`, // Append /:id
+  /** DELETE - Delete an event (Event Lead) */
+  DELETE_EVENT: `${BASE_URL}/events`, // Append /:id
   /** GET - Get event dashboard/registrations (Event Lead) */
   GET_EVENT_DASHBOARD: `${BASE_URL}/events`, // Append /:id/dashboard
+  /** POST - Send reminder to event registrants (Event Lead) */
+  SEND_REMINDER: `${BASE_URL}/events`, // Append /:id/send-reminder
   /** PUT - Admin review event request */
   REVIEW_EVENT_REQUEST: `${BASE_URL}/events/admin/request`, // Append /:id
 };

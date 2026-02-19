@@ -66,24 +66,51 @@ export default function EventCard({ event, onClick, isPast }: EventCardProps): J
                 isPast ? "opacity-75" : ""
             }`}
         >
-            {/* Event Type Badge */}
-            <div className="p-4 pb-0">
-                <div className="flex items-center justify-between mb-3">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getTypeBadgeColor(event.type)}`}>
-                        {event.type}
-                    </span>
-                    <span className={`flex items-center gap-1 text-xs font-medium ${
-                        event.mode === "ONLINE" ? "text-green-600" : "text-blue-600"
-                    }`}>
-                        {event.mode === "ONLINE" ? (
-                            <Video className="w-3.5 h-3.5" />
-                        ) : (
-                            <MapPin className="w-3.5 h-3.5" />
-                        )}
-                        {event.mode}
-                    </span>
+            {/* Event Image */}
+            {event.imageUrl ? (
+                <div className="relative h-40 overflow-hidden">
+                    <img 
+                        src={event.imageUrl} 
+                        alt={event.title}
+                        className="w-full h-full object-cover"
+                    />
+                    {/* Overlay badges on image */}
+                    <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm ${getTypeBadgeColor(event.type)}`}>
+                            {event.type}
+                        </span>
+                        <span className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full backdrop-blur-sm ${
+                            event.mode === "ONLINE" ? "bg-green-100/90 text-green-700" : "bg-blue-100/90 text-blue-700"
+                        }`}>
+                            {event.mode === "ONLINE" ? (
+                                <Video className="w-3.5 h-3.5" />
+                            ) : (
+                                <MapPin className="w-3.5 h-3.5" />
+                            )}
+                            {event.mode}
+                        </span>
+                    </div>
                 </div>
-            </div>
+            ) : (
+                /* No Image - Show placeholder gradient */
+                <div className="relative h-24 bg-gradient-to-br from-blue-500 to-purple-600">
+                    <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium bg-white/90 ${getTypeBadgeColor(event.type)}`}>
+                            {event.type}
+                        </span>
+                        <span className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-white/90 ${
+                            event.mode === "ONLINE" ? "text-green-700" : "text-blue-700"
+                        }`}>
+                            {event.mode === "ONLINE" ? (
+                                <Video className="w-3.5 h-3.5" />
+                            ) : (
+                                <MapPin className="w-3.5 h-3.5" />
+                            )}
+                            {event.mode}
+                        </span>
+                    </div>
+                </div>
+            )}
 
             {/* Content */}
             <div className="p-4 pt-2">

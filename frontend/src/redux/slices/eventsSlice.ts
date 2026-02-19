@@ -34,6 +34,16 @@ export interface Event {
     type: EventType;
     mode: EventMode;
     venue?: string;
+    /** Location coordinates for Google Maps (offline events) */
+    location?: {
+        address?: string;
+        lat?: number;
+        lng?: number;
+    };
+    /** Meeting link for online events (Zoom, Google Meet, etc.) */
+    meetingLink?: string;
+    /** Event cover/banner image URL */
+    imageUrl?: string;
     eventDate: string;
     registrationDeadline?: string;
     capacity?: number;
@@ -154,6 +164,31 @@ export const eventsSlice = createSlice({
             state.myEvents.unshift(action.payload);
             state.events.unshift(action.payload);
         },
+        updateEventInState: (state, action: PayloadAction<Event>) => {
+            const updatedEvent = action.payload;
+            // Update in events list
+            const eventsIndex = state.events.findIndex(e => e._id === updatedEvent._id);
+            if (eventsIndex !== -1) {
+                state.events[eventsIndex] = updatedEvent;
+            }
+            // Update in myEvents list
+            const myEventsIndex = state.myEvents.findIndex(e => e._id === updatedEvent._id);
+            if (myEventsIndex !== -1) {
+                state.myEvents[myEventsIndex] = updatedEvent;
+            }
+            // Update selectedEvent if it's the same
+            if (state.selectedEvent && state.selectedEvent._id === updatedEvent._id) {
+                state.selectedEvent = updatedEvent;
+            }
+        },
+        removeEventFromState: (state, action: PayloadAction<string>) => {
+            const eventId = action.payload;
+            state.events = state.events.filter(e => e._id !== eventId);
+            state.myEvents = state.myEvents.filter(e => e._id !== eventId);
+            if (state.selectedEvent && state.selectedEvent._id === eventId) {
+                state.selectedEvent = null;
+            }
+        },
         updateEventRequestStatus: (state, action: PayloadAction<{ id: string; status: EventRequestStatus; adminRemark?: string }>) => {
             const request = state.allEventRequests.find(r => r._id === action.payload.id);
             if (request) {
@@ -186,6 +221,8 @@ export const {
     setAllEventRequests,
     addEventRequest,
     addEvent,
+    updateEventInState,
+    removeEventFromState,
     updateEventRequestStatus,
     addRegistration,
     removeRegistration,

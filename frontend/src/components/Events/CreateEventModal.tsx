@@ -247,7 +247,8 @@ export default function CreateEventModal({ onClose }: CreateEventModalProps): JS
                 description: formData.description.trim(),
                 type: formData.category as "MEETUP" | "SESSION" | "CAMP",
                 mode: formData.mode,
-                venue: formData.mode === "OFFLINE" ? formData.venue.trim() : formData.onlineLink.trim(),
+                venue: formData.mode === "OFFLINE" ? formData.venue.trim() : undefined,
+                meetingLink: formData.mode === "ONLINE" ? formData.onlineLink.trim() : undefined,
                 eventDate: eventDateTime,
                 registrationDeadline: formData.registrationDeadline || undefined,
                 capacity: formData.capacity ? parseInt(formData.capacity) : undefined,
@@ -539,24 +540,29 @@ export default function CreateEventModal({ onClose }: CreateEventModalProps): JS
 
                                 {/* Venue / Online Link */}
                                 {formData.mode === "OFFLINE" ? (
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            <MapPin className="w-4 h-4 inline mr-1" />
-                                            Venue <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="venue"
-                                            value={formData.venue}
-                                            onChange={handleChange}
-                                            placeholder="e.g., Grand Convention Center, City"
-                                            className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none ${
-                                                errors.venue ? "border-red-500" : "border-gray-300"
-                                            }`}
-                                        />
-                                        {errors.venue && (
-                                            <p className="mt-1 text-sm text-red-500">{errors.venue}</p>
-                                        )}
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                <MapPin className="w-4 h-4 inline mr-1" />
+                                                Venue Name <span className="text-red-500">*</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="venue"
+                                                value={formData.venue}
+                                                onChange={handleChange}
+                                                placeholder="e.g., Grand Convention Center"
+                                                className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none ${
+                                                    errors.venue ? "border-red-500" : "border-gray-300"
+                                                }`}
+                                            />
+                                            {errors.venue && (
+                                                <p className="mt-1 text-sm text-red-500">{errors.venue}</p>
+                                            )}
+                                            <p className="mt-1 text-xs text-gray-500">
+                                                Enter full venue address for accurate directions (e.g., "Grand Convention Center, Kozhikode, Kerala")
+                                            </p>
+                                        </div>
                                     </div>
                                 ) : (
                                     <div>

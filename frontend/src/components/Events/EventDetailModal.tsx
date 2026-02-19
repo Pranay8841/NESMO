@@ -8,7 +8,7 @@
 import { type JSX, useEffect, useState } from "react";
 import { 
     X, Calendar, Clock, MapPin, Video, Users, IndianRupee, 
-    User, CheckCircle, Loader2, AlertCircle, XCircle 
+    User, CheckCircle, Loader2, AlertCircle, XCircle, ExternalLink 
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { 
@@ -19,6 +19,7 @@ import {
     verifyEventPayment 
 } from "../../services/eventsService";
 import type { Event, EventRegistration } from "../../redux/slices/eventsSlice";
+import GoogleMapEmbed from "./GoogleMapEmbed";
 
 interface EventDetailModalProps {
     event: Event;
@@ -204,7 +205,8 @@ export default function EventDetailModal({ event, onClose }: EventDetailModalPro
     const organizerName = typeof event.createdBy === "object" 
         ? `${event.createdBy.firstName} ${event.createdBy.lastName}`
         : "NESMO Team";
-
+    
+    console.log("EventDetailModal render - event:", event);
     return (
         <div className="fixed inset-0 z-50 overflow-y-auto">
             {/* Backdrop */}
@@ -219,19 +221,33 @@ export default function EventDetailModal({ event, onClose }: EventDetailModalPro
                     {/* Close Button */}
                     <button
                         onClick={onClose}
-                        className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors z-10"
+                        className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors z-10 bg-white/80 backdrop-blur-sm"
                     >
                         <X className="w-5 h-5 text-gray-500" />
                     </button>
 
+                    {/* Event Image */}
+                    {event.imageUrl && (
+                        <div className="relative h-56 overflow-hidden rounded-t-2xl">
+                            <img 
+                                src={event.imageUrl} 
+                                alt={event.title}
+                                className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                        </div>
+                    )}
+
                     {/* Header */}
-                    <div className="p-6 pb-4 border-b border-gray-100">
-                        <div className="flex items-center gap-3 mb-3">
-                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getTypeBadgeColor(event.type)}`}>
+                    <div className={`p-6 pb-4 border-b border-gray-100 ${event.imageUrl ? '-mt-16 relative z-10' : ''}`}>
+                        <div className={`flex items-center gap-3 mb-3 ${event.imageUrl ? 'text-white' : ''}`}>
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${event.imageUrl ? 'bg-white/90' : ''} ${getTypeBadgeColor(event.type)}`}>
                                 {event.type}
                             </span>
                             <span className={`flex items-center gap-1 text-sm font-medium ${
-                                event.mode === "ONLINE" ? "text-green-600" : "text-blue-600"
+                                event.imageUrl 
+                                    ? 'text-white' 
+                                    : event.mode === "ONLINE" ? "text-green-600" : "text-blue-600"
                             }`}>
                                 {event.mode === "ONLINE" ? (
                                     <Video className="w-4 h-4" />
@@ -241,7 +257,7 @@ export default function EventDetailModal({ event, onClose }: EventDetailModalPro
                                 {event.mode}
                             </span>
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-900 pr-8">{event.title}</h2>
+                        <h2 className={`text-2xl font-bold pr-8 ${event.imageUrl ? 'text-white drop-shadow-md' : 'text-gray-900'}`}>{event.title}</h2>
                     </div>
 
                     {/* Content */}
@@ -281,13 +297,32 @@ export default function EventDetailModal({ event, onClose }: EventDetailModalPro
                                 ) : (
                                     <MapPin className="w-5 h-5 text-blue-600 mt-0.5" />
                                 )}
-                                <div>
+                                <div className="flex-1">
                                     <p className="text-sm text-gray-500">
                                         {event.mode === "ONLINE" ? "Platform" : "Venue"}
                                     </p>
-                                    <p className="font-medium text-gray-900">
-                                        {event.mode === "ONLINE" ? "Online (Link will be shared)" : event.venue || "TBA"}
-                                    </p>
+                                    {event.mode === "ONLINE" ? (
+                                        isRegistered && registration?.status === "CONFIRMED" && event.meetingLink ? (
+                                            <a 
+                                                href={event.meetingLink}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                                            >
+                                                Join Meeting
+                                                <ExternalLink className="w-4 h-4" />
+                                            </a>
+                                        ) : (
+                                            <p className="font-medium text-gray-900">
+                                                Online (Link available after registration)
+                                            </p>
+                                        )
+                                    ) : (
+                                        <p className="font-medium text-gray-900">
+                                            {event.venue || "TBA"}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 
@@ -324,6 +359,18 @@ export default function EventDetailModal({ event, onClose }: EventDetailModalPro
                                 </div>
                             )}
                         </div>
+
+                        {/* Google Maps for Offline Events */}
+                        {event.mode === "OFFLINE" && event.venue && (
+                            <div className="mb-6">
+                                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                                    Event Location
+                                </h3>
+                                <GoogleMapEmbed
+                                    venueName={event.venue}
+                                />
+                            </div>
+                        )}
 
                         {/* Price Section */}
                         <div className="mb-6 p-4 bg-blue-50 rounded-lg">
