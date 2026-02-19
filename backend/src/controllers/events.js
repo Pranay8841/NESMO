@@ -174,7 +174,8 @@ export const registerForEvent = async (req, res) => {
         event: event._id,
         user: req.user.id,
         paymentId: req.body.paymentId,
-        amountPaid: req.body.amountPaid || 0
+        amountPaid: req.body.amountPaid || 0,
+        status: event.isPaid ? "PENDING" : "CONFIRMED"
     });
 
     res.status(201).json({
@@ -182,6 +183,39 @@ export const registerForEvent = async (req, res) => {
         message: "Registered successfully",
         data: registration
     });
+};
+
+/**
+ * Unregister from event
+ * DELETE /api/events/:id/unregister
+ */
+export const unregisterFromEvent = async (req, res) => {
+    try {
+        const registration = await EventRegistration.findOne({
+            event: req.params.id,
+            user: req.user.id
+        });
+
+        if (!registration) {
+            return res.status(404).json({ message: "Registration not found" });
+        }
+
+        // Don't allow unregistering from paid events that are confirmed
+        if (registration.isPaid && registration.status === "CONFIRMED") {
+            return res.status(400).json({ 
+                message: "Cannot unregister from paid events. Please contact support for refund." 
+            });
+        }
+
+        await EventRegistration.deleteOne({ _id: registration._id });
+
+        res.json({
+            success: true,
+            message: "Successfully unregistered from event"
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Unable to unregister" });
+    }
 };
 
 /**

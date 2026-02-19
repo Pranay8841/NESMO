@@ -22,6 +22,7 @@ import {
     addEvent,
     updateEventRequestStatus,
     addRegistration,
+    removeRegistration,
 } from '../redux/slices/eventsSlice';
 import type { Event, EventRequest, EventRegistration } from '../redux/slices/eventsSlice';
 import { apiConnector } from '../utils/APIsConnector';
@@ -172,6 +173,36 @@ export const registerForEvent = createAsyncThunk(
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
             const errorMessage = axiosError.response?.data?.message || 'Registration failed';
+            toast.error(errorMessage, { id: toastId });
+            return rejectWithValue(errorMessage);
+        }
+    }
+);
+
+/**
+ * Unregister from an event.
+ */
+export const unregisterFromEvent = createAsyncThunk(
+    'events/unregisterFromEvent',
+    async (eventId: string, { dispatch, getState, rejectWithValue }) => {
+        const toastId = toast.loading('Cancelling registration...');
+        try {
+            const state = getState() as { auth: { token: string | null } };
+            const token = state.auth.token;
+            
+            await apiConnector(
+                'DELETE',
+                `${EVENTS_API.UNREGISTER_FROM_EVENT}/${eventId}/unregister`,
+                null,
+                { Authorization: `Bearer ${token}` } as AxiosRequestHeaders
+            );
+            
+            dispatch(removeRegistration(eventId));
+            toast.success('Successfully unregistered from event', { id: toastId });
+            return eventId;
+        } catch (error) {
+            const axiosError = error as AxiosError<{ message: string }>;
+            const errorMessage = axiosError.response?.data?.message || 'Failed to unregister';
             toast.error(errorMessage, { id: toastId });
             return rejectWithValue(errorMessage);
         }

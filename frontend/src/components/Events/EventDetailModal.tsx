@@ -8,11 +8,12 @@
 import { type JSX, useEffect, useState } from "react";
 import { 
     X, Calendar, Clock, MapPin, Video, Users, IndianRupee, 
-    User, CheckCircle, Loader2, AlertCircle 
+    User, CheckCircle, Loader2, AlertCircle, XCircle 
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { 
     registerForEvent, 
+    unregisterFromEvent,
     checkRegistrationStatus,
     createEventPaymentOrder,
     verifyEventPayment 
@@ -103,6 +104,7 @@ export default function EventDetailModal({ event, onClose }: EventDetailModalPro
     const [registration, setRegistration] = useState<EventRegistration | null>(null);
     const [checkingStatus, setCheckingStatus] = useState(false);
     const [registering, setRegistering] = useState(false);
+    const [unregistering, setUnregistering] = useState(false);
 
     const isPast = new Date(event.eventDate) < new Date();
     const isRegistrationClosed = event.registrationDeadline && 
@@ -182,6 +184,19 @@ export default function EventDetailModal({ event, onClose }: EventDetailModalPro
             }
         } finally {
             setRegistering(false);
+        }
+    };
+
+    const handleUnregister = async () => {
+        if (!user) return;
+        
+        setUnregistering(true);
+        try {
+            await dispatch(unregisterFromEvent(event._id)).unwrap();
+            setIsRegistered(false);
+            setRegistration(null);
+        } finally {
+            setUnregistering(false);
         }
     };
 
@@ -334,13 +349,35 @@ export default function EventDetailModal({ event, onClose }: EventDetailModalPro
                                     <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
                                 </div>
                             ) : isRegistered ? (
-                                <div className="flex items-center justify-center gap-2 py-4 bg-green-50 rounded-lg text-green-700">
-                                    <CheckCircle className="w-5 h-5" />
-                                    <span className="font-medium">
-                                        {registration?.status === "CONFIRMED" 
-                                            ? "You're registered for this event!"
-                                            : "Registration pending confirmation"}
-                                    </span>
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-center gap-2 py-4 bg-green-50 rounded-lg text-green-700">
+                                        <CheckCircle className="w-5 h-5" />
+                                        <span className="font-medium">
+                                            {registration?.status === "CONFIRMED" 
+                                                ? "You're registered for this event!"
+                                                : "Registration pending confirmation"}
+                                        </span>
+                                    </div>
+                                    {/* Show unregister button only for free events or pending paid registrations */}
+                                    {(!registration?.isPaid || registration?.status !== "CONFIRMED") && !isPast && (
+                                        <button
+                                            onClick={handleUnregister}
+                                            disabled={unregistering}
+                                            className="w-full py-2.5 border border-red-300 hover:bg-red-50 text-red-600 font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            {unregistering ? (
+                                                <>
+                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                    Cancelling...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <XCircle className="w-4 h-4" />
+                                                    Cancel Registration
+                                                </>
+                                            )}
+                                        </button>
+                                    )}
                                 </div>
                             ) : isPast ? (
                                 <div className="py-4 text-center text-gray-500 bg-gray-100 rounded-lg">

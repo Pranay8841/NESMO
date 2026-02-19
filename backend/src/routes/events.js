@@ -5,6 +5,7 @@ import {
     requestEventCreation,
     createEvent,
     registerForEvent,
+    unregisterFromEvent,
     getEvents,
     getEventById,
     getMyEventRequests,
@@ -49,6 +50,7 @@ router.put(
 router.get("/:id", getEventById);
 router.get("/:id/registration-status", protect, getRegistrationStatus);
 router.post("/:id/register", protect, registerForEvent);
+router.delete("/:id/unregister", protect, unregisterFromEvent);
 router.post("/:id/payment/create-order", protect, createEventPaymentOrder);
 router.get("/:id/dashboard", protect, authorize("EVENT_LEAD", "ADMIN"), eventDashboard);
 

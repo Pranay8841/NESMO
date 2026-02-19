@@ -103,6 +103,8 @@ export const EVENTS_API = {
   GET_REGISTRATION_STATUS: `${BASE_URL}/events`, // Append /:id/registration-status
   /** POST - Register for an event */
   REGISTER_FOR_EVENT: `${BASE_URL}/events`, // Append /:id/register
+  /** DELETE - Unregister from an event */
+  UNREGISTER_FROM_EVENT: `${BASE_URL}/events`, // Append /:id/unregister
   /** POST - Create payment order for paid event */
   CREATE_EVENT_PAYMENT_ORDER: `${BASE_URL}/events`, // Append /:id/payment/create-order
   /** POST - Verify event payment */

@@ -164,6 +164,13 @@ export const eventsSlice = createSlice({
         addRegistration: (state, action: PayloadAction<EventRegistration>) => {
             state.myRegistrations.unshift(action.payload);
         },
+        removeRegistration: (state, action: PayloadAction<string>) => {
+            state.myRegistrations = state.myRegistrations.filter(
+                (reg) => typeof reg.event === 'string' 
+                    ? reg.event !== action.payload 
+                    : reg.event._id !== action.payload
+            );
+        },
     },
 });
 
@@ -181,6 +188,7 @@ export const {
     addEvent,
     updateEventRequestStatus,
     addRegistration,
+    removeRegistration,
 } = eventsSlice.actions;
 
 export default eventsSlice.reducer;

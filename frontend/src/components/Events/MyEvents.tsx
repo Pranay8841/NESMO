@@ -228,8 +228,9 @@ export default function MyEvents(): JSX.Element {
     }, [dispatch, canCreateEvent]);
 
     // Separate active and past events
-    const activeEvents = myEvents.filter(e => e.status === "ACTIVE");
-    const pastEvents = myEvents.filter(e => e.status !== "ACTIVE" || new Date(e.eventDate) < new Date());
+    const now = new Date();
+    const activeEvents = myEvents.filter(e => e.status === "ACTIVE" && new Date(e.eventDate) >= now);
+    const pastEvents = myEvents.filter(e => e.status !== "ACTIVE" || new Date(e.eventDate) < now);
 
     return (
         <div className="p-6">
