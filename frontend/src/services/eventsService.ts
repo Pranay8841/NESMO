@@ -20,8 +20,11 @@ import {
     setAllEventRequests,
     addEventRequest,
     addEvent,
+    updateEventInState,
+    removeEventFromState,
     updateEventRequestStatus,
     addRegistration,
+    removeRegistration,
 } from '../redux/slices/eventsSlice';
 import type { Event, EventRequest, EventRegistration } from '../redux/slices/eventsSlice';
 import { apiConnector } from '../utils/APIsConnector';
@@ -172,6 +175,36 @@ export const registerForEvent = createAsyncThunk(
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
             const errorMessage = axiosError.response?.data?.message || 'Registration failed';
+            toast.error(errorMessage, { id: toastId });
+            return rejectWithValue(errorMessage);
+        }
+    }
+);
+
+/**
+ * Unregister from an event.
+ */
+export const unregisterFromEvent = createAsyncThunk(
+    'events/unregisterFromEvent',
+    async (eventId: string, { dispatch, getState, rejectWithValue }) => {
+        const toastId = toast.loading('Cancelling registration...');
+        try {
+            const state = getState() as { auth: { token: string | null } };
+            const token = state.auth.token;
+            
+            await apiConnector(
+                'DELETE',
+                `${EVENTS_API.UNREGISTER_FROM_EVENT}/${eventId}/unregister`,
+                null,
+                { Authorization: `Bearer ${token}` } as AxiosRequestHeaders
+            );
+            
+            dispatch(removeRegistration(eventId));
+            toast.success('Successfully unregistered from event', { id: toastId });
+            return eventId;
+        } catch (error) {
+            const axiosError = error as AxiosError<{ message: string }>;
+            const errorMessage = axiosError.response?.data?.message || 'Failed to unregister';
             toast.error(errorMessage, { id: toastId });
             return rejectWithValue(errorMessage);
         }
@@ -341,6 +374,12 @@ interface CreateEventData {
     type: 'MEETUP' | 'SESSION' | 'CAMP';
     mode: 'ONLINE' | 'OFFLINE';
     venue?: string;
+    meetingLink?: string;
+    location?: {
+        address?: string;
+        lat?: number;
+        lng?: number;
+    };
     eventDate: string;
     registrationDeadline?: string;
     capacity?: number;
@@ -373,6 +412,72 @@ export const createEvent = createAsyncThunk(
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
             const errorMessage = axiosError.response?.data?.message || 'Failed to create event';
+            toast.error(errorMessage, { id: toastId });
+            return rejectWithValue(errorMessage);
+        }
+    }
+);
+
+interface UpdateEventData extends Partial<CreateEventData> {
+    eventId: string;
+    status?: 'ACTIVE' | 'CLOSED' | 'CANCELLED';
+    imageUrl?: string;
+}
+
+/**
+ * Update an existing event (Event Lead only).
+ */
+export const updateEvent = createAsyncThunk(
+    'events/updateEvent',
+    async ({ eventId, ...eventData }: UpdateEventData, { dispatch, getState, rejectWithValue }) => {
+        const toastId = toast.loading('Updating event...');
+        try {
+            const state = getState() as { auth: { token: string | null } };
+            const token = state.auth.token;
+            
+            const response = await apiConnector(
+                'PUT',
+                `${EVENTS_API.UPDATE_EVENT}/${eventId}`,
+                eventData,
+                { Authorization: `Bearer ${token}` } as AxiosRequestHeaders
+            );
+            
+            dispatch(updateEventInState(response.data.data));
+            toast.success('Event updated successfully!', { id: toastId });
+            return response.data.data as Event;
+        } catch (error) {
+            const axiosError = error as AxiosError<{ message: string }>;
+            const errorMessage = axiosError.response?.data?.message || 'Failed to update event';
+            toast.error(errorMessage, { id: toastId });
+            return rejectWithValue(errorMessage);
+        }
+    }
+);
+
+/**
+ * Delete an event (Event Lead only).
+ */
+export const deleteEvent = createAsyncThunk(
+    'events/deleteEvent',
+    async (eventId: string, { dispatch, getState, rejectWithValue }) => {
+        const toastId = toast.loading('Deleting event...');
+        try {
+            const state = getState() as { auth: { token: string | null } };
+            const token = state.auth.token;
+            
+            await apiConnector(
+                'DELETE',
+                `${EVENTS_API.DELETE_EVENT}/${eventId}`,
+                null,
+                { Authorization: `Bearer ${token}` } as AxiosRequestHeaders
+            );
+            
+            dispatch(removeEventFromState(eventId));
+            toast.success('Event deleted successfully!', { id: toastId });
+            return eventId;
+        } catch (error) {
+            const axiosError = error as AxiosError<{ message: string }>;
+            const errorMessage = axiosError.response?.data?.message || 'Failed to delete event';
             toast.error(errorMessage, { id: toastId });
             return rejectWithValue(errorMessage);
         }
@@ -476,6 +581,41 @@ export const reviewEventRequest = createAsyncThunk(
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
             const errorMessage = axiosError.response?.data?.message || 'Failed to process request';
+            toast.error(errorMessage, { id: toastId });
+            return rejectWithValue(errorMessage);
+        }
+    }
+);
+
+interface SendReminderData {
+    eventId: string;
+    message?: string;
+}
+
+/**
+ * Send reminder to all event registrants (Event Lead only).
+ * Uses the event reminder service endpoint.
+ */
+export const sendEventReminder = createAsyncThunk(
+    'events/sendEventReminder',
+    async ({ eventId, message }: SendReminderData, { getState, rejectWithValue }) => {
+        const toastId = toast.loading('Sending reminders...');
+        try {
+            const state = getState() as { auth: { token: string | null } };
+            const token = state.auth.token;
+            
+            const response = await apiConnector(
+                'POST',
+                `${EVENTS_API.SEND_REMINDER}/${eventId}/send-reminder`,
+                message ? { message } : {},
+                { Authorization: `Bearer ${token}` } as AxiosRequestHeaders
+            );
+            
+            toast.success(response.data.message || 'Reminders sent successfully!', { id: toastId });
+            return response.data;
+        } catch (error) {
+            const axiosError = error as AxiosError<{ message: string }>;
+            const errorMessage = axiosError.response?.data?.message || 'Failed to send reminders';
             toast.error(errorMessage, { id: toastId });
             return rejectWithValue(errorMessage);
         }

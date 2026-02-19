@@ -22,6 +22,25 @@ const eventSchema = new mongoose.Schema({
 
     venue: String,
 
+    /** Location coordinates for offline events (Google Maps integration) */
+    location: {
+        address: String,
+        lat: Number,
+        lng: Number
+    },
+
+    /** Meeting link for online events (Zoom, Google Meet, etc.) */
+    meetingLink: {
+        type: String,
+        trim: true
+    },
+
+    /** Event cover/banner image URL */
+    imageUrl: {
+        type: String,
+        trim: true
+    },
+
     eventDate: Date,
     registrationDeadline: Date,
 
@@ -52,6 +71,12 @@ const eventSchema = new mongoose.Schema({
         type: String,
         enum: ["ACTIVE", "CLOSED", "CANCELLED"],
         default: "ACTIVE"
+    },
+
+    /** Track which reminders have been sent */
+    remindersSent: {
+        oneDayBefore: { type: Boolean, default: false },
+        oneHourBefore: { type: Boolean, default: false }
     }
 }, { timestamps: true });
 

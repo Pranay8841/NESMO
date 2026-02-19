@@ -8,11 +8,12 @@
 import { type JSX, useEffect, useState, useCallback } from "react";
 import { 
     Calendar, MapPin, Video, Users, IndianRupee, Plus,
-    Loader2, BarChart3, Clock, CheckCircle
+    Loader2, BarChart3, Clock, CheckCircle, Pencil
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { fetchMyCreatedEvents, fetchEventDashboard } from "../../services/eventsService";
 import CreateEventModal from "./CreateEventModal";
+import EditEventModal from "./EditEventModal";
 import type { Event } from "../../redux/slices/eventsSlice";
 
 /**
@@ -51,9 +52,10 @@ interface EventDashboardData {
 interface EventRowProps {
     event: Event;
     onViewDashboard: (event: Event) => void;
+    onEdit: (event: Event) => void;
 }
 
-function EventRow({ event, onViewDashboard }: EventRowProps): JSX.Element {
+function EventRow({ event, onViewDashboard, onEdit }: EventRowProps): JSX.Element {
     const statusBadge = getStatusBadge(event.status);
     const isPast = new Date(event.eventDate) < new Date();
 
@@ -102,6 +104,13 @@ function EventRow({ event, onViewDashboard }: EventRowProps): JSX.Element {
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => onEdit(event)}
+                        className="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 font-medium rounded-lg transition-colors"
+                    >
+                        <Pencil className="w-4 h-4" />
+                        Edit
+                    </button>
                     <button
                         onClick={() => onViewDashboard(event)}
                         className="flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium rounded-lg transition-colors"
@@ -218,6 +227,7 @@ export default function MyEvents(): JSX.Element {
     const { user } = useAppSelector((state) => state.auth);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+    const [editingEvent, setEditingEvent] = useState<Event | null>(null);
 
     const canCreateEvent = user?.role === "EVENT_LEAD" || user?.role === "ADMIN";
 
@@ -228,8 +238,9 @@ export default function MyEvents(): JSX.Element {
     }, [dispatch, canCreateEvent]);
 
     // Separate active and past events
-    const activeEvents = myEvents.filter(e => e.status === "ACTIVE");
-    const pastEvents = myEvents.filter(e => e.status !== "ACTIVE" || new Date(e.eventDate) < new Date());
+    const now = new Date();
+    const activeEvents = myEvents.filter(e => e.status === "ACTIVE" && new Date(e.eventDate) >= now);
+    const pastEvents = myEvents.filter(e => e.status !== "ACTIVE" || new Date(e.eventDate) < now);
 
     return (
         <div className="p-6">
@@ -300,6 +311,7 @@ export default function MyEvents(): JSX.Element {
                                 key={event._id} 
                                 event={event} 
                                 onViewDashboard={setSelectedEvent}
+                                onEdit={setEditingEvent}
                             />
                         ))}
                     </div>
@@ -318,6 +330,7 @@ export default function MyEvents(): JSX.Element {
                                 key={event._id} 
                                 event={event} 
                                 onViewDashboard={setSelectedEvent}
+                                onEdit={setEditingEvent}
                             />
                         ))}
                     </div>
@@ -334,6 +347,18 @@ export default function MyEvents(): JSX.Element {
                 <DashboardModal 
                     event={selectedEvent} 
                     onClose={() => setSelectedEvent(null)}
+                />
+            )}
+
+            {/* Edit Event Modal */}
+            {editingEvent && (
+                <EditEventModal 
+                    event={editingEvent} 
+                    onClose={() => setEditingEvent(null)}
+                    onDeleted={() => {
+                        setEditingEvent(null);
+                        dispatch(fetchMyCreatedEvents());
+                    }}
                 />
             )}
         </div>
