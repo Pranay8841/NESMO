@@ -4,6 +4,7 @@ import alumniReducer from './slices/alumniSlice';
 import profileReducer from './slices/profileSlice';
 import adminReducer from './slices/adminSlice';
 import eventsReducer from './slices/eventsSlice';
+import discussionReducer from './slices/discussionSlice';
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     profile: profileReducer,
     admin: adminReducer,
     events: eventsReducer,
+    discussion: discussionReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

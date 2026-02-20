@@ -9,6 +9,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Events from "./pages/Events";
+import Feed from "./pages/Feed";
 import OAuthSuccess from "./pages/OAuthSuccess";
 import OAuthError from "./pages/OAuthError";
 import EmailVerification from "./pages/EmailVerification";
@@ -63,6 +64,7 @@ function App(): JSX.Element {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/events" element={<Events />} />
+          <Route path="/feed" element={<Feed />} />
           <Route path="/directory" element={<ProtectedRoute><Directory /></ProtectedRoute>} />
         </Route>
         <Route element={<DashboardLayout />}>

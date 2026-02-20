@@ -12,6 +12,7 @@ import membershipRoutes from "./routes/membership.js";
 import helplineRoutes from "./routes/helpline.js";
 import eventRoutes from "./routes/events.js";
 import albumRoutes from "./routes/album.js";
+import discussionRoutes from "./routes/discussion.js";
 
 import connectDB from "./config/mongodb.js";
 import fileUpload from "express-fileupload"
@@ -39,6 +40,7 @@ app.use("/api/membership", membershipRoutes);
 app.use("/api/helpline", helplineRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/albums", albumRoutes);
+app.use("/api/discussions", discussionRoutes);
 
 const startServer = async () => {
   try {
