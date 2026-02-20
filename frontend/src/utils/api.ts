@@ -181,3 +181,56 @@ export const ADMIN_API = {
   /** POST - Broadcast notification to users */
   BROADCAST_NOTIFICATION: `${BASE_URL}/admin/notifications/broadcast`,
 };
+
+/* ==================== Discussion Forum Endpoints ==================== */
+
+/**
+ * Discussion Forum API endpoints.
+ */
+export const DISCUSSION_API = {
+  /** GET - Get all discussion rooms */
+  GET_ROOMS: `${BASE_URL}/discussions/rooms`,
+  /** POST - Create a discussion room (Admin) */
+  CREATE_ROOM: `${BASE_URL}/discussions/rooms`,
+  /** POST - Seed default rooms (Admin) */
+  SEED_ROOMS: `${BASE_URL}/discussions/rooms/seed`,
+  
+  /** GET - Get posts feed */
+  GET_POSTS: `${BASE_URL}/discussions/posts`,
+  /** GET - Get single post */
+  GET_POST_BY_ID: `${BASE_URL}/discussions/posts`, // Append /:id
+  /** POST - Create a new post */
+  CREATE_POST: `${BASE_URL}/discussions/posts`,
+  /** PUT - Update a post */
+  UPDATE_POST: `${BASE_URL}/discussions/posts`, // Append /:id
+  /** DELETE - Delete a post */
+  DELETE_POST: `${BASE_URL}/discussions/posts`, // Append /:id
+  
+  /** POST - Like/unlike a post */
+  TOGGLE_LIKE_POST: `${BASE_URL}/discussions/posts`, // Append /:id/like
+  /** POST - Vote on a poll */
+  VOTE_POLL: `${BASE_URL}/discussions/posts`, // Append /:id/vote
+  /** POST - Share a post */
+  SHARE_POST: `${BASE_URL}/discussions/posts`, // Append /:id/share
+  
+  /** GET - Get comments for a post */
+  GET_COMMENTS: `${BASE_URL}/discussions/posts`, // Append /:postId/comments
+  /** POST - Create a comment */
+  CREATE_COMMENT: `${BASE_URL}/discussions/posts`, // Append /:postId/comments
+  /** GET - Get replies for a comment */
+  GET_REPLIES: `${BASE_URL}/discussions/comments`, // Append /:commentId/replies
+  /** DELETE - Delete a comment */
+  DELETE_COMMENT: `${BASE_URL}/discussions/comments`, // Append /:id
+  /** POST - Like/unlike a comment */
+  TOGGLE_LIKE_COMMENT: `${BASE_URL}/discussions/comments`, // Append /:id/like
+  
+  /** GET - Get trending hashtags */
+  GET_TRENDING: `${BASE_URL}/discussions/trending`,
+  /** GET - Get posts by hashtag */
+  GET_POSTS_BY_HASHTAG: `${BASE_URL}/discussions/hashtag`, // Append /:tag
+  /** GET - Get alumni suggestions */
+  GET_SUGGESTIONS: `${BASE_URL}/discussions/suggestions`,
+  
+  /** POST - Seed default hashtags (Admin) */
+  SEED_HASHTAGS: `${BASE_URL}/discussions/hashtags/seed`,
+};

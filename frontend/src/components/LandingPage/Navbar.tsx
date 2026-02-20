@@ -57,6 +57,7 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
                     {/* Navigation */}
                     <nav className="hidden md:flex items-center gap-6 lg:gap-8">
                         <Link to="/" className="text-gray-700 text-sm hover:text-gray-900 transition">Home</Link>
+                        <Link to="/feed" className="text-gray-700 text-sm hover:text-gray-900 transition">Feed</Link>
                         <Link to="/about" className="text-gray-700 text-sm hover:text-gray-900 transition">About</Link>
                         <Link to="/events" className="text-gray-700 text-sm hover:text-gray-900 transition">Events</Link>
                         <Link to="/directory" className="text-gray-700 text-sm hover:text-gray-900 transition">Directory</Link>
@@ -118,6 +119,7 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
                     <div className="md:hidden border-t border-gray-200 bg-white">
                         <nav className="flex flex-col px-4 py-4 space-y-3">
                             <Link to="/" className="text-gray-700 hover:text-gray-900 text-sm" onClick={() => setIsMenuOpen(false)}>Home</Link>
+                            <Link to="/feed" className="text-gray-700 hover:text-gray-900 text-sm" onClick={() => setIsMenuOpen(false)}>Feed</Link>
                             <Link to="/about" className="text-gray-700 hover:text-gray-900 text-sm" onClick={() => setIsMenuOpen(false)}>About</Link>
                             <Link to="/events" className="text-gray-700 hover:text-gray-900 text-sm" onClick={() => setIsMenuOpen(false)}>Events</Link>
                             <Link to="/directory" className="text-gray-700 hover:text-gray-900 text-sm" onClick={() => setIsMenuOpen(false)}>Directory</Link>
