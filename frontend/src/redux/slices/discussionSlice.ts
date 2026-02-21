@@ -94,14 +94,6 @@ export interface Hashtag {
     lastUsed: string;
 }
 
-export interface AlumniSuggestion {
-    _id: string;
-    firstName: string;
-    lastName: string;
-    role: string;
-    profileData?: UserProfile;
-}
-
 export interface Pagination {
     page: number;
     limit: number;
@@ -137,13 +129,6 @@ interface DiscussionState {
         GENERAL: Hashtag[];
     };
     trendingLoading: boolean;
-
-    // Suggestions
-    suggestions: AlumniSuggestion[];
-    suggestionsLoading: boolean;
-
-    // Create Post Modal
-    isCreatePostModalOpen: boolean;
 }
 
 const initialState: DiscussionState = {
@@ -168,11 +153,6 @@ const initialState: DiscussionState = {
         GENERAL: []
     },
     trendingLoading: false,
-
-    suggestions: [],
-    suggestionsLoading: false,
-
-    isCreatePostModalOpen: false,
 };
 
 /* ==================== Slice Definition ==================== */
@@ -193,9 +173,6 @@ export const discussionSlice = createSlice({
         },
         setTrendingLoading: (state, action: PayloadAction<boolean>) => {
             state.trendingLoading = action.payload;
-        },
-        setSuggestionsLoading: (state, action: PayloadAction<boolean>) => {
-            state.suggestionsLoading = action.payload;
         },
 
         // Rooms
@@ -256,6 +233,36 @@ export const discussionSlice = createSlice({
                 state.posts[index].shareCount = action.payload.shareCount;
             }
         },
+        updatePostPollVote: (state, action: PayloadAction<{ postId: string; optionId: string; userId: string }>) => {
+            const index = state.posts.findIndex(p => p._id === action.payload.postId);
+            if (index !== -1 && state.posts[index].poll) {
+                const poll = state.posts[index].poll!;
+                // Remove user's previous vote from all options (if single-choice poll)
+                if (!poll.allowMultiple) {
+                    poll.options.forEach(opt => {
+                        opt.votes = opt.votes.filter(v => v !== action.payload.userId);
+                    });
+                }
+                // Add vote to selected option
+                const optionIndex = poll.options.findIndex(opt => opt._id === action.payload.optionId);
+                if (optionIndex !== -1 && !poll.options[optionIndex].votes.includes(action.payload.userId)) {
+                    poll.options[optionIndex].votes.push(action.payload.userId);
+                }
+            }
+            // Also update selectedPost if it matches
+            if (state.selectedPost?._id === action.payload.postId && state.selectedPost.poll) {
+                const poll = state.selectedPost.poll;
+                if (!poll.allowMultiple) {
+                    poll.options.forEach(opt => {
+                        opt.votes = opt.votes.filter(v => v !== action.payload.userId);
+                    });
+                }
+                const optionIndex = poll.options.findIndex(opt => opt._id === action.payload.optionId);
+                if (optionIndex !== -1 && !poll.options[optionIndex].votes.includes(action.payload.userId)) {
+                    poll.options[optionIndex].votes.push(action.payload.userId);
+                }
+            }
+        },
 
         // Comments
         setComments: (state, action: PayloadAction<Comment[]>) => {
@@ -289,16 +296,6 @@ export const discussionSlice = createSlice({
             state.trendingGrouped = action.payload;
         },
 
-        // Suggestions
-        setSuggestions: (state, action: PayloadAction<AlumniSuggestion[]>) => {
-            state.suggestions = action.payload;
-        },
-
-        // Modal
-        setCreatePostModalOpen: (state, action: PayloadAction<boolean>) => {
-            state.isCreatePostModalOpen = action.payload;
-        },
-
         // Reset
         resetDiscussionState: () => initialState,
     },
@@ -309,7 +306,6 @@ export const {
     setPostsLoading,
     setCommentsLoading,
     setTrendingLoading,
-    setSuggestionsLoading,
     setRooms,
     setSelectedRoom,
     setPosts,
@@ -322,6 +318,7 @@ export const {
     updatePostLikes,
     updatePostCommentCount,
     updatePostShareCount,
+    updatePostPollVote,
     setComments,
     appendComments,
     setCommentsPagination,
@@ -330,8 +327,6 @@ export const {
     updateCommentLikes,
     setTrending,
     setTrendingGrouped,
-    setSuggestions,
-    setCreatePostModalOpen,
     resetDiscussionState,
 } = discussionSlice.actions;
 

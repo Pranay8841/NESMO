@@ -13,9 +13,10 @@ import type { Comment } from '../../redux/slices/discussionSlice';
 
 interface CommentSectionProps {
     postId: string;
+    postAuthorId: string;
 }
 
-export default function CommentSection({ postId }: CommentSectionProps) {
+export default function CommentSection({ postId, postAuthorId }: CommentSectionProps) {
     const dispatch = useAppDispatch();
     const { user } = useAppSelector(state => state.auth);
     const { comments, commentsLoading, commentsPagination } = useAppSelector(state => state.discussion);
@@ -131,6 +132,8 @@ export default function CommentSection({ postId }: CommentSectionProps) {
                             key={comment._id}
                             comment={comment}
                             currentUserId={user?._id}
+                            currentUserRole={user?.role}
+                            postAuthorId={postAuthorId}
                             onLike={() => handleLikeComment(comment._id)}
                             onDelete={() => handleDeleteComment(comment._id)}
                             formatTimeAgo={formatTimeAgo}
@@ -166,15 +169,20 @@ export default function CommentSection({ postId }: CommentSectionProps) {
 interface CommentItemProps {
     comment: Comment;
     currentUserId?: string;
+    currentUserRole?: string;
+    postAuthorId: string;
     onLike: () => void;
     onDelete: () => void;
     formatTimeAgo: (date: string) => string;
 }
 
-function CommentItem({ comment, currentUserId, onLike, onDelete, formatTimeAgo }: CommentItemProps) {
+function CommentItem({ comment, currentUserId, currentUserRole, postAuthorId, onLike, onDelete, formatTimeAgo }: CommentItemProps) {
     const author = comment.author;
     const hasLiked = currentUserId && comment.likes.includes(currentUserId);
-    const isAuthor = currentUserId === author._id;
+    const isCommentAuthor = currentUserId === author._id;
+    const isPostAuthor = currentUserId === postAuthorId;
+    const isAdmin = currentUserRole === 'ADMIN';
+    const canDelete = isCommentAuthor || isPostAuthor || isAdmin;
 
     const profilePhoto = author.profile?.profilePhoto;
     const userInitials = `${author.firstName.charAt(0)}${author.lastName.charAt(0)}`.toUpperCase();
@@ -219,7 +227,7 @@ function CommentItem({ comment, currentUserId, onLike, onDelete, formatTimeAgo }
                         Like {comment.likeCount > 0 && `(${comment.likeCount})`}
                     </button>
                     <span className="text-xs text-gray-400">{formatTimeAgo(comment.createdAt)}</span>
-                    {isAuthor && (
+                    {canDelete && (
                         <button
                             onClick={onDelete}
                             className="text-xs text-gray-400 hover:text-red-500 transition-colors"
