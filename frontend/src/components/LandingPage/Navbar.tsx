@@ -61,6 +61,7 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
                         <Link to="/directory" className="text-gray-700 text-sm hover:text-gray-900 transition">Directory</Link>
                         <Link to="/feed" className="text-gray-700 text-sm hover:text-gray-900 transition">Feed</Link>
                         <Link to="/events" className="text-gray-700 text-sm hover:text-gray-900 transition">Events</Link>
+                        <Link to="/gallery" className="text-gray-700 text-sm hover:text-gray-900 transition">Gallery</Link>
                     </nav>
 
                     {/* Auth Buttons - Desktop */}
@@ -122,6 +123,7 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
                             <Link to="/feed" className="text-gray-700 hover:text-gray-900 text-sm" onClick={() => setIsMenuOpen(false)}>Feed</Link>
                             <Link to="/about" className="text-gray-700 hover:text-gray-900 text-sm" onClick={() => setIsMenuOpen(false)}>About</Link>
                             <Link to="/events" className="text-gray-700 hover:text-gray-900 text-sm" onClick={() => setIsMenuOpen(false)}>Events</Link>
+                            <Link to="/gallery" className="text-gray-700 hover:text-gray-900 text-sm" onClick={() => setIsMenuOpen(false)}>Gallery</Link>
                             <Link to="/directory" className="text-gray-700 hover:text-gray-900 text-sm" onClick={() => setIsMenuOpen(false)}>Directory</Link>
                             <div className="pt-2 border-t border-gray-200">
                                 {user ? (

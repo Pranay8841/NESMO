@@ -5,6 +5,7 @@ import profileReducer from './slices/profileSlice';
 import adminReducer from './slices/adminSlice';
 import eventsReducer from './slices/eventsSlice';
 import discussionReducer from './slices/discussionSlice';
+import galleryReducer from './slices/gallerySlice';
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     admin: adminReducer,
     events: eventsReducer,
     discussion: discussionReducer,
+    gallery: galleryReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

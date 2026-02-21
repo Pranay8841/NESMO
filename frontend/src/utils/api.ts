@@ -126,16 +126,30 @@ export const EVENTS_API = {
 };
 
 /**
- * Photo album API endpoints.
- * @future Not part of first release
+ * Photo album/gallery API endpoints.
  */
 export const ALBUM_API = {
+  /** GET - Get all public albums with pagination & filters */
   GET_ALBUMS: `${BASE_URL}/albums`,
-  CREATE_ALBUM: `${BASE_URL}/create-album`,
-  UPLOAD_MEDIA:`${BASE_URL}/:albumId/media`,
-  GET_ALBUM_MEDIA:`${BASE_URL}/:albumId/media`,
-  Delete_ALBUM_MEDIA:`${BASE_URL}/:albumId/media/:mediaId`,
-}
+  /** GET - Get single album by ID (append /:albumId) */
+  GET_ALBUM_BY_ID: `${BASE_URL}/albums`,
+  /** POST - Create a new album */
+  CREATE_ALBUM: `${BASE_URL}/albums/create-album`,
+  /** PUT - Update album (append /:albumId) */
+  UPDATE_ALBUM: `${BASE_URL}/albums`,
+  /** DELETE - Delete album (append /:albumId) */
+  DELETE_ALBUM: `${BASE_URL}/albums`,
+  /** POST - Upload media to album (append /:albumId/media) */
+  UPLOAD_MEDIA: `${BASE_URL}/albums`,
+  /** GET - Get album media (append /:albumId/media) */
+  GET_ALBUM_MEDIA: `${BASE_URL}/albums`,
+  /** DELETE - Delete media (append /:albumId/media/:mediaId) */
+  DELETE_MEDIA: `${BASE_URL}/albums`,
+  /** GET - Get distinct locations for filter */
+  GET_LOCATIONS: `${BASE_URL}/albums/locations`,
+  /** GET - Get distinct years for filter */
+  GET_YEARS: `${BASE_URL}/albums/years`,
+};
 
 /**
  * Notifications API endpoints.
