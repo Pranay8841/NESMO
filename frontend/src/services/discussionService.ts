@@ -13,7 +13,6 @@ import {
     setPostsLoading,
     setCommentsLoading,
     setTrendingLoading,
-    setSuggestionsLoading,
     setRooms,
     setPosts,
     appendPosts,
@@ -21,9 +20,11 @@ import {
     setPostsPagination,
     addPost,
     removePostFromState,
+    updatePostInState,
     updatePostLikes,
     updatePostCommentCount,
     updatePostShareCount,
+    updatePostPollVote,
     setComments,
     appendComments,
     setCommentsPagination,
@@ -32,14 +33,12 @@ import {
     updateCommentLikes,
     setTrending,
     setTrendingGrouped,
-    setSuggestions,
 } from '../redux/slices/discussionSlice';
 import type { 
     DiscussionRoom, 
     Post, 
     Comment, 
     Hashtag,
-    AlumniSuggestion,
     Pagination 
 } from '../redux/slices/discussionSlice';
 import { apiConnector } from '../utils/APIsConnector';
@@ -168,9 +167,11 @@ export const fetchPostById = createAsyncThunk(
                 token ? { Authorization: `Bearer ${token}` } as AxiosRequestHeaders : undefined
             );
             
-            dispatch(setSelectedPost(response.data.data));
+            const post = response.data.data as Post;
+            dispatch(setSelectedPost(post));
+            dispatch(updatePostInState(post)); // Also update in posts list
             dispatch(setPostsLoading(false));
-            return response.data.data as Post;
+            return post;
         } catch (error) {
             dispatch(setPostsLoading(false));
             const axiosError = error as AxiosError<{ message: string }>;
@@ -361,10 +362,16 @@ export const sharePost = createAsyncThunk(
 export const votePoll = createAsyncThunk(
     'discussion/votePoll',
     async ({ postId, optionId }: { postId: string; optionId: string }, { dispatch, getState, rejectWithValue }) => {
+        const state = getState() as { auth: { token: string | null; user: { _id: string } | null } };
+        const token = state.auth.token;
+        const userId = state.auth.user?._id;
+        
+        // Optimistic update - immediately show the selection
+        if (userId) {
+            dispatch(updatePostPollVote({ postId, optionId, userId }));
+        }
+        
         try {
-            const state = getState() as { auth: { token: string | null } };
-            const token = state.auth.token;
-            
             const response = await apiConnector(
                 'POST',
                 `${DISCUSSION_API.VOTE_POLL}/${postId}/vote`,
@@ -372,11 +379,14 @@ export const votePoll = createAsyncThunk(
                 { Authorization: `Bearer ${token}` } as AxiosRequestHeaders
             );
             
-            // Refetch the post to get updated poll data
+            // Refetch the post to sync with server data
             dispatch(fetchPostById(postId));
             
             return response.data.data;
         } catch (error) {
+            // Revert optimistic update on failure by refetching
+            dispatch(fetchPostById(postId));
+            
             const axiosError = error as AxiosError<{ message: string }>;
             const errorMessage = axiosError.response?.data?.message || 'Failed to vote';
             toast.error(errorMessage);
@@ -632,38 +642,6 @@ export const fetchPostsByHashtag = createAsyncThunk(
             dispatch(setPostsLoading(false));
             const axiosError = error as AxiosError<{ message: string }>;
             const errorMessage = axiosError.response?.data?.message || 'Failed to fetch posts';
-            return rejectWithValue(errorMessage);
-        }
-    }
-);
-
-/**
- * Fetch alumni suggestions for "Connect with Alumni".
- */
-export const fetchSuggestions = createAsyncThunk(
-    'discussion/fetchSuggestions',
-    async (limit: number = 5, { dispatch, getState, rejectWithValue }) => {
-        try {
-            dispatch(setSuggestionsLoading(true));
-            const state = getState() as { auth: { token: string | null } };
-            const token = state.auth.token;
-            
-            const response = await apiConnector(
-                'GET',
-                DISCUSSION_API.GET_SUGGESTIONS,
-                null,
-                { Authorization: `Bearer ${token}` } as AxiosRequestHeaders,
-                { limit }
-            );
-            
-            dispatch(setSuggestions(response.data.data));
-            dispatch(setSuggestionsLoading(false));
-            
-            return response.data.data as AlumniSuggestion[];
-        } catch (error) {
-            dispatch(setSuggestionsLoading(false));
-            const axiosError = error as AxiosError<{ message: string }>;
-            const errorMessage = axiosError.response?.data?.message || 'Failed to fetch suggestions';
             return rejectWithValue(errorMessage);
         }
     }

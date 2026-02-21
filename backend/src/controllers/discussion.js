@@ -639,6 +639,7 @@ export const createComment = async (req, res) => {
 /**
  * Delete a comment (soft delete)
  * DELETE /api/discussions/comments/:id
+ * Can be deleted by: comment author, post author, or admin
  */
 export const deleteComment = async (req, res) => {
     try {
@@ -648,8 +649,20 @@ export const deleteComment = async (req, res) => {
             return res.status(404).json({ message: "Comment not found" });
         }
 
-        // Check ownership
-        if (comment.author.toString() !== req.user.id && req.user.role !== "ADMIN") {
+        // Get the post to check if user is the post author
+        const post = await Post.findById(comment.post);
+        
+        // Handle author comparison - author could be ObjectId or populated object
+        const commentAuthorId = comment.author._id ? comment.author._id.toString() : comment.author.toString();
+        const postAuthorId = post?.author._id ? post.author._id.toString() : post?.author?.toString();
+        const currentUserId = req.user.id.toString();
+        
+        const isCommentAuthor = commentAuthorId === currentUserId;
+        const isPostAuthor = post && postAuthorId === currentUserId;
+        const isAdmin = req.user.role === "ADMIN";
+
+        // Check authorization: comment author, post author, or admin can delete
+        if (!isCommentAuthor && !isPostAuthor && !isAdmin) {
             return res.status(403).json({ message: "Not authorized to delete this comment" });
         }
 

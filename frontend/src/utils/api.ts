@@ -228,8 +228,6 @@ export const DISCUSSION_API = {
   GET_TRENDING: `${BASE_URL}/discussions/trending`,
   /** GET - Get posts by hashtag */
   GET_POSTS_BY_HASHTAG: `${BASE_URL}/discussions/hashtag`, // Append /:tag
-  /** GET - Get alumni suggestions */
-  GET_SUGGESTIONS: `${BASE_URL}/discussions/suggestions`,
   
   /** POST - Seed default hashtags (Admin) */
   SEED_HASHTAGS: `${BASE_URL}/discussions/hashtags/seed`,

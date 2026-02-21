@@ -15,10 +15,13 @@ import {
     Share2, 
     MoreHorizontal, 
     Trash2, 
-    CheckCircle2,
-    Clock
+    Check,
+    Clock,
+    BarChart3,
+    Users
 } from 'lucide-react';
 import CommentSection from './CommentSection';
+import ShareModal from './ShareModal';
 
 interface PostCardProps {
     post: Post;
@@ -31,6 +34,7 @@ export default function PostCard({ post }: PostCardProps) {
     const [showMenu, setShowMenu] = useState(false);
     const [imageModalOpen, setImageModalOpen] = useState<string | null>(null);
     const [isVoting, setIsVoting] = useState(false);
+    const [showShareModal, setShowShareModal] = useState(false);
 
     const author = post.author;
     const room = typeof post.room === 'object' ? post.room : null;
@@ -75,9 +79,11 @@ export default function PostCard({ post }: PostCardProps) {
     };
 
     const handleShare = () => {
+        setShowShareModal(true);
+    };
+
+    const handleShareConfirm = () => {
         dispatch(sharePost(post._id));
-        // Also copy link to clipboard
-        navigator.clipboard.writeText(`${window.location.origin}/feed?post=${post._id}`);
     };
 
     const handleDelete = async () => {
@@ -158,7 +164,7 @@ export default function PostCard({ post }: PostCardProps) {
                     <div className="relative">
                         <button
                             onClick={() => setShowMenu(!showMenu)}
-                            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                            className="p-1 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
                         >
                             <MoreHorizontal className="w-5 h-5 text-gray-400" />
                         </button>
@@ -168,7 +174,7 @@ export default function PostCard({ post }: PostCardProps) {
                                 {(isAuthor || user?.role === 'ADMIN') && (
                                     <button
                                         onClick={handleDelete}
-                                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 cursor-pointer"
                                     >
                                         <Trash2 className="w-4 h-4" />
                                         Delete Post
@@ -230,56 +236,141 @@ export default function PostCard({ post }: PostCardProps) {
             )}
 
             {/* Poll */}
-            {post.poll && post.poll.options && post.poll.options.length > 0 && (
-                <div className="px-4 py-3 bg-gray-50 border-y border-gray-100">
-                    <h4 className="font-medium text-gray-900 mb-3">{post.poll.question}</h4>
-                    <div className="space-y-2">
-                        {post.poll.options.map(option => {
-                            const hasVoted = user && option.votes.includes(user._id);
-                            const percentage = pollStats && pollStats.totalVotes > 0
-                                ? Math.round((option.votes.length / pollStats.totalVotes) * 100)
-                                : 0;
-                            
-                            return (
-                                <button
-                                    key={option._id}
-                                    onClick={() => handleVote(option._id)}
-                                    disabled={isVoting}
-                                    className={`w-full p-3 rounded-lg border text-left text-sm relative overflow-hidden transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
-                                        hasVoted 
-                                            ? 'border-blue-300 bg-blue-50' 
-                                            : 'border-gray-200 hover:border-blue-300 bg-white'
-                                    }`}
-                                >
-                                    <div 
-                                        className="absolute inset-y-0 left-0 bg-blue-100 transition-all pointer-events-none"
-                                        style={{ width: `${percentage}%` }}
-                                    />
-                                    <div className="relative flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            {hasVoted && <CheckCircle2 className="w-4 h-4 text-blue-600" />}
-                                            <span className={hasVoted ? 'font-medium text-blue-900' : 'text-gray-700'}>
-                                                {option.text}
-                                            </span>
+            {post.poll && post.poll.options && post.poll.options.length > 0 && (() => {
+                const userHasVoted = user && post.poll!.options.some(opt => opt.votes.includes(user._id));
+                const isPollExpired = post.poll!.expiresAt && new Date(post.poll!.expiresAt) < new Date();
+                const showResults = userHasVoted || isPollExpired;
+                
+                // Find the winning option (highest votes)
+                const maxVotes = Math.max(...post.poll!.options.map(opt => opt.votes.length));
+                
+                return (
+                    <div className="mx-4 my-3 rounded-xl border border-gray-200 overflow-hidden bg-white">
+                        {/* Poll Header */}
+                        <div className="px-4 py-3 bg-linear-to-r from-blue-50 to-indigo-50 border-b border-gray-100">
+                            <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <BarChart3 className="w-4 h-4 text-blue-600" />
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold text-gray-900 text-sm">Poll</h4>
+                                    <p className="text-xs text-gray-500">
+                                        {isPollExpired ? 'Final results' : (userHasVoted ? 'Tap to change vote' : 'Tap to vote')}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {/* Poll Question */}
+                        <div className="px-4 pt-3 pb-2">
+                            <p className="text-gray-900 font-medium">{post.poll!.question}</p>
+                        </div>
+                        
+                        {/* Poll Options */}
+                        <div className="px-4 pb-3 space-y-2">
+                            {post.poll!.options.map(option => {
+                                const hasVoted = user && option.votes.includes(user._id);
+                                const percentage = pollStats && pollStats.totalVotes > 0
+                                    ? Math.round((option.votes.length / pollStats.totalVotes) * 100)
+                                    : 0;
+                                const isWinning = option.votes.length === maxVotes && maxVotes > 0;
+                                const canVote = !isPollExpired && !isVoting;
+                                
+                                return (
+                                    <button
+                                        key={option._id}
+                                        onClick={() => canVote && handleVote(option._id)}
+                                        disabled={!canVote}
+                                        className={`w-full rounded-xl text-left text-sm relative overflow-hidden transition-all duration-300 ${
+                                            isPollExpired
+                                                ? 'cursor-default'
+                                                : 'cursor-pointer hover:scale-[1.01] active:scale-[0.99]'
+                                        } ${
+                                            hasVoted 
+                                                ? 'ring-2 ring-blue-500 ring-offset-1' 
+                                                : showResults ? '' : 'hover:bg-gray-50 border border-gray-200'
+                                        }`}
+                                    >
+                                        {/* Progress bar background */}
+                                        {showResults && (
+                                            <div 
+                                                className={`absolute inset-0 transition-all duration-500 ease-out ${
+                                                    hasVoted 
+                                                        ? 'bg-linear-to-r from-blue-100 to-blue-50' 
+                                                        : isWinning 
+                                                            ? 'bg-linear-to-r from-green-100 to-green-50'
+                                                            : 'bg-gray-100'
+                                                }`}
+                                                style={{ width: `${percentage}%` }}
+                                            />
+                                        )}
+                                        
+                                        <div className={`relative flex items-center justify-between p-3 ${
+                                            !showResults ? '' : 'border border-gray-200 rounded-xl'
+                                        }`}>
+                                            <div className="flex items-center gap-3">
+                                                {/* Radio/Check indicator */}
+                                                {!showResults ? (
+                                                    <div className="w-5 h-5 rounded-full border-2 border-gray-300 shrink-0" />
+                                                ) : hasVoted ? (
+                                                    <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
+                                                        <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-5 h-5 shrink-0" />
+                                                )}
+                                                
+                                                <span className={`${
+                                                    hasVoted 
+                                                        ? 'font-semibold text-blue-900' 
+                                                        : isWinning && showResults
+                                                            ? 'font-medium text-green-900'
+                                                            : 'text-gray-700'
+                                                }`}>
+                                                    {option.text}
+                                                </span>
+                                            </div>
+                                            
+                                            {/* Percentage */}
+                                            {showResults && (
+                                                <span className={`text-sm font-semibold ${
+                                                    hasVoted 
+                                                        ? 'text-blue-600' 
+                                                        : isWinning 
+                                                            ? 'text-green-600'
+                                                            : 'text-gray-500'
+                                                }`}>
+                                                    {percentage}%
+                                                </span>
+                                            )}
                                         </div>
-                                        <span className="text-xs text-gray-500">{percentage}%</span>
-                                    </div>
-                                </button>
-                            );
-                        })}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        
+                        {/* Poll Footer */}
+                        <div className="px-4 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+                            <div className="flex items-center gap-1.5 text-gray-500">
+                                <Users className="w-4 h-4" />
+                                <span className="text-sm font-medium">{pollStats?.totalVotes || 0}</span>
+                                <span className="text-sm">votes</span>
+                            </div>
+                            {post.poll!.expiresAt && (
+                                <div className="flex items-center gap-1.5 text-gray-500">
+                                    <Clock className="w-4 h-4" />
+                                    <span className="text-sm">
+                                        {isPollExpired 
+                                            ? 'Ended' 
+                                            : `Ends ${new Date(post.poll!.expiresAt).toLocaleDateString()}`
+                                        }
+                                    </span>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                    <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
-                        <span>{pollStats?.totalVotes || 0} votes</span>
-                        {post.poll.expiresAt && (
-                            <>
-                                <span>•</span>
-                                <Clock className="w-3 h-3" />
-                                <span>Ends {new Date(post.poll.expiresAt).toLocaleDateString()}</span>
-                            </>
-                        )}
-                    </div>
-                </div>
-            )}
+                );
+            })()}
 
             {/* Engagement Stats */}
             <div className="px-4 py-2 flex items-center justify-between text-xs text-gray-500 border-b border-gray-100">
@@ -341,7 +432,7 @@ export default function PostCard({ post }: PostCardProps) {
 
             {/* Comments Section */}
             {showComments && (
-                <CommentSection postId={post._id} />
+                <CommentSection postId={post._id} postAuthorId={author._id} />
             )}
 
             {/* Image Modal */}
@@ -357,6 +448,15 @@ export default function PostCard({ post }: PostCardProps) {
                     />
                 </div>
             )}
+
+            {/* Share Modal */}
+            <ShareModal
+                isOpen={showShareModal}
+                onClose={() => setShowShareModal(false)}
+                onShare={handleShareConfirm}
+                postUrl={`${window.location.origin}/feed?post=${post._id}`}
+                postTitle={post.content?.substring(0, 100) || 'Check out this post on NESMO'}
+            />
         </div>
     );
 }
