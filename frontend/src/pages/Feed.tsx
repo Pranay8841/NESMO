@@ -22,7 +22,7 @@ import { Loader2, RefreshCw, MessageSquare } from 'lucide-react';
 
 export default function Feed() {
     const dispatch = useAppDispatch();
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
     const { 
         posts, 
         postsLoading, 
