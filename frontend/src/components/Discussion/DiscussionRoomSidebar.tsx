@@ -10,8 +10,6 @@ import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { fetchRooms } from '../../services/discussionService';
 import { setSelectedRoom } from '../../redux/slices/discussionSlice';
 import type { DiscussionRoom } from '../../redux/slices/discussionSlice';
-import { Users } from 'lucide-react';
-
 interface DiscussionRoomSidebarProps {
     onRoomSelect?: (room: DiscussionRoom | null) => void;
 }
@@ -74,7 +72,7 @@ export default function DiscussionRoomSidebar({ onRoomSelect }: DiscussionRoomSi
                 {/* All Posts option */}
                 <button
                     onClick={() => handleRoomClick(null)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors cursor-pointer ${
                         selectedRoom === null
                             ? 'bg-blue-50 text-blue-600'
                             : 'text-gray-700 hover:bg-gray-50'
@@ -88,7 +86,7 @@ export default function DiscussionRoomSidebar({ onRoomSelect }: DiscussionRoomSi
                     <button
                         key={room._id}
                         onClick={() => handleRoomClick(room)}
-                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors ${
+                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors cursor-pointer ${
                             selectedRoom?._id === room._id
                                 ? 'bg-blue-50 text-blue-600'
                                 : 'text-gray-700 hover:bg-gray-50'
@@ -109,18 +107,6 @@ export default function DiscussionRoomSidebar({ onRoomSelect }: DiscussionRoomSi
                         )}
                     </button>
                 ))}
-            </div>
-
-            {/* Mentorship Program Banner */}
-            <div className="m-4 p-4 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl text-white">
-                <h4 className="font-semibold mb-1">Mentorship Program</h4>
-                <p className="text-xs text-blue-100 mb-3">
-                    Guide the next generation or get career advice from experienced seniors.
-                </p>
-                <button className="w-full bg-white text-blue-600 font-medium text-sm py-2 rounded-lg hover:bg-blue-50 transition-colors flex items-center justify-center gap-2">
-                    <Users className="w-4 h-4" />
-                    Find Mentors
-                </button>
             </div>
         </div>
     );

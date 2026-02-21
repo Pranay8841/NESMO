@@ -6,10 +6,11 @@
  */
 
 import { useEffect, useState, useCallback, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { fetchPosts, fetchPostsByHashtag, fetchRooms } from '../services/discussionService';
+import { fetchPosts, fetchPostsByHashtag, fetchRooms, fetchPostById } from '../services/discussionService';
 import { fetchEvents } from '../services/eventsService';
-import { setSelectedRoom, setPosts } from '../redux/slices/discussionSlice';
+import { setSelectedRoom, setPosts, setSelectedPost } from '../redux/slices/discussionSlice';
 import type { DiscussionRoom } from '../redux/slices/discussionSlice';
 import { 
     DiscussionRoomSidebar, 
@@ -21,11 +22,13 @@ import { Loader2, RefreshCw, MessageSquare } from 'lucide-react';
 
 export default function Feed() {
     const dispatch = useAppDispatch();
+    const [searchParams] = useSearchParams();
     const { 
         posts, 
         postsLoading, 
         postsPagination, 
         selectedRoom,
+        selectedPost,
         rooms 
     } = useAppSelector(state => state.discussion);
     const { events } = useAppSelector(state => state.events);
@@ -33,8 +36,44 @@ export default function Feed() {
     
     const [selectedHashtag, setSelectedHashtag] = useState<string | null>(null);
     const [showMobileRooms, setShowMobileRooms] = useState(false);
+    const [highlightedPostId, setHighlightedPostId] = useState<string | null>(null);
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement>(null);
+    const postRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+    // Handle specific post from URL query parameter
+    const postIdFromUrl = searchParams.get('post');
+
+    // Fetch specific post if URL has post parameter
+    useEffect(() => {
+        if (postIdFromUrl) {
+            dispatch(fetchPostById(postIdFromUrl));
+            setHighlightedPostId(postIdFromUrl);
+            // Clear highlight after 3 seconds
+            const timer = setTimeout(() => setHighlightedPostId(null), 3000);
+            return () => clearTimeout(timer);
+        } else {
+            dispatch(setSelectedPost(null));
+        }
+    }, [dispatch, postIdFromUrl]);
+
+    // Scroll to the specific post when it's loaded
+    useEffect(() => {
+        if (postIdFromUrl) {
+            // Check if post exists either in posts array or as selectedPost
+            const postInFeed = posts.find(p => p._id === postIdFromUrl);
+            const postToScrollTo = postInFeed || selectedPost;
+            
+            if (postToScrollTo) {
+                const postElement = postRefs.current[postIdFromUrl];
+                if (postElement) {
+                    setTimeout(() => {
+                        postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
+                }
+            }
+        }
+    }, [postIdFromUrl, posts, selectedPost]);
 
     // Initial data fetch
     useEffect(() => {
@@ -205,7 +244,21 @@ export default function Feed() {
 
                         {/* Posts Feed */}
                         <div className="space-y-4">
-                            {postsLoading && posts.length === 0 ? (
+                            {/* Show the linked post at the top if it's not in the feed */}
+                            {selectedPost && postIdFromUrl && !posts.find(p => p._id === selectedPost._id) && (
+                                <div
+                                    ref={(el) => { postRefs.current[selectedPost._id] = el; }}
+                                    className={`transition-all duration-500 ${
+                                        highlightedPostId === selectedPost._id 
+                                            ? 'ring-2 ring-blue-500 ring-offset-2 rounded-xl' 
+                                            : ''
+                                    }`}
+                                >
+                                    <PostCard post={selectedPost} />
+                                </div>
+                            )}
+                            
+                            {postsLoading && posts.length === 0 && !selectedPost ? (
                                 <div className="flex flex-col items-center justify-center py-12">
                                     <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-2" />
                                     <span className="text-gray-500 text-sm">Loading posts...</span>
@@ -222,7 +275,17 @@ export default function Feed() {
                                 </div>
                             ) : (
                                 posts.map(post => (
-                                    <PostCard key={post._id} post={post} />
+                                    <div
+                                        key={post._id}
+                                        ref={(el) => { postRefs.current[post._id] = el; }}
+                                        className={`transition-all duration-500 ${
+                                            highlightedPostId === post._id 
+                                                ? 'ring-2 ring-blue-500 ring-offset-2 rounded-xl' 
+                                                : ''
+                                        }`}
+                                    >
+                                        <PostCard post={post} />
+                                    </div>
                                 ))
                             )}
 

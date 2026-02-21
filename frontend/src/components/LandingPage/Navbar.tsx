@@ -57,10 +57,10 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
                     {/* Navigation */}
                     <nav className="hidden md:flex items-center gap-6 lg:gap-8">
                         <Link to="/" className="text-gray-700 text-sm hover:text-gray-900 transition">Home</Link>
-                        <Link to="/feed" className="text-gray-700 text-sm hover:text-gray-900 transition">Feed</Link>
                         <Link to="/about" className="text-gray-700 text-sm hover:text-gray-900 transition">About</Link>
-                        <Link to="/events" className="text-gray-700 text-sm hover:text-gray-900 transition">Events</Link>
                         <Link to="/directory" className="text-gray-700 text-sm hover:text-gray-900 transition">Directory</Link>
+                        <Link to="/feed" className="text-gray-700 text-sm hover:text-gray-900 transition">Feed</Link>
+                        <Link to="/events" className="text-gray-700 text-sm hover:text-gray-900 transition">Events</Link>
                     </nav>
 
                     {/* Auth Buttons - Desktop */}
