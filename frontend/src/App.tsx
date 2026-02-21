@@ -10,6 +10,8 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Events from "./pages/Events";
 import Feed from "./pages/Feed";
+import Gallery from "./pages/Gallery";
+import AlbumDetail from "./pages/AlbumDetail";
 import OAuthSuccess from "./pages/OAuthSuccess";
 import OAuthError from "./pages/OAuthError";
 import EmailVerification from "./pages/EmailVerification";
@@ -65,6 +67,8 @@ function App(): JSX.Element {
           <Route path="/about" element={<About />} />
           <Route path="/events" element={<Events />} />
           <Route path="/feed" element={<Feed />} />
+          <Route path="/gallery" element={<ProtectedRoute><Gallery /></ProtectedRoute>} />
+          <Route path="/gallery/:albumId" element={<ProtectedRoute><AlbumDetail /></ProtectedRoute>} />
           <Route path="/directory" element={<ProtectedRoute><Directory /></ProtectedRoute>} />
         </Route>
         <Route element={<DashboardLayout />}>

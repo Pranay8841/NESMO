@@ -21,7 +21,7 @@ import {
     Users
 } from 'lucide-react';
 import CommentSection from './CommentSection';
-import ShareModal from './ShareModal';
+import toast from 'react-hot-toast';
 
 interface PostCardProps {
     post: Post;
@@ -34,7 +34,6 @@ export default function PostCard({ post }: PostCardProps) {
     const [showMenu, setShowMenu] = useState(false);
     const [imageModalOpen, setImageModalOpen] = useState<string | null>(null);
     const [isVoting, setIsVoting] = useState(false);
-    const [showShareModal, setShowShareModal] = useState(false);
 
     const author = post.author;
     const room = typeof post.room === 'object' ? post.room : null;
@@ -78,12 +77,30 @@ export default function PostCard({ post }: PostCardProps) {
         dispatch(toggleLikePost(post._id));
     };
 
-    const handleShare = () => {
-        setShowShareModal(true);
-    };
-
-    const handleShareConfirm = () => {
-        dispatch(sharePost(post._id));
+    const handleShare = async () => {
+        const url = `${window.location.origin}/feed?post=${post._id}`;
+        const title = post.content?.substring(0, 100) || 'Check out this post on NESMO';
+        
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title,
+                    text: title,
+                    url
+                });
+                // User completed the share action - increment count
+                dispatch(sharePost(post._id));
+            } catch (error: unknown) {
+                // Only show error if it's not a user cancellation
+                if (error instanceof Error && error.name !== 'AbortError') {
+                    toast.error('Failed to share');
+                }
+            }
+        } else {
+            // Fallback: just copy to clipboard (no share count since we can't verify actual share)
+            await navigator.clipboard.writeText(url);
+            toast.success('Link copied to clipboard!');
+        }
     };
 
     const handleDelete = async () => {
@@ -448,15 +465,6 @@ export default function PostCard({ post }: PostCardProps) {
                     />
                 </div>
             )}
-
-            {/* Share Modal */}
-            <ShareModal
-                isOpen={showShareModal}
-                onClose={() => setShowShareModal(false)}
-                onShare={handleShareConfirm}
-                postUrl={`${window.location.origin}/feed?post=${post._id}`}
-                postTitle={post.content?.substring(0, 100) || 'Check out this post on NESMO'}
-            />
         </div>
     );
 }
