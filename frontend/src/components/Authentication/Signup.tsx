@@ -65,9 +65,17 @@ export default function App({ onSuccess, onOpenLogin }: SignupProps) {
         }
     };
 
-    const handleGoogleSignup = () => {
+    const handleGoogleSignup = async () => {
         setIsAuthenticating(true);
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        
+        try {
+            // Pre-warm the backend (handles Render cold starts)
+            await fetch(`${apiUrl}/health`, { method: 'GET' });
+        } catch {
+            // Ignore errors - proceed with redirect anyway
+        }
+        
         window.location.href = `${apiUrl}/auth/google`;
     };
 

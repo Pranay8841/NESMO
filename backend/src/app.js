@@ -32,6 +32,11 @@ app.use(
 
 cloudinaryConnect();
 
+// Health check endpoint (for warming up cold starts)
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "ok", timestamp: Date.now() });
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/profile", profileRoutes);
