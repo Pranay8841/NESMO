@@ -1,6 +1,6 @@
 // routes/gallery.routes.js
 import express from "express";
-import { protect, authorize } from "../middleware/auth.js";
+import { protect, authorize } from "../middleware/firebaseAuth.js";
 
 import {
     createAlbum,

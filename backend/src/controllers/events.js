@@ -1,6 +1,4 @@
-import EventRequest from "../models/eventRequest.js";
-import Event from "../models/event.js";
-import EventRegistration from "../models/eventRegistration.js";
+import { addDocument, getDocuments, getDocument, updateDocument } from "../config/firestore.js";
 import razorpay from "../config/razorpay.js";
 import crypto from "crypto";
 
@@ -10,18 +8,23 @@ import crypto from "crypto";
  */
 export const requestEventCreation = async (req, res) => {
     try {
-        const request = await EventRequest.create({
+        const requestId = await addDocument('eventRequests', {
             requestedBy: req.user.id,
+            status: 'PENDING',
+            adminRemark: '',
+            createdAt: new Date(),
+            updatedAt: new Date(),
             ...req.body
         });
 
         res.status(201).json({
             success: true,
             message: "Event request submitted for admin approval",
-            data: request
+            data: { id: requestId, ...req.body }
         });
 
     } catch (err) {
+        console.error("Event Request Error:", err);
         res.status(500).json({ success: false, message: "Unable to submit request" });
     }
 };
@@ -31,16 +34,25 @@ export const requestEventCreation = async (req, res) => {
  * POST /api/events
  */
 export const createEvent = async (req, res) => {
-    const event = await Event.create({
-        createdBy: req.user.id,
-        ...req.body
-    });
+    try {
+        const eventId = await addDocument('events', {
+            createdBy: req.user.id,
+            status: 'ACTIVE',
+            totalCollected: 0,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            ...req.body
+        });
 
-    res.status(201).json({
-        success: true,
-        message: "Event created successfully",
-        data: event
-    });
+        res.status(201).json({
+            success: true,
+            message: "Event created successfully",
+            data: { id: eventId, ...req.body }
+        });
+    } catch (error) {
+        console.error("Create Event Error:", error);
+        res.status(500).json({ success: false, message: "Unable to create event" });
+    }
 };
 
 /**
@@ -48,10 +60,19 @@ export const createEvent = async (req, res) => {
  * GET /api/events
  */
 export const getEvents = async (req, res) => {
-    const events = await Event.find({ status: "ACTIVE" })
-        .sort({ eventDate: 1 });
+    try {
+        const events = await getDocuments('events', [
+            { field: 'status', operator: '==', value: 'ACTIVE' }
+        ]);
 
-    res.json({ success: true, data: events });
+        // Sort by eventDate
+        const sorted = events.sort((a, b) => new Date(a.eventDate) - new Date(b.eventDate));
+
+        res.json({ success: true, data: sorted });
+    } catch (error) {
+        console.error("Get Events Error:", error);
+        res.status(500).json({ success: false, message: "Unable to fetch events" });
+    }
 };
 
 /**
@@ -59,19 +80,26 @@ export const getEvents = async (req, res) => {
  * GET /api/events/:id/dashboard
  */
 export const eventDashboard = async (req, res) => {
-    const eventId = req.params.id;
+    try {
+        const eventId = req.params.id;
 
-    const registrations = await EventRegistration.find({ event: eventId });
+        const registrations = await getDocuments('eventRegistrations', [
+            { field: 'event', operator: '==', value: eventId }
+        ]);
 
-    const totalAmount = registrations.reduce(
-        (sum, r) => sum + (r.amountPaid || 0), 0
-    );
+        const totalAmount = registrations.reduce(
+            (sum, r) => sum + (r.amountPaid || 0), 0
+        );
 
-    res.json({
-        success: true,
-        totalRegistrations: registrations.length,
-        totalAmount
-    });
+        res.json({
+            success: true,
+            totalRegistrations: registrations.length,
+            totalAmount
+        });
+    } catch (error) {
+        console.error("Event Dashboard Error:", error);
+        res.status(500).json({ success: false, message: "Unable to fetch dashboard" });
+    }
 };
 
 /**
@@ -79,23 +107,31 @@ export const eventDashboard = async (req, res) => {
  * POST /api/events/:id/register
  */
 export const registerForEvent = async (req, res) => {
-    const event = await Event.findById(req.params.id);
-    if (!event || event.status !== "ACTIVE") {
-        return res.status(400).json({ message: "Event not available" });
+    try {
+        const event = await getDocument('events', req.params.id);
+        
+        if (!event || event.status !== 'ACTIVE') {
+            return res.status(400).json({ message: "Event not available" });
+        }
+
+        const registrationId = await addDocument('eventRegistrations', {
+            event: req.params.id,
+            user: req.user.id,
+            paymentId: req.body.paymentId,
+            amountPaid: req.body.amountPaid || 0,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        });
+
+        res.status(201).json({
+            success: true,
+            message: "Registered successfully",
+            data: { id: registrationId }
+        });
+    } catch (error) {
+        console.error("Register Event Error:", error);
+        res.status(500).json({ success: false, message: "Unable to register" });
     }
-
-    const registration = await EventRegistration.create({
-        event: event._id,
-        user: req.user.id,
-        paymentId: req.body.paymentId,
-        amountPaid: req.body.amountPaid || 0
-    });
-
-    res.status(201).json({
-        success: true,
-        message: "Registered successfully",
-        data: registration
-    });
 };
 
 /**
@@ -107,25 +143,29 @@ export const createEventPaymentOrder = async (req, res) => {
         const userId = req.user.id;
         const { eventId } = req.params;
 
-        const event = await Event.findById(eventId);
+        const event = await getDocument('events', eventId);
         if (!event || !event.isPaid) {
             return res.status(400).json({ success: false, message: "Invalid paid event" });
         }
 
-        const registration = await EventRegistration.create({
+        const registrationId = await addDocument('eventRegistrations', {
             event: eventId,
             user: userId,
-            amount: event.price
+            amount: event.price,
+            status: 'PENDING',
+            createdAt: new Date(),
+            updatedAt: new Date()
         });
 
         const order = await razorpay.orders.create({
             amount: event.price * 100,
-            currency: event.currency,
-            receipt: `event_${eventId}_${registration._id}`
+            currency: event.currency || 'INR',
+            receipt: `event_${eventId}_${registrationId}`
         });
 
-        registration.razorpayOrderId = order.id;
-        await registration.save();
+        await updateDocument('eventRegistrations', registrationId, {
+            razorpayOrderId: order.id
+        });
 
         res.status(200).json({
             success: true,
@@ -133,12 +173,13 @@ export const createEventPaymentOrder = async (req, res) => {
                 orderId: order.id,
                 amount: order.amount,
                 currency: order.currency,
-                registrationId: registration._id,
+                registrationId,
                 key: process.env.RAZORPAY_KEY_ID
             }
         });
 
     } catch (error) {
+        console.error("Create Payment Order Error:", error);
         res.status(500).json({ success: false, message: "Payment initiation failed" });
     }
 };
@@ -167,20 +208,24 @@ export const verifyEventPayment = async (req, res) => {
             return res.status(400).json({ success: false, message: "Payment verification failed" });
         }
 
-        const registration = await EventRegistration.findById(registrationId);
+        const registration = await getDocument('eventRegistrations', registrationId);
         if (!registration) {
             return res.status(404).json({ success: false, message: "Registration not found" });
         }
 
-        registration.status = "CONFIRMED";
-        registration.isPaid = true;
-        registration.razorpayPaymentId = razorpay_payment_id;
-        registration.razorpaySignature = razorpay_signature;
-        await registration.save();
+        await updateDocument('eventRegistrations', registrationId, {
+            status: 'CONFIRMED',
+            isPaid: true,
+            razorpayPaymentId: razorpay_payment_id,
+            razorpaySignature: razorpay_signature,
+            updatedAt: new Date()
+        });
 
-        /* Update event total */
-        await Event.findByIdAndUpdate(registration.event, {
-            $inc: { totalCollected: registration.amount }
+        // Update event total collected
+        const event = await getDocument('events', registration.event);
+        const newTotal = (event.totalCollected || 0) + (registration.amount || 0);
+        await updateDocument('events', registration.event, {
+            totalCollected: newTotal
         });
 
         res.status(200).json({
@@ -189,6 +234,7 @@ export const verifyEventPayment = async (req, res) => {
         });
 
     } catch (error) {
+        console.error("Verify Payment Error:", error);
         res.status(500).json({ success: false, message: "Payment verification error" });
     }
 };

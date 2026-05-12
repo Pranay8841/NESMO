@@ -5,9 +5,8 @@
  * @module controllers/profile
  */
 
-import User from "../models/user.js";
-import Profile from "../models/profile.js";
 import uploadImageToCloudinary from "../utils/imageUploader.js";
+import { getDocument, updateDocument } from "../config/firestore.js";
 
 /**
  * Update user's profile information.
@@ -48,41 +47,37 @@ export const updateProfile = async (req, res) => {
       bloodGroup
     } = req.body;
 
-    const user = await User.findById(userId).populate("profile");
+    // Get user doc from Firestore
+    const user = await getDocument('users', userId);
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found"
-      });
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    const profile = await Profile.findByIdAndUpdate(
-      user.profile._id,
-      {
-        about,
-        phone,
-        currentAddress: city,
-        occupation,
-        organization,
-        sector,
-        joinBatch,
-        passoutBatch,
-        bloodGroup
-      },
-      { new: true }
-    );
+    const profileId = user.profile;
+    if (!profileId) {
+      return res.status(404).json({ success: false, message: 'Profile not found' });
+    }
 
-    res.status(200).json({
-      success: true,
-      message: "Profile updated successfully",
-      profile
-    });
+    const updates = {
+      about,
+      phone,
+      currentAddress: city,
+      occupation,
+      organization,
+      sector,
+      joinBatch,
+      passoutBatch,
+      bloodGroup,
+      updatedAt: new Date()
+    };
 
+    await updateDocument('profiles', profileId, updates);
+    const updatedProfile = await getDocument('profiles', profileId);
+
+    res.status(200).json({ success: true, message: 'Profile updated successfully', profile: updatedProfile });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Unable to update profile"
-    });
+    console.error('Update profile error:', error);
+    res.status(500).json({ success: false, message: 'Unable to update profile' });
   }
 };
 
@@ -102,17 +97,19 @@ export const updateProfile = async (req, res) => {
  */
 export const getMyProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id)
-      .populate("profile")
-      .select("-password");
+    const user = await getDocument('users', req.user.id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
-    return res.status(200).json({
-      success: true,
-      data: user
-    });
+    const profile = user.profile ? await getDocument('profiles', user.profile) : null;
 
+    // Remove sensitive fields if any
+    const response = { ...user, profile };
+    delete response.password;
+
+    return res.status(200).json({ success: true, data: response });
   } catch (error) {
-    return res.status(500).json({ message: "Failed to fetch profile" });
+    console.error('Get my profile error:', error);
+    return res.status(500).json({ message: 'Failed to fetch profile' });
   }
 };
 
@@ -136,12 +133,12 @@ export const getMyProfile = async (req, res) => {
  */
 export const getProfileCompleteness = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).populate("profile");
+    const user = await getDocument('users', req.user.id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const profile = user.profile ? await getDocument('profiles', user.profile) : {};
 
     let filledFields = 0;
-    const profile = user.profile;
-    
-    // Count filled fields (10 total fields in profile)
     if (profile.profilePhoto) filledFields++;
     if (profile.phone) filledFields++;
     if (profile.currentAddress) filledFields++;
@@ -152,20 +149,13 @@ export const getProfileCompleteness = async (req, res) => {
     if (profile.joinBatch) filledFields++;
     if (profile.passoutBatch) filledFields++;
     if (profile.bloodGroup) filledFields++;
-    
-    // Calculate percentage (10 fields = 100%)
+
     const completeness = Math.round((filledFields / 10) * 100);
 
-    res.status(200).json({
-      success: true,
-      completeness: completeness
-    });
-
+    res.status(200).json({ success: true, completeness });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Unable to calculate profile completeness"
-    });
+    console.error('Get profile completeness error:', error);
+    res.status(500).json({ success: false, message: 'Unable to calculate profile completeness' });
   }
 };
 
@@ -190,42 +180,24 @@ export const uploadProfilePhoto = async (req, res) => {
   try {
     const displayPicture = req.files.profilePhoto;
     const userId = req.user.id;
-    
+
     // Upload image to Cloudinary
-    const image = await uploadImageToCloudinary(
-      displayPicture,
-      process.env.FOLDER_NAME,
-      1000,
-      1000
-    );
-    
+    const image = await uploadImageToCloudinary(displayPicture, process.env.FOLDER_NAME, 1000, 1000);
+
     // Get user to find their profile ID
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found"
-      });
-    }
-    
-    // Update the Profile model's profilePhoto field
-    const updatedProfile = await Profile.findByIdAndUpdate(
-      user.profile,
-      { profilePhoto: image.secure_url },
-      { new: true }
-    );
-    
-    res.status(200).json({
-      success: true,
-      message: "Profile photo updated successfully",
-      profilePhoto: image.secure_url,
-      profile: updatedProfile,
-    });
+    const user = await getDocument('users', userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const profileId = user.profile;
+    if (!profileId) return res.status(404).json({ success: false, message: 'Profile not found' });
+
+    await updateDocument('profiles', profileId, { profilePhoto: image.secure_url, updatedAt: new Date() });
+    const updatedProfile = await getDocument('profiles', profileId);
+
+    res.status(200).json({ success: true, message: 'Profile photo updated successfully', profilePhoto: image.secure_url, profile: updatedProfile });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    console.error('Upload profile photo error:', error);
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 

@@ -1,6 +1,6 @@
 // src/routes/membership.routes.js
 import express from "express";
-import { protect } from "../middleware/auth.js";
+import { protect } from "../middleware/firebaseAuth.js";
 import {
   createMembershipOrder,
   verifyMembershipPayment

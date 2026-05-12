@@ -1,8 +1,5 @@
 import { useState } from 'react';
 import { Mail, RefreshCw, ArrowLeft, CheckCircle } from 'lucide-react';
-import { useAppDispatch, useAppSelector } from '../../redux/hooks';
-import { resendVerificationEmail } from '../../services/authService';
-import { clearPendingVerification } from '../../redux/slices/authSlice';
 
 interface VerifyEmailPromptProps {
     email?: string;

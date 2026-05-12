@@ -22,7 +22,7 @@ import {
   getProfileCompleteness
 } from "../controllers/profile.js";
 import { getAlumniDirectory } from "../controllers/alumniDirectory.js";
-import { protect } from "../middleware/auth.js";
+import { protect } from "../middleware/firebaseAuth.js";
 
 const router = express.Router();
 

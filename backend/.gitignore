@@ -3,6 +3,10 @@
 .env.local
 .env.*.local
 
+# Firebase service account key (contains sensitive credentials)
+src/config/firebase-key.json
+
+
 # Logs
 logs
 *.log

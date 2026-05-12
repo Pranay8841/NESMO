@@ -1,12 +1,7 @@
-import { User, Mail, Lock, Eye, EyeOff, Shield } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
-import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
-import { registerUser } from '../../services/authService';
-import type { RootState } from '../../redux/store';
+import { googleSignIn } from '../../services/authService';
 import AuthLoading from './AuthLoading';
-import VerifyEmailPrompt from './VerifyEmailPrompt';
 
 const backgroundImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDW4vPiCeZ4gsaK4aZaETJJ3s7KjcDPRsqa2pFP5nSuDlstKJ8fOPWpwRzXqrJcJ9GcoZ0oBUoNup6lHsLZtGCzhs371PlWmu2XmsCf6fzcEZPJNamEgpZ9D76ksuY4QRByODUcgXY98BJEZYBZRWwQgADiYxmWC-bwJIcUWeb9IOF5tcNWEMdznncRi4caQYg0w-3VkGp5SS9pk8WHk_8KDl5sGQLHpo6QZND5BEM-6tZ6if2Gmydi-43Bm1OGjW5akJnhYtm0txDb';
 
@@ -15,81 +10,26 @@ interface SignupProps {
     onOpenLogin?: () => void;
 }
 
-export default function App({ onSuccess, onOpenLogin }: SignupProps) {
+export default function Signup({ onSuccess, onOpenLogin }: SignupProps) {
     const dispatch = useAppDispatch();
-    const navigate = useNavigate();
-    const { loading, pendingVerificationEmail } = useAppSelector((state: RootState) => state.auth);
-
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        password: '',
-    });
-    const [termsAccepted, setTermsAccepted] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
+    const { loading } = useAppSelector((state) => state.auth);
     const [isAuthenticating, setIsAuthenticating] = useState(false);
-    const [showVerificationPrompt, setShowVerificationPrompt] = useState(false);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.id]: e.target.value });
-    };
-
-    const handleSubmit = async (e: FormEvent) => {
-        e.preventDefault();
-
-        if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
-            toast.error('Please fill in all fields');
-            return;
-        }
-
-        if (!termsAccepted) {
-            toast.error('Please accept the Terms of Service and Privacy Policy');
-            return;
-        }
-
+    const handleGoogleSignIn = async () => {
         setIsAuthenticating(true);
-        const result = await dispatch(registerUser(formData));
+        const result = await dispatch(googleSignIn());
         
-        if (registerUser.fulfilled.match(result)) {
+        if (googleSignIn.fulfilled.match(result)) {
             setIsAuthenticating(false);
-            // Check if email verification is required
-            if (result.payload?.requiresEmailVerification) {
-                setShowVerificationPrompt(true);
-            } else {
-                // Fallback for backwards compatibility
-                onSuccess?.();
-            }
+            onSuccess?.();
         } else {
             setIsAuthenticating(false);
         }
     };
 
-    const handleGoogleSignup = () => {
-        setIsAuthenticating(true);
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-        window.location.href = `${apiUrl}/auth/google`;
-    };
-
     // Show full-screen loading when authenticating
-    if (isAuthenticating) {
-        return <AuthLoading message="Creating your account..." subMessage="Please wait while we set up your profile." />;
-    }
-
-    // Show verification prompt after successful registration
-    if (showVerificationPrompt || pendingVerificationEmail) {
-        return (
-            <VerifyEmailPrompt 
-                email={pendingVerificationEmail || formData.email} 
-                onBackToLogin={() => {
-                    if (onOpenLogin) {
-                        onOpenLogin();
-                    } else {
-                        navigate('/login');
-                    }
-                }}
-            />
-        );
+    if (isAuthenticating || loading) {
+        return <AuthLoading message="Creating your account..." subMessage="Connecting with your Google account..." />;
     }
 
     return (
@@ -101,20 +41,6 @@ export default function App({ onSuccess, onOpenLogin }: SignupProps) {
             >
                 {/* Overlay */}
                 <div className="absolute inset-0 bg-black/40"></div>
-
-                {/* Decorative Plant - Left Edge */}
-                <div className="absolute left-0 top-0 bottom-0 w-12 overflow-hidden">
-                    <svg viewBox="0 0 50 800" className="h-full w-full" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M10 0 Q15 50 10 100 Q5 150 10 200 Q15 250 10 300 Q5 350 10 400 Q15 450 10 500 Q5 550 10 600 Q15 650 10 700 Q5 750 10 800" stroke="#4A7C59" strokeWidth="3" fill="none" />
-                        <ellipse cx="10" cy="30" rx="8" ry="12" fill="#5A8C69" opacity="0.7" />
-                        <ellipse cx="15" cy="80" rx="10" ry="15" fill="#5A8C69" opacity="0.7" />
-                        <ellipse cx="8" cy="130" rx="9" ry="13" fill="#5A8C69" opacity="0.7" />
-                        <ellipse cx="12" cy="180" rx="8" ry="12" fill="#5A8C69" opacity="0.7" />
-                        <ellipse cx="15" cy="230" rx="10" ry="14" fill="#5A8C69" opacity="0.7" />
-                        <ellipse cx="10" cy="280" rx="8" ry="12" fill="#5A8C69" opacity="0.7" />
-                        <ellipse cx="14" cy="330" rx="9" ry="13" fill="#5A8C69" opacity="0.7" />
-                    </svg>
-                </div>
 
                 {/* Content */}
                 <div className="relative z-10 flex flex-col justify-between p-6 sm:p-8 lg:p-12 text-white w-full">
@@ -179,178 +105,51 @@ export default function App({ onSuccess, onOpenLogin }: SignupProps) {
             <div className="w-full lg:w-1/2 bg-gray-50 flex items-center justify-center p-6 sm:p-8 min-h-screen">
                 <div className="w-full max-w-md">
                     {/* Header */}
-                    <div className="mb-6 lg:mb-8">
-                        <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                    <div className="mb-6 sm:mb-8 lg:mb-10 text-center">
+                        <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-gray-900 mb-2">
                             Create an account
                         </h2>
-                        <p className="text-gray-600 text-sm">
-                            Already have an account?{' '}
-                            <button 
-                                type="button"
-                                onClick={onOpenLogin}
-                                className="text-blue-600 font-semibold hover:underline cursor-pointer"
-                            >
-                                Log in here
-                            </button>
+                        <p className="text-indigo-700 text-xs sm:text-sm font-medium">
+                            Sign up with your Google account to join NESMO
                         </p>
                     </div>
 
-                    {/* Google Sign Up Button */}
-                    <button
-                        type="button"
-                        onClick={handleGoogleSignup}
-                        className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors mb-6 shadow-sm cursor-pointer"
-                    >
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M19.6 10.227c0-.709-.064-1.39-.182-2.045H10v3.868h5.382a4.6 4.6 0 01-1.996 3.018v2.51h3.232c1.891-1.742 2.982-4.305 2.982-7.35z" fill="#4285F4" />
-                            <path d="M10 20c2.7 0 4.964-.895 6.618-2.423l-3.232-2.509c-.895.6-2.04.955-3.386.955-2.605 0-4.81-1.76-5.595-4.123H1.064v2.59A9.996 9.996 0 0010 20z" fill="#34A853" />
-                            <path d="M4.405 11.9c-.2-.6-.314-1.24-.314-1.9 0-.66.114-1.3.314-1.9V5.51H1.064A9.996 9.996 0 000 10c0 1.614.386 3.14 1.064 4.49L4.405 11.9z" fill="#FBBC05" />
-                            <path d="M10 3.977c1.468 0 2.786.505 3.823 1.496l2.868-2.868C14.959.99 12.695 0 10 0 6.09 0 2.71 2.24 1.064 5.51l3.34 2.59C5.19 5.736 7.395 3.977 10 3.977z" fill="#EA4335" />
-                        </svg>
-                        <span className="text-gray-700 font-medium">Sign up with Google</span>
-                    </button>
+                    {/* Form Card */}
+                    <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 lg:p-8">
+                        {/* Google Sign Up Button */}
+                        <button
+                            type="button"
+                            onClick={handleGoogleSignIn}
+                            disabled={isAuthenticating}
+                            className="w-full flex items-center justify-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 sm:py-4 bg-white border-2 border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm sm:text-base text-gray-900"
+                        >
+                            <svg width="24" height="24" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M19.6 10.227c0-.709-.064-1.39-.182-2.045H10v3.868h5.382a4.6 4.6 0 01-1.996 3.018v2.51h3.232c1.891-1.742 2.982-4.305 2.982-7.35z" fill="#4285F4" />
+                                <path d="M10 20c2.7 0 4.964-.895 6.618-2.423l-3.232-2.509c-.895.6-2.04.955-3.386.955-2.605 0-4.81-1.76-5.595-4.123H1.064v2.59A9.996 9.996 0 0010 20z" fill="#34A853" />
+                                <path d="M4.405 11.9c-.2-.6-.314-1.24-.314-1.9 0-.66.114-1.3.314-1.9V5.51H1.064A9.996 9.996 0 000 10c0 1.614.386 3.14 1.064 4.49L4.405 11.9z" fill="#FBBC05" />
+                                <path d="M10 3.977c1.468 0 2.786.505 3.823 1.496l2.868-2.868C14.959.99 12.695 0 10 0 6.09 0 2.71 2.24 1.064 5.51l3.34 2.59C5.19 5.736 7.395 3.977 10 3.977z" fill="#EA4335" />
+                            </svg>
+                            <span>Sign up with Google</span>
+                        </button>
 
-                    {/* Divider */}
-                    <div className="relative mb-6">
-                        <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-gray-300"></div>
-                        </div>
-                        <div className="relative flex justify-center text-xs">
-                            <span className="px-4 bg-gray-50 text-gray-500 uppercase tracking-wider font-medium">
-                                Or continue with email
-                            </span>
+                        {/* Login Link */}
+                        <div className="mt-4 sm:mt-6 text-center">
+                            <p className="text-gray-600 text-xs sm:text-sm">
+                                Already have an account?{' '}
+                                <button
+                                    type="button"
+                                    onClick={onOpenLogin}
+                                    className="text-blue-600 font-bold hover:underline cursor-pointer"
+                                >
+                                    Log in here
+                                </button>
+                            </p>
                         </div>
                     </div>
 
-                    {/* Form */}
-                    <form className="space-y-4" onSubmit={handleSubmit}>
-                        {/* First Name & Last Name Row */}
-                        <div className="grid grid-cols-2 gap-4">
-                            {/* First Name */}
-                            <div>
-                                <label htmlFor="firstName" className="block text-sm font-semibold text-gray-900 mb-2">
-                                    First Name
-                                </label>
-                                <div className="relative">
-                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                    <input
-                                        type="text"
-                                        id="firstName"
-                                        placeholder="John"
-                                        value={formData.firstName}
-                                        onChange={handleChange}
-                                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-900 placeholder:text-gray-400"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Last Name */}
-                            <div>
-                                <label htmlFor="lastName" className="block text-sm font-semibold text-gray-900 mb-2">
-                                    Last Name
-                                </label>
-                                <div className="relative">
-                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                    <input
-                                        type="text"
-                                        id="lastName"
-                                        placeholder="Doe"
-                                        value={formData.lastName}
-                                        onChange={handleChange}
-                                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-900 placeholder:text-gray-400"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Email Address */}
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-semibold text-gray-900 mb-2">
-                                Email Address
-                            </label>
-                            <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                <input
-                                    type="email"
-                                    id="email"
-                                    placeholder="name@example.com"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-900 placeholder:text-gray-400"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Password */}
-                        <div>
-                            <label htmlFor="password" className="block text-sm font-semibold text-gray-900 mb-2">
-                                Password
-                            </label>
-                            <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                <input
-                                    type={showPassword ? 'text' : 'password'}
-                                    id="password"
-                                    placeholder="••••••••"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-900 placeholder:text-gray-400"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2"
-                                >
-                                    {showPassword ? (
-                                        <EyeOff className="w-4 h-4 text-gray-400 cursor-pointer" />
-                                    ) : (
-                                        <Eye className="w-4 h-4 text-gray-400 cursor-pointer" />
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Terms Checkbox */}
-                        <div className="flex items-start gap-2 pt-2">
-                            <input
-                                type="checkbox"
-                                id="terms"
-                                checked={termsAccepted}
-                                onChange={(e) => setTermsAccepted(e.target.checked)}
-                                className="mt-0.5 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-600"
-                            />
-                            <label htmlFor="terms" className="text-sm text-gray-600">
-                                I agree to the{' '}
-                                <a href="#" className="text-blue-600 font-semibold hover:underline">
-                                    Terms of Service
-                                </a>
-                                {' '}and{' '}
-                                <a href="#" className="text-blue-600 font-semibold hover:underline">
-                                    Privacy Policy
-                                </a>
-                            </label>
-                        </div>
-
-                        {/* Submit Button */}
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {loading ? 'Creating Account...' : 'Create Account'}
-                        </button>
-                    </form>
-
-                    {/* Footer Links */}
-                    <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
-                        <div className="flex items-center gap-2 text-xs text-gray-500">
-                            <Shield className="w-4 h-4" />
-                            <span>Secure SSL Encryption</span>
-                        </div>
-                        <div className="flex items-center gap-4 text-xs text-gray-600">
-                            <a href="#" className="hover:text-blue-600">Help Center</a>
-                            <a href="#" className="hover:text-blue-600">About NESMO</a>
-                        </div>
+                    {/* Footer */}
+                    <div className="mt-4 sm:mt-6 text-center text-[10px] sm:text-xs text-gray-500">
+                        <p>By signing up, you agree to our Terms of Service and Privacy Policy</p>
                     </div>
                 </div>
             </div>
