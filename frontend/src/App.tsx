@@ -1,7 +1,7 @@
 import { type JSX, useEffect } from "react";
 import { useAppDispatch } from "./redux/hooks";
 import { fetchCurrentUser } from "./services/authService";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import Layout from "./components/Layout";
 import DashboardLayout from "./components/DashboardLayout";
@@ -12,15 +12,28 @@ import About from "./pages/About";
 // import Events from "./pages/Events";
 // import Contact from "./pages/Contact";
 // import Membership from "./pages/Membership";
-import OAuthSuccess from "./pages/OAuthSuccess";
-import OAuthError from "./pages/OAuthError";
-import EmailVerification from "./pages/EmailVerification";
-import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./components/Dashboard/Dashboard";
 import Profile from "./components/Dashboard/Profile";
 import Directory from "./pages/Directory";
 import UserModeration from "./components/Admin/UserModeration";
 import AdminRoute from "./components/AdminRoute";
+
+/**
+ * Scroll to top on route change for mobile screens
+ */
+function ScrollToTopOnRouteChange() {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Check if on mobile or tablet (viewport width < 1024px)
+    const isMobile = window.innerWidth < 1024;
+    if (isMobile) {
+      window.scrollTo(0, 0);
+    }
+  }, [location.pathname]);
+
+  return null;
+}
 
 function App(): JSX.Element {
   const dispatch = useAppDispatch();
@@ -34,6 +47,7 @@ function App(): JSX.Element {
 
   return (
     <BrowserRouter>
+      <ScrollToTopOnRouteChange />
       <Toaster
         position="top-center"
         toastOptions={{
@@ -74,10 +88,6 @@ function App(): JSX.Element {
           {/* Admin Routes - Protected for Admin only */}
           <Route path="/admin/users" element={<AdminRoute><UserModeration /></AdminRoute>} />
         </Route>
-        <Route path="/oauth-success" element={<OAuthSuccess />} />
-        <Route path="/oauth-error" element={<OAuthError />} />
-        <Route path="/verify-email/:token" element={<EmailVerification />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
       </Routes>
     </BrowserRouter>
   );

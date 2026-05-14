@@ -5,37 +5,37 @@ const aboutImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCk9mlifc
 export default function App() {
     return (
         <>
-            <div className="max-w-7xl mx-auto px-4 sm:px-6">
-                <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
+            <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6">
+                <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
                     {/* Left Section - Main Content */}
                     <div className="lg:col-span-2">
                         {/* Header */}
-                        <div className="mb-8 sm:mb-12">
-                            <div className="flex items-center gap-3 mb-3 sm:mb-4">
-                                <div className="w-6 sm:w-8 h-0.5 bg-yellow-500"></div>
-                                <span className="text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wide">WHAT WE DO</span>
+                        <div className="mb-6 sm:mb-8 md:mb-10 lg:mb-12">
+                            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                                <div className="w-4 sm:w-6 md:w-8 h-0.5 bg-yellow-500"></div>
+                                <span className="text-[10px] sm:text-xs md:text-sm font-semibold text-gray-700 uppercase tracking-wide">WHAT WE DO</span>
                             </div>
-                            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 sm:mb-4">
+                            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 mb-2 sm:mb-3 md:mb-4">
                                 Empowering Our <span className="text-blue-600">Community</span>
                             </h1>
-                            <p className="text-gray-600 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
+                            <p className="text-gray-600 text-xs sm:text-sm md:text-base lg:text-lg leading-relaxed max-w-2xl">
                                 We provide comprehensive support systems designed to foster growth, connection, and well-being for every member of the Navodaya family.
                             </p>
                         </div>
 
                         {/* Feature Cards Grid */}
-                        <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6">
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
                             {/* Alumni Directory */}
-                            <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
-                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
-                                    <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+                            <div className="bg-white rounded-lg sm:rounded-lg md:rounded-xl p-3 sm:p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow">
+                                <div className="w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-2 sm:mb-3 md:mb-4">
+                                    <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-blue-600" />
                                 </div>
-                                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Alumni Directory</h3>
-                                <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed">
+                                <h3 className="text-base sm:text-lg md:text-lg lg:text-xl font-bold text-gray-900 mb-1 sm:mb-2">Alumni Directory</h3>
+                                <p className="text-gray-600 text-[10px] sm:text-xs md:text-sm mb-2 sm:mb-3 md:mb-4 leading-relaxed">
                                     Connect with batchmates and seniors globally through our secure database.
                                 </p>
-                                <button className="text-blue-600 font-semibold text-xs sm:text-sm flex items-center gap-1 hover:gap-2 transition-all">
-                                    Learn More <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
+                                <button className="text-blue-600 font-semibold text-[10px] sm:text-xs md:text-sm flex items-center gap-1 hover:gap-2 transition-all">
+                                    Learn More <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-4 md:h-4" />
                                 </button>
                             </div>
 

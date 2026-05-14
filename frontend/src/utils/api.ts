@@ -15,25 +15,13 @@ const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 /* ==================== Authentication Endpoints ==================== */
 
 /**
- * User authentication API endpoints.
+ * User authentication API endpoints (Firebase Google Sign-In only).
  */
 export const USER_API = {
-  /** POST - Login with email/password */
-  LOGIN: `${BASE_URL}/auth/login`,
-  /** POST - Register new user account */
-  REGISTER: `${BASE_URL}/auth/register`,
-  /** GET - Verify email (append /:token) */
-  VERIFY_EMAIL: `${BASE_URL}/auth/verify-email`,
-  /** POST - Resend verification email */
-  RESEND_VERIFICATION: `${BASE_URL}/auth/resend-verification`,
-  /** POST - Request password reset email */
-  FORGOT_PASSWORD: `${BASE_URL}/auth/forgot-password`,
-  /** POST - Reset password with token (append /:token) */
-  RESET_PASSWORD: `${BASE_URL}/auth/reset-password`,
-  /** GET - Initiate Google OAuth flow */
-  GOOGLE_AUTH: `${BASE_URL}/auth/google`,
-  /** GET - Google OAuth callback (handled by backend) */
-  GOOGLE_CALLBACK: `${BASE_URL}/auth/google/callback`,
+  /** Base auth endpoint */
+  AUTH: `${BASE_URL}/auth`,
+  /** POST - Google Sign-In with Firebase ID token */
+  GOOGLE_SIGNIN: `${BASE_URL}/auth/google-signin`,
   /** GET - Get current authenticated user */
   CURRENT_USER: `${BASE_URL}/auth/me`,
   /** POST - Logout user */

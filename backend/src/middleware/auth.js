@@ -6,7 +6,7 @@
  */
 
 import jwt from 'jsonwebtoken';
-import User from '../models/user.js';
+import { getDocument } from '../config/firestore.js';
 
 /**
  * Protect middleware - Validates JWT token and attaches user to request.
@@ -46,24 +46,54 @@ export const protect = async (req, res, next) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        const user = await User.findById(decoded.userId).select("role status");
+        // Support both uid (Firestore JWT) and userId (legacy MongoDB JWT for backwards compatibility)
+        if (decoded.userId) {
+            // Legacy flow - convert to Firestore lookup if needed, otherwise fail
+            const userId = decoded.userId;
+            const userDoc = await getDocument('users', userId);
 
-        if (!user) {
-            return res.status(401).json({ message: "User not found" });
+            if (!userDoc) {
+                return res.status(401).json({ message: 'User not found' });
+            }
+
+            if (userDoc.status === 'BLOCKED') {
+                return res.status(403).json({ message: 'Account is blocked' });
+            }
+
+            req.user = {
+                id: userDoc.id || userDoc.uid,
+                role: userDoc.role,
+                ...userDoc,
+            };
+
+            return next();
         }
 
-        if (user.status === "BLOCKED") {
-            return res.status(403).json({ message: "Account is blocked" });
+        if (decoded.uid) {
+            // Firestore user lookup
+            const userDoc = await getDocument('users', decoded.uid);
+
+            if (!userDoc) {
+                return res.status(401).json({ message: 'User not found' });
+            }
+
+            if (userDoc.status === 'BLOCKED') {
+                return res.status(403).json({ message: 'Account is blocked' });
+            }
+
+            req.user = {
+                id: userDoc.id || userDoc.uid,
+                role: userDoc.role,
+                ...userDoc,
+            };
+
+            return next();
         }
 
-        req.user = {
-            id: user._id,
-            role: user.role,
-        };
-
-        next();
+        // If neither userId nor uid present, reject
+        return res.status(401).json({ message: 'Not authorized - invalid token payload' });
     } catch (error) {
-        return res.status(401).json({ message: "Not authorized - invalid token" });
+        return res.status(401).json({ message: 'Not authorized - invalid token' });
     }
 };
 

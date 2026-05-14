@@ -1,4 +1,5 @@
 import { Mail, MapPin, Phone, Twitter, Github, Linkedin, Instagram, CircleCheck } from 'lucide-react';
+import nesmoLogo from '../../assets/nesmo-logo-transperant.png';
 
 export default function Footer() {
     return (
@@ -38,9 +39,7 @@ export default function Footer() {
                     {/* Left Section - Brand */}
                     <div className="shrink-0 lg:w-1/4">
                         <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                                <span className="text-white font-bold text-sm sm:text-lg">N</span>
-                            </div>
+                            <img src={nesmoLogo} alt="NESMO" className="w-8 h-8 sm:w-10 sm:h-10" />
                             <span className="text-lg sm:text-xl font-bold text-gray-900">NESMO</span>
                         </div>
                         <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-3 sm:mb-5">

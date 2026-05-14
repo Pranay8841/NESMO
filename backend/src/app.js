@@ -2,8 +2,6 @@ import "./config/env.js";
 
 import express from "express";
 import cors from "cors";
-import passport from "passport";
-import "./config/passport.js"; // Must be imported before routes that use passport
 
 import authRoutes from "./routes/auth.js";
 import adminRoutes from "./routes/admin.js";
@@ -13,7 +11,7 @@ import helplineRoutes from "./routes/helpline.js";
 import eventRoutes from "./routes/events.js";
 import albumRoutes from "./routes/album.js";
 
-import connectDB from "./config/mongodb.js";
+import initializeFirebase from "./config/firestore.js";
 import fileUpload from "express-fileupload"
 import cloudinaryConnect from "./config/cloudinary.js";
 
@@ -21,7 +19,6 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use(passport.initialize());
 app.use(
   fileUpload({
     useTempFiles: true,
@@ -42,7 +39,7 @@ app.use("/api/albums", albumRoutes);
 
 const startServer = async () => {
   try {
-    await connectDB();
+    await initializeFirebase();
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, "0.0.0.0", () => console.log(`Server running on ${PORT}`));
   } catch (error) {

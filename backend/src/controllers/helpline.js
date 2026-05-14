@@ -1,5 +1,4 @@
-import SupportTicket from "../models/supportTicket.js";
-import User from "../models/user.js";
+import { addDocument, getDocuments, getDocument, updateDocument } from "../config/firestore.js";
 
 /**
  * CREATE SUPPORT TICKET
@@ -97,42 +96,44 @@ export const createSupportTicket = async (req, res) => {
            VALIDATE SELECTED HELPERS
         ============================= */
         if (selectedHelpers.length > 0) {
-            const helpers = await User.find({
-                _id: { $in: selectedHelpers },
-                status: "ACTIVE"
-            });
-
-            if (helpers.length !== selectedHelpers.length) {
-                return res.status(400).json({
-                    success: false,
-                    message: "One or more selected helpers are invalid or inactive"
-                });
+            for (const helperId of selectedHelpers) {
+                const helper = await getDocument('users', helperId);
+                if (!helper || helper.status !== 'ACTIVE') {
+                    return res.status(400).json({
+                        success: false,
+                        message: "One or more selected helpers are invalid or inactive"
+                    });
+                }
             }
         }
 
         /* ============================
            CREATE TICKET
         ============================= */
-        const ticket = await SupportTicket.create({
+        const ticketData = {
             createdBy: userId,
-
             category,
             subject,
             description,
             priority,
             cities,
-
             selectedHelpers,
+            status: 'OPEN',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            helperActions: []
+        };
 
-            medicalData: category === "MEDICAL" ? medicalData : undefined,
-            financialData: category === "FINANCIAL" ? financialData : undefined,
-            careerData: category === "CAREER" ? careerData : undefined
-        });
+        if (category === 'MEDICAL') ticketData.medicalData = medicalData;
+        if (category === 'FINANCIAL') ticketData.financialData = financialData;
+        if (category === 'CAREER') ticketData.careerData = careerData;
+
+        const ticketId = await addDocument('supportTickets', ticketData);
 
         res.status(201).json({
             success: true,
             message: "Support ticket created successfully",
-            data: ticket
+            data: { id: ticketId, ...ticketData }
         });
 
     } catch (error) {
@@ -157,44 +158,46 @@ export const searchHelpers = async (req, res) => {
             limit = 20
         } = req.query;
 
-        const query = {
-            status: "ACTIVE",
-            role: "MEMBER",
-            isMember: true
-        };
+        // Build filter for members
+        const filters = [
+            { field: 'status', operator: '==', value: 'ACTIVE' },
+            { field: 'role', operator: '==', value: 'MEMBER' },
+            { field: 'isMember', operator: '==', value: true }
+        ];
 
-        /* City */
-        if (city) {
-            query["profile.city"] = { $in: city.split(",") };
+        let helpers = await getDocuments('users', filters);
+
+        // Enrich with profile and apply optional filters
+        let enrichedHelpers = [];
+        for (const helper of helpers.slice(0, parseInt(limit))) {
+            try {
+                const profile = helper.profile ? await getDocument('profiles', helper.profile) : {};
+
+                // Apply optional filters
+                if (city && !city.split(',').includes(profile.currentAddress)) continue;
+                if (occupation && (!profile.occupation || !profile.occupation.toLowerCase().includes(occupation.toLowerCase()))) continue;
+                if (sector && (!profile.sector || !profile.sector.toLowerCase().includes(sector.toLowerCase()))) continue;
+
+                enrichedHelpers.push({
+                    id: helper.uid,
+                    firstName: helper.firstName,
+                    lastName: helper.lastName,
+                    email: helper.email,
+                    profile: {
+                        city: profile.currentAddress,
+                        occupation: profile.occupation,
+                        sector: profile.sector
+                    }
+                });
+            } catch (err) {
+                console.warn(`Failed to load profile for helper ${helper.uid}:`, err);
+            }
         }
-
-        /* Occupation */
-        if (occupation) {
-            query["profile.occupation"] = {
-                $regex: occupation,
-                $options: "i"
-            };
-        }
-
-        /* Sector (Career) */
-        if (sector) {
-            query["profile.sector"] = {
-                $regex: sector,
-                $options: "i"
-            };
-        }
-
-
-        const helpers = await User.find(query)
-            .populate("profile", "city occupation sector")
-            .select("firstName lastName email profile")
-            .limit(Number(limit))
-            .lean();
 
         res.status(200).json({
             success: true,
-            count: helpers.length,
-            data: helpers
+            count: enrichedHelpers.length,
+            data: enrichedHelpers
         });
 
     } catch (error) {
@@ -223,7 +226,7 @@ export const respondToTicket = async (req, res) => {
             });
         }
 
-        const ticket = await SupportTicket.findById(ticketId);
+        const ticket = await getDocument('supportTickets', ticketId);
 
         if (!ticket) {
             return res.status(404).json({
@@ -239,34 +242,38 @@ export const respondToTicket = async (req, res) => {
             });
         }
 
-        let helperAction = ticket.helperActions.find(
-            h => h.helper.toString() === helperId
+        let helperAction = ticket.helperActions?.find(
+            h => h.helper === helperId
         );
 
         if (!helperAction) {
-            helperAction = {
-                helper: helperId
-            };
-            ticket.helperActions.push(helperAction);
+            helperAction = { helper: helperId, status: 'PENDING' };
+            ticket.helperActions = [...(ticket.helperActions || []), helperAction];
         }
 
-        if (helperAction.status !== "PENDING") {
+        if (helperAction.status !== 'PENDING') {
             return res.status(400).json({
                 success: false,
                 message: "You already responded to this ticket"
             });
         }
 
-        helperAction.status = action === "ACCEPT" ? "ACCEPTED" : "DECLINED";
+        helperAction.status = action === 'ACCEPT' ? 'ACCEPTED' : 'DECLINED';
         helperAction.respondedAt = new Date();
         helperAction.note = note;
 
-        if (action === "ACCEPT" && !ticket.assignedHelper) {
+        if (action === 'ACCEPT' && !ticket.assignedHelper) {
             ticket.assignedHelper = helperId;
-            ticket.status = "IN_PROGRESS";
+            ticket.status = 'IN_PROGRESS';
         }
 
-        await ticket.save();
+        await updateDocument('supportTickets', ticketId, {
+            ...ticket,
+            status: ticket.status,
+            assignedHelper: ticket.assignedHelper,
+            helperActions: ticket.helperActions,
+            updatedAt: new Date()
+        });
 
         res.status(200).json({
             success: true,

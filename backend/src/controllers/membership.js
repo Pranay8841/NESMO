@@ -1,13 +1,12 @@
-// src/controllers/membership.controller.js
+// src/controllers/membership.controller.js - Firestore Version
 import razorpay from "../config/razorpay.js";
-import Membership from "../models/membership.js";
 import { MEMBERSHIP_PLANS } from "../config/membershipPlans.js";
 import crypto from "crypto";
-import User from "../models/user.js";
+import { addDocument, getDocuments, updateDocument } from "../config/firestore.js";
 
 export const createMembershipOrder = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user.id;
     const { planId } = req.body;
 
     const plan = MEMBERSHIP_PLANS[planId];
@@ -21,11 +20,14 @@ export const createMembershipOrder = async (req, res) => {
       receipt: `nesmo_${Date.now()}`
     });
 
-    await Membership.create({
+    await addDocument('memberships', {
       user: userId,
       planId,
       amount: plan.amount,
-      razorpay: { orderId: order.id }
+      razorpay: { orderId: order.id },
+      status: 'PENDING',
+      createdAt: new Date(),
+      updatedAt: new Date()
     });
 
     res.json({
@@ -54,24 +56,31 @@ export const verifyMembershipPayment = async (req, res) => {
       return res.status(400).json({ message: "Invalid payment signature" });
     }
 
-    const membership = await Membership.findOne({
-      "razorpay.orderId": razorpay_order_id
-    });
+    const memberships = await getDocuments('memberships', [
+      { field: 'razorpay.orderId', operator: '==', value: razorpay_order_id }
+    ]);
 
+    if (!memberships || memberships.length === 0) {
+      return res.status(404).json({ message: "Membership record not found" });
+    }
+
+    const membership = memberships[0];
     const startDate = new Date();
     const endDate = new Date();
     endDate.setFullYear(endDate.getFullYear() + 1);
 
-    membership.status = "ACTIVE";
-    membership.startDate = startDate;
-    membership.endDate = endDate;
-    membership.razorpay.paymentId = razorpay_payment_id;
-    membership.razorpay.signature = razorpay_signature;
+    await updateDocument('memberships', membership.id, {
+      status: 'ACTIVE',
+      startDate,
+      endDate,
+      'razorpay.paymentId': razorpay_payment_id,
+      'razorpay.signature': razorpay_signature,
+      updatedAt: new Date()
+    });
 
-    await membership.save();
-
-    await User.findByIdAndUpdate(membership.user, {
-      isMember: true
+    await updateDocument('users', membership.user, {
+      isMember: true,
+      updatedAt: new Date()
     });
 
     res.json({ success: true, message: "Membership activated" });
