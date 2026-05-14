@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { googleSignIn } from '../../services/authService';
 import AuthLoading from './AuthLoading';
+import nesmoLogo from '../../assets/nesmo-logo-transperant.png';
 
 const backgroundImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCIIuthEqIFJvMsr1O6clwVW6l7p5zYh3zKbWu_kdTxkqYJGfZwlnZaKhNXblwnWRoYSeiSEjmsi-u0NfEsOqBdPylHvS1KCXxpGbF8wpqaz8IJilF81WtaIv4U1yyAlVE_iSV7jHcWOuut8GF5MGnIH-nAq78XbzOYS1PFYay9OXrwLSe6Sk4eKgX0kLAOh2QFNgEBoVNU87rSaF8iSgFpXZxPXzutwwHqNMHBLEOHPMMYsROFDkGTu075tTQFbFvoWwwxC7Sx89OU';
 
@@ -51,12 +52,7 @@ export default function Login({ onSuccess, onSwitchToSignup }: LoginProps) {
                 <div className="relative z-10 flex flex-col justify-between p-6 sm:p-8 lg:p-12 text-white w-full">
                     {/* Logo */}
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 lg:w-12 lg:h-12 bg-white rounded-xl flex items-center justify-center">
-                            <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="lg:w-7 lg:h-7">
-                                <path d="M14 3C14 3 8 7 8 13C8 16 10 19 14 19C18 19 20 16 20 13C20 7 14 3 14 3Z" fill="#0000FF" />
-                                <path d="M14 19C14 19 10 21 10 25C10 26.5 11 28 14 28C17 28 18 26.5 18 25C18 21 14 19 14 19Z" fill="#0000FF" />
-                            </svg>
-                        </div>
+                        <img src={nesmoLogo} alt="NESMO" className="w-10 h-10 lg:w-12 lg:h-12" />
                         <span className="text-xl lg:text-3xl font-black tracking-tight">NESMO</span>
                     </div>
 

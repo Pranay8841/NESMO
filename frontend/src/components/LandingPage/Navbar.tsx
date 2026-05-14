@@ -2,6 +2,7 @@ import { LogIn, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppSelector } from '../../redux/hooks';
+import nesmoLogo from '../../assets/nesmo-logo-transperant.png';
 
 interface NavbarProps {
     onSignupClick?: () => void;
@@ -45,11 +46,7 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
                 <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 h-14 sm:h-16 flex items-center justify-between">
                     {/* Logo */}
                     <Link to="/" className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 hover:opacity-80 transition">
-                        <div className="w-7 h-7 sm:w-8 sm:h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="sm:w-5 sm:h-5">
-                                <path d="M4 6L10 3L16 6V10C16 13.5 13.5 16.5 10 17C6.5 16.5 4 13.5 4 10V6Z" fill="white" />
-                            </svg>
-                        </div>
+                        <img src={nesmoLogo} alt="NESMO" className="w-7 h-7 sm:w-8 sm:h-8" />
                         <span className="text-sm sm:text-base md:text-lg font-bold text-blue-600">NESMO</span>
                     </Link>
 

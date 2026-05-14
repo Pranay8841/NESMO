@@ -1,6 +1,5 @@
 import { Calendar, Users, Search } from 'lucide-react';
-
-const heroImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuC9VhaArLjZA6blIfXsliolvoREVM3-1wAV70sovNDQkZAUOLgNSIDMPFpFrPX6kyOXS98B1jyh2ZoeEaZ4mF6TC-vAb4oS1c0ftTnJMSdMrg-z1ObAKbMsk7xh8d7L01MdKHb-V9EBBEonjl9VUGtK8o4fx7qzk9zi6ofZk4gnre-D_kQfdlAH64MG3PIG0T-7PWpgnWsahn15LPrm6FOBdhjE9K4Xzo1_PByUYOpPjCISBTfzz5MxdHwuPOQQnXRkj9s89D7ApmU_';
+import heroImage from '../../assets/Banner.jpeg';
 
 export default function HeroSection() {
     return (
@@ -9,21 +8,38 @@ export default function HeroSection() {
                 <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
                     {/* Left Content */}
                     <div>
-                        <div className="inline-block mb-3 sm:mb-4">
-                            <span className="px-2.5 sm:px-3 py-0.5 sm:py-1 sm:py-1.5 bg-blue-100 text-blue-600 rounded-md text-[10px] sm:text-xs font-medium">
-                                Official Alumni Network
-                            </span>
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                            <div className="inline-block">
+                                <span className="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-blue-100 text-blue-600 rounded-md text-[10px] sm:text-xs font-medium whitespace-nowrap">
+                                    Official Alumni Network
+                                </span>
+                            </div>
                         </div>
 
                         <h1 className="mt-2 sm:mt-4 lg:mt-6 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black text-gray-900 leading-tight">
-                            Connecting<br />
-                            Navodayans<br />
-                            Across the Globe
+                            Where Navodayans<br />
+                            Stay Connected<br />
+                            For Life
                         </h1>
 
                         <p className="mt-3 sm:mt-4 lg:mt-6 text-xs sm:text-sm md:text-base lg:text-lg text-gray-600 leading-relaxed max-w-xl">
-                            The official platform for alumni to network, support, and grow together. Whether you are looking for mentorship, career opportunities, or simply to reconnect, NESMO is your bridge to a thriving community of excellence.
+                            From mentorship and career opportunities to social initiatives and alumni support, NESMO empowers Navodayans to stay connected, strengthen lifelong bonds, and grow together beyond JNV.
                         </p>
+
+                        <div className="flex flex-wrap items-center gap-3 mt-3 sm:mt-4">
+                            <span className="px-1.5 sm:px-2 py-0.5 bg-blue-300 text-blue-800 rounded text-[10px] sm:text-xs font-medium whitespace-nowrap">
+                                Connect
+                            </span>
+                            <span className="px-1.5 sm:px-2 py-0.5 bg-green-300 text-green-800 rounded text-[10px] sm:text-xs font-medium whitespace-nowrap">
+                                Support
+                            </span>
+                            <span className="px-1.5 sm:px-2 py-0.5 bg-red-300 text-red-800 rounded text-[10px] sm:text-xs font-medium whitespace-nowrap">
+                                Grow
+                            </span>
+                            <span className="px-1.5 sm:px-2 py-0.5 bg-yellow-300 text-yellow-800 rounded text-[10px] sm:text-xs font-medium whitespace-nowrap">
+                                Give Back
+                            </span>
+                        </div>
 
                         {/* CTA Buttons */}
                         <div className="mt-4 sm:mt-6 lg:mt-8 flex flex-col sm:flex-row flex-wrap items-center gap-2 sm:gap-3 lg:gap-4">
