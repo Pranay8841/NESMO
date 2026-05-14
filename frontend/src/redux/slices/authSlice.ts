@@ -18,6 +18,8 @@ type UserStatus = "ACTIVE" | "BLOCKED";
  * User data structure matching backend User model.
  */
 export interface User {
+    /** MongoDB ObjectId (also available as 'id' for Firebase compatibility) */
+    _id?: string;
     /** Firebase UID */
     id: string;
     /** User's first name */
@@ -52,12 +54,15 @@ interface AuthState {
     loading: boolean;
     /** Firebase ID token for API authentication */
     token: string | null;
+    /** Email pending verification (for email verification flow) */
+    pendingVerificationEmail: string | null;
 }
 
 const initialState: AuthState = {
     user: null,
     loading: false,
     token: localStorage.getItem("token") ? JSON.parse(localStorage.getItem("token") as string) : null,
+    pendingVerificationEmail: null,
 };
 
 export const authSlice = createSlice({
@@ -73,9 +78,16 @@ export const authSlice = createSlice({
         setUser: (state, action: PayloadAction<User | null>) => {
             state.user = action.payload;
         },
+        setPendingVerificationEmail: (state, action: PayloadAction<string | null>) => {
+            state.pendingVerificationEmail = action.payload;
+        },
+        clearPendingVerification: (state) => {
+            state.pendingVerificationEmail = null;
+        },
         logout: (state) => {
             state.user = null;
             state.token = null;
+            state.pendingVerificationEmail = null;
             localStorage.removeItem('token');
         },
         updateUserProfilePhoto: (state, action: PayloadAction<string>) => {
@@ -89,6 +101,6 @@ export const authSlice = createSlice({
     },
 });
 
-export const { setLoading, setToken, setUser, logout, updateUserProfilePhoto } = authSlice.actions;
+export const { setLoading, setToken, setUser, setPendingVerificationEmail, clearPendingVerification, logout, updateUserProfilePhoto } = authSlice.actions;
 
 export default authSlice.reducer;

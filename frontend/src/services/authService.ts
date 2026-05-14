@@ -271,3 +271,63 @@ export const updateUserProfile = createAsyncThunk(
         }
     }
 );
+
+/**
+ * Send forgot password email
+ * Sends a password reset link to the user's email address
+ * 
+ * @async
+ * @function forgotPassword
+ * @param {string} email - User's email address
+ * @returns {Promise<Object>} Confirmation message
+ */
+export const forgotPassword = createAsyncThunk(
+    'auth/forgotPassword',
+    async (email: string, { rejectWithValue }) => {
+        const toastId = toast.loading('Sending password reset email...');
+        try {
+            const response = await apiConnector(
+                'POST',
+                `${USER_API.AUTH}/forgot-password`,
+                { email }
+            );
+
+            toast.success('Password reset email sent. Check your inbox.', { id: toastId });
+            return response.data;
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.message || 'Failed to send reset email';
+            toast.error(errorMessage, { id: toastId });
+            return rejectWithValue(errorMessage);
+        }
+    }
+);
+
+/**
+ * Resend email verification email
+ * Sends a new verification email to the user's email address
+ * 
+ * @async
+ * @function resendVerificationEmail
+ * @param {string} email - User's email address
+ * @returns {Promise<Object>} Confirmation message
+ */
+export const resendVerificationEmail = createAsyncThunk(
+    'auth/resendVerificationEmail',
+    async (email: string, { rejectWithValue }) => {
+        const toastId = toast.loading('Sending verification email...');
+        try {
+            const response = await apiConnector(
+                'POST',
+                `${USER_API.AUTH}/resend-verification`,
+                { email }
+            );
+
+            toast.success('Verification email sent. Check your inbox.', { id: toastId });
+            return response.data;
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.message || 'Failed to send verification email';
+            toast.error(errorMessage, { id: toastId });
+            return rejectWithValue(errorMessage);
+        }
+    }
+);
