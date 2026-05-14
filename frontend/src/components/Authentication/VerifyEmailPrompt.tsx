@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { Mail, RefreshCw, ArrowLeft, CheckCircle } from 'lucide-react';
+import { useAppDispatch, useAppSelector } from '../../redux/hooks';
+import { resendVerificationEmail } from '../../services/authService';
+import { clearPendingVerification } from '../../redux/slices/authSlice';
 
 interface VerifyEmailPromptProps {
     email?: string;
@@ -8,7 +11,7 @@ interface VerifyEmailPromptProps {
 
 export default function VerifyEmailPrompt({ email: propEmail, onBackToLogin }: VerifyEmailPromptProps) {
     const dispatch = useAppDispatch();
-    const { pendingVerificationEmail, loading } = useAppSelector((state) => state.auth);
+    const { pendingVerificationEmail, loading } = useAppSelector((state: any) => state.auth);
     
     const email = propEmail || pendingVerificationEmail;
     const [resendDisabled, setResendDisabled] = useState(false);
