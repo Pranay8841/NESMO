@@ -25,16 +25,29 @@ export const initializeFirebase = async () => {
       return;
     }
 
-    const serviceAccountPath = path.join(process.cwd(), 'src/config/firebase-key.json');
-    
-    if (!fs.existsSync(serviceAccountPath)) {
-      const errorMsg = `
+    let serviceAccount;
+
+    // Try to load from environment variable first (for production/Render)
+    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+      try {
+        serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+      } catch (err) {
+        console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY from environment');
+        throw err;
+      }
+    } else {
+      // Fall back to file-based approach (for local development)
+      const serviceAccountPath = path.join(process.cwd(), 'src/config/firebase-key.json');
+      
+      if (!fs.existsSync(serviceAccountPath)) {
+        const errorMsg = `
 ╔═══════════════════════════════════════════════════════════════════╗
 ║ 🔑 Firebase Service Account Key Missing                           ║
 ╚═══════════════════════════════════════════════════════════════════╝
 
 To set up Firebase, follow these steps:
 
+LOCAL DEVELOPMENT:
 1. Go to Firebase Console: https://console.firebase.google.com
 2. Select your project: "nesmo-eea87"
 3. Go to Project Settings (gear icon) → Service Accounts
@@ -42,15 +55,18 @@ To set up Firebase, follow these steps:
 5. Save the JSON file as: backend/src/config/firebase-key.json
 6. DO NOT commit this file to Git (already in .gitignore)
 
-For development, you can also use environment-based configuration.
+PRODUCTION (Render):
+1. Add environment variable: FIREBASE_SERVICE_ACCOUNT_KEY
+2. Paste the entire Firebase service account JSON as the value
 
 Error: Service account key not found at ${serviceAccountPath}
       `;
-      console.error(errorMsg);
-      throw new Error(errorMsg);
-    }
+        console.error(errorMsg);
+        throw new Error(errorMsg);
+      }
 
-    const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+      serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+    }
 
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
