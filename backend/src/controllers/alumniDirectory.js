@@ -52,8 +52,10 @@ export const getAlumniDirectory = async (req, res) => {
 
     const allUsers = await getDocuments('users', userFilters);
 
-    // Filter out current user
-    let users = allUsers.filter(u => u.uid !== req.user.id);
+    // Filter out current user (if authenticated)
+    let users = req.user?.id ? allUsers.filter(u => u.uid !== req.user.id) : allUsers;
+    
+    console.log(`[Alumni Directory] isMember=${req.query.isMember}, Found ${allUsers.length} users matching role filter`);
 
     /* ------------------ Enrich with Profile Data & Apply Profile Filters ------------------ */
     let enrichedUsers = [];
@@ -112,6 +114,8 @@ export const getAlumniDirectory = async (req, res) => {
     /* ------------------ Pagination & Response Mapping ------------------ */
     const totalCount = enrichedUsers.length;
     const paginatedUsers = enrichedUsers.slice(skip, skip + limit);
+
+    console.log(`[Alumni Directory] After filtering: ${totalCount} total, returning ${paginatedUsers.length} on page ${page}`);
 
     const directory = paginatedUsers.map(({ user, profile }) => ({
       id: user.uid,

@@ -1,7 +1,74 @@
 import { Calendar, Users, Search } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import heroImage from '../../assets/Banner.jpeg';
+import { apiConnector } from '../../utils/APIsConnector';
+import { ALUMNI_API } from '../../utils/api';
+import { useAppSelector } from '../../redux/hooks';
+
+interface RecentMember {
+    id: string;
+    firstName?: string;
+    lastName?: string;
+    name: string;
+    photo?: string;
+}
 
 export default function HeroSection() {
+    const [recentMembers, setRecentMembers] = useState<RecentMember[]>([]);
+    const [totalMembers, setTotalMembers] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const { token } = useAppSelector(state => state.auth);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchRecentMembers = async () => {
+            try {
+                console.log('Fetching members...');
+                const response = await apiConnector(
+                    'GET',
+                    ALUMNI_API.GET_ALUMNI_DIRECTORY,
+                    null,
+                    token ? { Authorization: `Bearer ${token}` } as any : {},
+                    { page: 1, limit: 10 } as any
+                );
+
+                console.log('Members API Response:', response.data);
+
+                if (response.data.success) {
+                    console.log('Setting members:', response.data.data);
+                    console.log('Total members count:', response.data.totalCount);
+                    setRecentMembers(response.data.data);
+                    setTotalMembers(response.data.totalCount);
+                } else {
+                    console.warn('API returned success: false', response.data);
+                }
+            } catch (error) {
+                console.error('Failed to fetch recent members:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRecentMembers();
+    }, [token]);
+
+    const getInitials = (name: string) => {
+        const parts = name.split(' ');
+        return parts.map(p => p.charAt(0).toUpperCase()).join('').slice(0, 2);
+    };
+
+    const formatCount = (count: number) => {
+        if (count >= 1000000) return `${Math.floor(count / 1000000)}M+`;
+        if (count >= 10000) return `${Math.floor(count / 1000)}k+`;
+        if (count >= 1000) {
+            const k = (count / 1000).toFixed(1);
+            return `${k}k+`;
+        }
+        if (count >= 100) return `${Math.floor(count / 100) * 100}+`;
+        return count.toString();
+    };
+
     return (
         <>
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -47,24 +114,64 @@ export default function HeroSection() {
                                 <Users className="w-3 h-3 sm:w-4 sm:h-4" />
                                 Join Membership
                             </button>
-                            <button className="w-full sm:w-auto px-3 sm:px-6 py-2 sm:py-3 border-2 border-blue-600 text-blue-600 rounded-lg font-medium text-xs sm:text-sm hover:bg-blue-50 transition flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2">
+                            <button 
+                                onClick={() => navigate('/directory')}
+                                className="w-full sm:w-auto px-3 sm:px-6 py-2 sm:py-3 border-2 border-blue-600 text-blue-600 rounded-lg font-medium text-xs sm:text-sm hover:bg-blue-200 transition cursor-pointer flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2"
+                            >
                                 <Search className="w-3 h-3 sm:w-4 sm:h-4" />
                                 Explore Directory
                             </button>
                         </div>
 
                         {/* Recent Joiners */}
-                        <div className="mt-4 sm:mt-6 lg:mt-8 flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
-                            <div className="flex -space-x-1.5 sm:-space-x-2">
-                                <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 border border-sm border-white sm:border-2"></div>
-                                <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 border border-sm border-white sm:border-2"></div>
-                                <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 rounded-full bg-gradient-to-br from-pink-400 to-pink-600 border border-sm border-white sm:border-2"></div>
-                                <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 rounded-full bg-gray-200 border border-sm border-white sm:border-2 flex items-center justify-center">
-                                    <span className="text-[8px] sm:text-xs font-semibold text-gray-600">+2k</span>
+                        {!loading && (
+                            <div className="mt-4 sm:mt-6 lg:mt-8 flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
+                                <div className="flex -space-x-1.5 sm:-space-x-2">
+                                    {recentMembers.slice(0, 4).map((member) => (
+                                        <div
+                                            key={member.id}
+                                            className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 rounded-full border border-sm border-white sm:border-2 overflow-hidden flex-shrink-0 flex items-center justify-center bg-gray-300"
+                                            title={member.name}
+                                        >
+                                            {member.photo ? (
+                                                <img
+                                                    src={member.photo}
+                                                    alt={member.name}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <span className="text-[8px] sm:text-xs font-semibold text-gray-700">
+                                                    {getInitials(member.name)}
+                                                </span>
+                                            )}
+                                        </div>
+                                    ))}
+                                    {recentMembers.length > 4 && (
+                                        <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 rounded-full bg-gray-200 border border-sm border-white sm:border-2 flex items-center justify-center flex-shrink-0">
+                                            <span className="text-[8px] sm:text-xs font-semibold text-gray-600">
+                                                {formatCount(totalMembers - 4)}
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
+                                <span className="text-[10px] sm:text-xs lg:text-sm text-gray-600 text-center sm:text-left">
+                                    {formatCount(totalMembers)} members joined
+                                </span>
                             </div>
-                            <span className="text-[10px] sm:text-xs lg:text-sm text-gray-600 text-center sm:text-left">Navodayans joined this month</span>
-                        </div>
+                        )}
+                        {loading && (
+                            <div className="mt-4 sm:mt-6 lg:mt-8 flex items-center gap-2 sm:gap-3">
+                                <div className="flex -space-x-1.5 sm:-space-x-2">
+                                    {[...Array(4)].map((_, i) => (
+                                        <div
+                                            key={i}
+                                            className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 rounded-full bg-gray-300 border border-sm border-white sm:border-2 animate-pulse"
+                                        />
+                                    ))}
+                                </div>
+                                <span className="text-[10px] sm:text-xs lg:text-sm text-gray-600">Loading members...</span>
+                            </div>
+                        )}
                     </div>
 
                     {/* Right Content - Image Card */}
@@ -84,29 +191,29 @@ export default function HeroSection() {
 
                                 {/* Floating Event Card */}
                                 <div className="absolute bottom-2 sm:bottom-3 lg:bottom-6 left-2 sm:left-3 lg:left-6 right-2 sm:right-3 lg:right-6 z-20">
-                                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 lg:gap-4 rounded-lg bg-white/95 p-2 sm:p-3 lg:p-4 shadow-lg backdrop-blur supports-backdrop-filter:bg-white/60">
+                                    {/* <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 lg:gap-4 rounded-lg bg-white/95 p-2 sm:p-3 lg:p-4 shadow-lg backdrop-blur supports-backdrop-filter:bg-white/60"> */}
 
                                         {/* Icon */}
-                                        <div className="flex h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600 flex-shrink-0">
+                                        {/* <div className="flex h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600 flex-shrink-0">
                                             <Calendar className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6" />
-                                        </div>
+                                        </div> */}
 
                                         {/* Text */}
-                                        <div className="flex-1 min-w-0">
+                                        {/* <div className="flex-1 min-w-0">
                                             <p className="text-[8px] sm:text-xs font-semibold uppercase tracking-wide text-gray-500">
                                                 Next Major Event
                                             </p>
                                             <p className="text-xs sm:text-sm lg:text-base font-bold text-gray-900 truncate">
                                                 Annual Alumni Meet 2024
                                             </p>
-                                        </div>
+                                        </div> */}
 
                                         {/* Arrow */}
-                                        <div className="hidden sm:block ml-auto text-gray-400 flex-shrink-0">
+                                        {/* <div className="hidden sm:block ml-auto text-gray-400 flex-shrink-0">
                                             →
-                                        </div>
+                                        </div> */}
 
-                                    </div>
+                                    {/* </div> */}
                                 </div>
 
                             </div>

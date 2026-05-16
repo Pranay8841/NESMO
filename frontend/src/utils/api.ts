@@ -142,3 +142,17 @@ export const ADMIN_API = {
   /** POST - Broadcast notification to users */
   BROADCAST_NOTIFICATION: `${BASE_URL}/admin/notifications/broadcast`,
 };
+
+/**
+ * Newsletter API endpoints.
+ */
+export const NEWSLETTER_API = {
+  /** POST - Subscribe email to newsletter */
+  SUBSCRIBE: `${BASE_URL}/newsletter/subscribe`,
+  /** POST - Unsubscribe email from newsletter */
+  UNSUBSCRIBE: `${BASE_URL}/newsletter/unsubscribe`,
+  /** GET - Get all active subscribers (admin only) */
+  GET_SUBSCRIBERS: `${BASE_URL}/newsletter/subscribers`,
+  /** GET - Get newsletter statistics (admin only) */
+  GET_STATS: `${BASE_URL}/newsletter/stats`,
+};
