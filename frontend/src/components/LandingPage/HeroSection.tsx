@@ -1,4 +1,4 @@
-import { Calendar, Users, Search } from 'lucide-react';
+import { Users, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import heroImage from '../../assets/Banner.jpeg';

@@ -34,7 +34,6 @@ export default function App() {
     events: "10+",
     years: new Date().getFullYear() - FOUNDED_YEAR,
   });
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -44,7 +43,7 @@ export default function App() {
           "GET",
           ALUMNI_API.GET_ALUMNI_DIRECTORY,
           null,
-          {},
+          undefined,
           { page: 1, limit: 1 }
         );
         const memberCount = alumniResponse?.data?.totalCount || 10000;
@@ -67,7 +66,6 @@ export default function App() {
         console.error("Error fetching stats:", error);
         // Keep default values on error
       } finally {
-        setLoading(false);
       }
     };
 
