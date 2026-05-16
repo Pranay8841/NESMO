@@ -125,7 +125,7 @@ export default function Profile() {
     const displayCompleteness = completeness || calculateCompleteness();
 
     return (
-        <div className="max-w-7xl mx-auto px-2 sm:px-3 md:px-4 pb-6 sm:pb-8">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 pb-8">
             {/* Hidden file input for photo upload */}
             <input
                 ref={fileInputRef}
@@ -135,15 +135,15 @@ export default function Profile() {
                 className="hidden"
             />
 
-            <div className="flex flex-col xl:flex-row gap-3 sm:gap-4 md:gap-6">
+            <div className="flex flex-col xl:flex-row gap-6">
                 {/* Main Content */}
                 <div className="w-full xl:flex-1">
                     {/* Profile Header */}
-                    <div className="bg-white rounded-lg sm:rounded-2xl p-3 sm:p-4 md:p-6 lg:p-8 mb-4 sm:mb-6 border border-gray-200">
-                        <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 md:gap-6">
+                    <div className="bg-white rounded-2xl p-4 sm:p-6 md:p-8 mb-6 border border-gray-200">
+                        <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
                             {/* Avatar */}
                             <div className="relative shrink-0 mx-auto sm:mx-0">
-                                <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 rounded-lg sm:rounded-lg md:rounded-lg overflow-hidden">
+                                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden">
                                     <img
                                         src={profileImage}
                                         alt={fullName}
@@ -153,71 +153,69 @@ export default function Profile() {
                                 <button 
                                     onClick={handlePhotoClick}
                                     disabled={loading}
-                                    className="absolute bottom-0 right-0 w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 bg-blue-600 rounded-full flex items-center justify-center border-3 sm:border-4 border-white shadow-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+                                    className="absolute bottom-0 right-0 w-9 h-9 sm:w-10 sm:h-10 bg-blue-600 rounded-full flex items-center justify-center border-4 border-white shadow-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
                                 >
-                                    <Camera className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 text-white" />
+                                    <Camera className="w-5 h-5 text-white" />
                                 </button>
                             </div>
 
                             {/* Profile Info */}
                             <div className="flex-1 w-full">
-                                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2 sm:mb-3 gap-2 sm:gap-3">
+                                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-3 gap-3">
                                     <div className="text-center sm:text-left">
-                                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5 sm:gap-2 md:gap-3 mb-1 sm:mb-2">
-                                            <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black text-gray-900 break-words">{fullName}</h1>
-                                            <span className={`px-2 sm:px-3 py-0.5 sm:py-1 ${roleInfo.bgColor} text-white text-[10px] sm:text-xs font-bold rounded-full uppercase tracking-wider`}>
+                                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3 mb-2">
+                                            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 break-words">{fullName}</h1>
+                                            <span className={`px-3 py-1 ${roleInfo.bgColor} text-white text-xs font-bold rounded-full uppercase tracking-wider`}>
                                                 {roleInfo.label}
                                             </span>
                                         </div>
                                         {(profile?.occupation || isEditing) && (
-                                            <h2 className="text-xs sm:text-base md:text-lg lg:text-xl font-bold text-blue-600 mb-1 sm:mb-2">
+                                            <h2 className="text-base sm:text-xl font-bold text-blue-600 mb-2 sm:mb-3">
                                                 {profile?.occupation 
                                                     ? `${profile.occupation}${profile.organization ? ` at ${profile.organization}` : ''}`
                                                     : 'Add your occupation'}
                                             </h2>
                                         )}
-                                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5 sm:gap-2 md:gap-3 text-xs sm:text-sm text-gray-600">
+                                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-4 text-sm text-gray-600">
                                             {(profile?.joinBatch || profile?.passoutBatch) && (
-                                                <div className="flex items-center gap-1">
-                                                    <GraduationCap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
+                                                <div className="flex items-center gap-1.5">
+                                                    <GraduationCap className="w-4 h-4 text-gray-400" />
                                                     <span>{profile.joinBatch || '?'} - {profile.passoutBatch || '?'}</span>
                                                 </div>
                                             )}
                                             {profile?.currentAddress && (
-                                                <div className="flex items-center gap-1">
-                                                    <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
-                                                    <span className="truncate max-w-[120px] sm:max-w-[150px] md:max-w-none">{profile.currentAddress.split(',')[0]}</span>
+                                                <div className="flex items-center gap-1.5">
+                                                    <MapPin className="w-4 h-4 text-gray-400" />
+                                                    <span className="truncate max-w-[150px] sm:max-w-none">{profile.currentAddress.split(',')[0]}</span>
                                                 </div>
                                             )}
                                             {profile?.sector && (
-                                                <div className="flex items-center gap-1">
-                                                    <Building2 className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 text-gray-400" />
+                                                <div className="flex items-center gap-1.5">
+                                                    <Building2 className="w-5 h-5 text-gray-400" />
                                                     <span>{profile.sector}</span>
                                                 </div>
                                             )}
                                         </div>
                                         {email && (
-                                            <p className="text-[10px] sm:text-xs md:text-sm text-gray-500 mt-1.5 sm:mt-2">{email}</p>
+                                            <p className="text-sm text-gray-500 mt-2">{email}</p>
                                         )}
                                     </div>
                                     <button 
                                         onClick={isEditing ? handleSaveProfile : handleEditToggle}
                                         disabled={loading}
-                                        className="w-full sm:w-auto px-4 sm:px-5 py-2 sm:py-2.5 bg-blue-600 text-white rounded-lg font-bold text-xs sm:text-sm hover:bg-blue-700 flex items-center justify-center gap-1.5 sm:gap-2 mt-2 sm:mt-0 disabled:opacity-50 cursor-pointer"
+                                        className="w-full sm:w-auto px-5 py-2.5 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 flex items-center justify-center gap-2 mt-3 sm:mt-0 disabled:opacity-50 cursor-pointer"
                                     >
                                         {loading ? (
-                                            <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
+                                            <Loader2 className="w-4 h-4 animate-spin" />
                                         ) : isEditing ? (
                                             <>
-                                                <Save className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                                <span className="hidden sm:inline">Save Changes</span>
-                                                <span className="sm:hidden">Save</span>
+                                                <Save className="w-4 h-4" />
+                                                Save Changes
                                             </>
                                         ) : (
                                             <>
-                                                <Pencil className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                                <span className="hidden sm:inline">Edit Profile</span>
-                                                <span className="sm:hidden">Edit</span>
+                                                <Pencil className="w-4 h-4" />
+                                                Edit Profile
                                             </>
                                         )}
                                     </button>
@@ -244,21 +242,21 @@ export default function Profile() {
                     </div>
 
                     {/* About Me */}
-                    <div className="bg-white rounded-lg sm:rounded-xl md:rounded-2xl p-4 sm:p-5 md:p-6 mb-4 sm:mb-6 border border-gray-200">
-                        <div className="flex items-center justify-between mb-3 sm:mb-4">
-                            <div className="flex items-center gap-1.5 sm:gap-2">
-                                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="sm:w-5 sm:h-5">
+                    <div className="bg-white rounded-2xl p-4 sm:p-6 mb-6 border border-gray-200">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <circle cx="10" cy="10" r="8" stroke="#3B82F6" strokeWidth="2"/>
                                     <path d="M10 6V10M10 14H10.01" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round"/>
                                 </svg>
-                                <h2 className="text-base sm:text-lg font-black text-gray-900">About Me</h2>
+                                <h2 className="text-lg font-black text-gray-900">About Me</h2>
                             </div>
                             {isEditing && (
                                 <button 
                                     onClick={handleEditToggle}
-                                    className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                                 >
-                                    <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
+                                    <X className="w-5 h-5 text-gray-500" />
                                 </button>
                             )}
                         </div>
@@ -270,36 +268,36 @@ export default function Profile() {
                                 placeholder="Tell us about yourself, your journey, and what you're passionate about..."
                                 maxLength={500}
                                 rows={5}
-                                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-xs sm:text-sm"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-sm"
                             />
                         ) : (
-                            <p className="text-gray-700 leading-relaxed text-xs sm:text-sm">
+                            <p className="text-gray-700 leading-relaxed text-sm">
                                 {profile?.about || 'No bio added yet. Click "Edit Profile" to add information about yourself.'}
                             </p>
                         )}
                         {isEditing && (
-                            <div className="text-[10px] sm:text-xs text-gray-400 mt-2 text-right">
+                            <div className="text-xs text-gray-400 mt-2 text-right">
                                 {formData.about?.length || 0}/500 characters
                             </div>
                         )}
                     </div>
 
                     {/* Personal Information */}
-                    <div className="bg-white rounded-lg sm:rounded-xl md:rounded-2xl p-4 sm:p-5 md:p-6 border border-gray-200">
-                        <div className="flex items-center gap-1.5 sm:gap-2 mb-4 sm:mb-5">
-                            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="sm:w-5 sm:h-5">
+                    <div className="bg-white rounded-2xl p-4 sm:p-6 border border-gray-200">
+                        <div className="flex items-center gap-2 mb-5">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <circle cx="10" cy="7" r="3" fill="#F59E0B" />
                                 <path d="M4 17C4 14 6.5 12 10 12C13.5 12 16 14 16 17" fill="#F59E0B" />
                             </svg>
-                            <h2 className="text-base sm:text-lg font-black text-gray-900">Personal Information</h2>
+                            <h2 className="text-lg font-black text-gray-900">Personal Information</h2>
                         </div>
 
-                        <div className="space-y-4 sm:space-y-5">
+                        <div className="space-y-5">
                             {/* Row 1: Phone and Blood Group */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
                                 {/* Phone Number */}
                                 <div>
-                                    <div className="text-[10px] sm:text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1.5 sm:mb-2">
+                                    <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">
                                         PHONE NUMBER
                                     </div>
                                     {isEditing ? (
@@ -309,11 +307,11 @@ export default function Profile() {
                                             value={formData.phone}
                                             onChange={handleInputChange}
                                             placeholder="+91 98765 43210"
-                                            className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-xs sm:text-sm"
+                                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                                         />
                                     ) : (
-                                        <div className="flex items-center gap-1.5 sm:gap-2 text-gray-900 font-semibold text-xs sm:text-sm">
-                                            <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
+                                        <div className="flex items-center gap-2 text-gray-900 font-semibold">
+                                            <Phone className="w-4 h-4 text-gray-400" />
                                             <span>{profile?.phone || 'Not provided'}</span>
                                         </div>
                                     )}
@@ -321,7 +319,7 @@ export default function Profile() {
 
                                 {/* Blood Group */}
                                 <div>
-                                    <div className="text-[10px] sm:text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1.5 sm:mb-2">
+                                    <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">
                                         BLOOD GROUP
                                     </div>
                                     {isEditing ? (
@@ -329,7 +327,7 @@ export default function Profile() {
                                             name="bloodGroup"
                                             value={formData.bloodGroup}
                                             onChange={handleInputChange}
-                                            className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-xs sm:text-sm bg-white"
+                                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
                                         >
                                             <option value="">Select Blood Group</option>
                                             {BLOOD_GROUPS.map(bg => (
@@ -337,8 +335,8 @@ export default function Profile() {
                                             ))}
                                         </select>
                                     ) : (
-                                        <div className="flex items-center gap-1.5 sm:gap-2 text-gray-900 font-semibold text-xs sm:text-sm">
-                                            <Droplet className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-600" />
+                                        <div className="flex items-center gap-2 text-gray-900 font-semibold">
+                                            <Droplet className="w-4 h-4 text-red-600" />
                                             <span>{profile?.bloodGroup || 'Not provided'}</span>
                                         </div>
                                     )}
@@ -346,7 +344,7 @@ export default function Profile() {
                             </div>
 
                             {/* Row 2: Join Batch and Passout Batch */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
                                 {/* Join Batch */}
                                 <div>
                                     <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">

@@ -1,5 +1,5 @@
 import express from "express";
-import { protect } from "../middleware/firebaseAuth.js";
+import { protect } from "../middleware/auth.js";
 import {
   getMyNotifications,
   markNotificationRead,

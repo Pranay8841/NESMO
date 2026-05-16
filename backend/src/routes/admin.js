@@ -18,7 +18,7 @@ import {
   broadcastNotification,
   migrateApprovedRequests
 } from "../controllers/admin.js";
-import { protect, authorize } from "../middleware/firebaseAuth.js";
+import { protect, authorize } from "../middleware/auth.js";
 
 const router = express.Router();
 

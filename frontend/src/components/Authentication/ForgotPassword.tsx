@@ -1,7 +1,6 @@
 import { ArrowLeft, Mail, CheckCircle } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import toast from 'react-hot-toast';
-import nesmoLogo from '../../assets/nesmo-logo-transperant.png';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { forgotPassword } from '../../services/authService';
 
@@ -53,7 +52,12 @@ export default function ForgotPassword({ onBackToLogin }: ForgotPasswordProps) {
                     <div className="relative z-10 flex flex-col justify-between p-6 sm:p-8 lg:p-12 text-white w-full">
                         {/* Logo */}
                         <div className="flex items-center gap-3">
-                            <img src={nesmoLogo} alt="NESMO" className="w-10 h-10 lg:w-12 lg:h-12" />
+                            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-white rounded-xl flex items-center justify-center">
+                                <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="lg:w-7 lg:h-7">
+                                    <path d="M14 3C14 3 8 7 8 13C8 16 10 19 14 19C18 19 20 16 20 13C20 7 14 3 14 3Z" fill="#0000FF" />
+                                    <path d="M14 19C14 19 10 21 10 25C10 26.5 11 28 14 28C17 28 18 26.5 18 25C18 21 14 19 14 19Z" fill="#0000FF" />
+                                </svg>
+                            </div>
                             <span className="text-xl lg:text-3xl font-black tracking-tight">NESMO</span>
                         </div>
 
@@ -86,38 +90,38 @@ export default function ForgotPassword({ onBackToLogin }: ForgotPasswordProps) {
                 <div className="w-full lg:w-1/2 bg-gray-100 flex items-center justify-center p-6 sm:p-8 min-h-screen">
                     <div className="w-full max-w-md">
                         {/* Header */}
-                        <div className="mb-4 sm:mb-6 lg:mb-10 text-center">
-                            <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-3 sm:mb-4">
-                                <CheckCircle className="w-6 h-6 sm:w-10 sm:h-10 text-green-600" />
+                        <div className="mb-6 lg:mb-10 text-center">
+                            <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-4">
+                                <CheckCircle className="w-10 h-10 text-green-600" />
                             </div>
-                            <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-gray-900 mb-2">
+                            <h2 className="text-3xl font-black text-gray-900 mb-2">
                                 Check your email
                             </h2>
-                            <p className="text-indigo-700 text-xs sm:text-sm font-medium">
+                            <p className="text-indigo-700 text-sm font-medium">
                                 We've sent a password reset link to
                             </p>
-                            <p className="text-gray-900 font-bold mt-1 text-xs sm:text-sm break-all">
+                            <p className="text-gray-900 font-bold mt-1">
                                 {email}
                             </p>
                         </div>
 
                         {/* Card */}
-                        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 lg:p-8">
+                        <div className="bg-white rounded-2xl shadow-sm p-8">
                             <div className="text-center">
-                                <div className="w-10 h-10 sm:w-12 sm:h-12 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-3 sm:mb-4">
-                                    <Mail className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+                                <div className="w-12 h-12 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                                    <Mail className="w-6 h-6 text-blue-600" />
                                 </div>
-                                <p className="text-gray-600 mb-4 sm:mb-6 text-xs sm:text-sm">
+                                <p className="text-gray-600 mb-6">
                                     Click the link in the email to reset your password. The link will expire in 1 hour.
                                 </p>
-                                <p className="text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">
+                                <p className="text-sm text-gray-500 mb-6">
                                     Didn't receive the email? Check your spam folder or try again.
                                 </p>
 
                                 <button
                                     type="button"
                                     onClick={() => setEmailSent(false)}
-                                    className="w-full py-2.5 sm:py-3.5 bg-gray-100 text-gray-700 font-bold rounded-lg hover:bg-gray-200 transition-colors text-sm sm:text-base mb-3 sm:mb-4"
+                                    className="w-full py-3.5 bg-gray-100 text-gray-700 font-bold rounded-lg hover:bg-gray-200 transition-colors text-base mb-4"
                                 >
                                     Try again
                                 </button>
@@ -125,23 +129,23 @@ export default function ForgotPassword({ onBackToLogin }: ForgotPasswordProps) {
                                 <button
                                     type="button"
                                     onClick={onBackToLogin}
-                                    className="inline-flex items-center gap-2 text-blue-600 font-bold hover:underline cursor-pointer text-xs sm:text-sm"
+                                    className="inline-flex items-center gap-2 text-blue-600 font-bold hover:underline cursor-pointer"
                                 >
-                                    <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
+                                    <ArrowLeft className="w-4 h-4" />
                                     Back to login
                                 </button>
                             </div>
                         </div>
 
                         {/* Footer Links */}
-                        <div className="flex items-center justify-center gap-3 sm:gap-6 mt-4 sm:mt-8">
-                            <a href="#" className="text-[10px] sm:text-xs text-indigo-400 hover:text-indigo-600 font-medium">
+                        <div className="flex items-center justify-center gap-6 mt-8">
+                            <a href="#" className="text-xs text-indigo-400 hover:text-indigo-600 font-medium">
                                 Help Center
                             </a>
-                            <a href="#" className="text-[10px] sm:text-xs text-indigo-400 hover:text-indigo-600 font-medium">
+                            <a href="#" className="text-xs text-indigo-400 hover:text-indigo-600 font-medium">
                                 Terms of Service
                             </a>
-                            <a href="#" className="text-[10px] sm:text-xs text-indigo-400 hover:text-indigo-600 font-medium">
+                            <a href="#" className="text-xs text-indigo-400 hover:text-indigo-600 font-medium">
                                 Privacy Policy
                             </a>
                         </div>
@@ -169,7 +173,12 @@ export default function ForgotPassword({ onBackToLogin }: ForgotPasswordProps) {
                 <div className="relative z-10 flex flex-col justify-between p-6 sm:p-8 lg:p-12 text-white w-full">
                     {/* Logo */}
                     <div className="flex items-center gap-3">
-                        <img src={nesmoLogo} alt="NESMO" className="w-10 h-10 lg:w-12 lg:h-12" />
+                        <div className="w-10 h-10 lg:w-12 lg:h-12 bg-white rounded-xl flex items-center justify-center">
+                            <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="lg:w-7 lg:h-7">
+                                <path d="M14 3C14 3 8 7 8 13C8 16 10 19 14 19C18 19 20 16 20 13C20 7 14 3 14 3Z" fill="#0000FF" />
+                                <path d="M14 19C14 19 10 21 10 25C10 26.5 11 28 14 28C17 28 18 26.5 18 25C18 21 14 19 14 19Z" fill="#0000FF" />
+                            </svg>
+                        </div>
                         <span className="text-xl lg:text-3xl font-black tracking-tight">NESMO</span>
                     </div>
 
@@ -217,21 +226,21 @@ export default function ForgotPassword({ onBackToLogin }: ForgotPasswordProps) {
             <div className="w-full lg:w-1/2 bg-gray-100 flex items-center justify-center p-6 sm:p-8 min-h-screen">
                 <div className="w-full max-w-md">
                     {/* Header */}
-                    <div className="mb-4 sm:mb-6 lg:mb-10 text-center">
-                        <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-gray-900 mb-2">
+                    <div className="mb-6 lg:mb-10 text-center">
+                        <h2 className="text-3xl font-black text-gray-900 mb-2">
                             Forgot password?
                         </h2>
-                        <p className="text-indigo-700 text-xs sm:text-sm font-medium">
+                        <p className="text-indigo-700 text-sm font-medium">
                             Enter your email and we'll send you a reset link
                         </p>
                     </div>
 
                     {/* Form Card */}
-                    <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 lg:p-8">
+                    <div className="bg-white rounded-2xl shadow-sm p-8">
                         {/* Icon */}
-                        <div className="flex justify-center mb-4 sm:mb-6">
-                            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                                <Mail className="w-7 h-7 sm:w-8 sm:h-8 text-blue-600" />
+                        <div className="flex justify-center mb-6">
+                            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                                <Mail className="w-8 h-8 text-blue-600" />
                             </div>
                         </div>
 
@@ -239,7 +248,7 @@ export default function ForgotPassword({ onBackToLogin }: ForgotPasswordProps) {
                         <form className="space-y-5" onSubmit={handleSubmit}>
                             {/* Email Address */}
                             <div>
-                                <label htmlFor="email" className="block text-xs sm:text-sm font-bold text-gray-900 mb-2">
+                                <label htmlFor="email" className="block text-sm font-bold text-gray-900 mb-2">
                                     Email Address
                                 </label>
                                 <input
@@ -248,7 +257,7 @@ export default function ForgotPassword({ onBackToLogin }: ForgotPasswordProps) {
                                     placeholder="name@jnv.com"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm sm:text-base text-gray-900 placeholder:text-gray-400"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-gray-900 placeholder:text-gray-400"
                                 />
                             </div>
 
@@ -256,34 +265,34 @@ export default function ForgotPassword({ onBackToLogin }: ForgotPasswordProps) {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full py-2.5 sm:py-3.5 bg-blue-600 text-white font-black rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full py-3.5 bg-blue-600 text-white font-black rounded-lg hover:bg-blue-700 transition-colors text-base disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {loading ? 'Sending...' : 'Send Reset Link'}
                             </button>
                         </form>
 
                         {/* Back to Login Link */}
-                        <div className="text-center mt-4 sm:mt-6">
+                        <div className="text-center mt-6">
                             <button
                                 type="button"
                                 onClick={onBackToLogin}
-                                className="inline-flex items-center gap-2 text-blue-600 font-bold hover:underline cursor-pointer text-xs sm:text-sm"
+                                className="inline-flex items-center gap-2 text-blue-600 font-bold hover:underline cursor-pointer"
                             >
-                                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
+                                <ArrowLeft className="w-4 h-4" />
                                 Back to login
                             </button>
                         </div>
                     </div>
 
                     {/* Footer Links */}
-                    <div className="flex items-center justify-center gap-3 sm:gap-6 mt-4 sm:mt-8">
-                        <a href="#" className="text-[10px] sm:text-xs text-indigo-400 hover:text-indigo-600 font-medium">
+                    <div className="flex items-center justify-center gap-6 mt-8">
+                        <a href="#" className="text-xs text-indigo-400 hover:text-indigo-600 font-medium">
                             Help Center
                         </a>
-                        <a href="#" className="text-[10px] sm:text-xs text-indigo-400 hover:text-indigo-600 font-medium">
+                        <a href="#" className="text-xs text-indigo-400 hover:text-indigo-600 font-medium">
                             Terms of Service
                         </a>
-                        <a href="#" className="text-[10px] sm:text-xs text-indigo-400 hover:text-indigo-600 font-medium">
+                        <a href="#" className="text-xs text-indigo-400 hover:text-indigo-600 font-medium">
                             Privacy Policy
                         </a>
                     </div>

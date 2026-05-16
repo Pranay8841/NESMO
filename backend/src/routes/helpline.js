@@ -1,5 +1,5 @@
 import express from "express";
-import { protect, authorize } from "../middleware/firebaseAuth.js";
+import { protect, authorize } from "../middleware/auth.js";
 import { createSupportTicket ,searchHelpers, respondToTicket } from "../controllers/helpline.js";
 
 const router = express.Router();

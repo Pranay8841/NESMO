@@ -1,6 +1,7 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import { getDocument, addDocument, updateDocument, getDocuments } from "./firestore.js";
+import User from "../models/user.js";
+import Profile from "../models/profile.js";
 
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     passport.use(
@@ -12,81 +13,41 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
             },
             async (_, __, profile, done) => {
                 try {
-                    const email = profile.emails?.[0]?.value;
-                    const uid = profile.id;
-                    const displayName = profile.displayName;
-                    const photoURL = profile.photos?.[0]?.value;
+                    const email = profile.emails?.[0].value;
 
-                    if (!email) {
-                        return done(new Error("No email provided by Google"), false);
+                    let user = await User.findOne({ email });
+
+                    if (user && !user.googleId) {
+                        // Existing user linking Google account - mark email as verified
+                        user.googleId = profile.id;
+                        user.authProvider = "GOOGLE";
+                        user.isEmailVerified = true; // Google has verified the email
+                        await user.save();
                     }
 
-                    // Check if user exists by email in Firestore
-                    const users = await getDocuments('users', [
-                        { field: 'email', operator: '==', value: email }
-                    ]);
+                    if (!user) {
+                        // Split displayName into firstName and lastName
+                        const nameParts = profile.displayName.trim().split(/\s+/);
+                        const firstName = nameParts[0] || "User";
+                        const lastName = nameParts.slice(1).join(" ") || profile.displayName;
 
-                    let userDoc = users && users.length > 0 ? users[0] : null;
+                        // Create a new profile document
+                        const newProfile = await Profile.create({});
 
-                    if (userDoc) {
-                        // Existing user - update with Google info if not already set
-                        if (!userDoc.googleId) {
-                            await updateDocument('users', userDoc.id, {
-                                googleId: uid,
-                                authProvider: 'GOOGLE',
-                                isEmailVerified: true
-                            });
-                        }
-                    } else {
-                        // New user - create profile and user document
-                        const [firstName, ...lastNameParts] = displayName.trim().split(/\s+/);
-                        const lastName = lastNameParts.join(' ') || displayName;
-
-                        // Create profile first
-                        const profileId = await addDocument('profiles', {
-                            firstName: firstName || 'User',
-                            lastName: lastName || '',
-                            bio: '',
-                            profilePhoto: photoURL || `https://api.dicebear.com/5.x/initials/svg?seed=${displayName}`,
-                            createdAt: new Date(),
-                            updatedAt: new Date()
+                        user = await User.create({
+                            firstName,
+                            lastName,
+                            email,
+                            googleId: profile.id,
+                            authProvider: "GOOGLE",
+                            role: "ALUMNI",
+                            profile: newProfile._id,
+                            isEmailVerified: true // Google has already verified the email
                         });
-
-                        // Create user document
-                        await addDocument('users', {
-                            uid,
-                            firstName: firstName || 'User',
-                            lastName: lastName || '',
-                            email,
-                            profile: profileId,
-                            googleId: uid,
-                            authProvider: 'GOOGLE',
-                            role: 'ALUMNI',
-                            status: 'ACTIVE',
-                            isEmailVerified: true,
-                            createdAt: new Date(),
-                            updatedAt: new Date()
-                        }, uid);
-
-                        userDoc = {
-                            uid,
-                            firstName: firstName || 'User',
-                            lastName: lastName || '',
-                            email,
-                            profile: profileId
-                        };
                     }
 
-                    // Return user object for req.user
-                    done(null, {
-                        uid: userDoc.uid || uid,
-                        email: userDoc.email,
-                        displayName: userDoc.firstName + ' ' + userDoc.lastName,
-                        photoURL: userDoc.profilePhoto || photoURL,
-                        ...userDoc
-                    });
+                    done(null, user);
                 } catch (err) {
-                    console.error('Passport Google strategy error:', err);
                     done(err, false);
                 }
             }

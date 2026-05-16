@@ -11,7 +11,7 @@ interface VerifyEmailPromptProps {
 
 export default function VerifyEmailPrompt({ email: propEmail, onBackToLogin }: VerifyEmailPromptProps) {
     const dispatch = useAppDispatch();
-    const { pendingVerificationEmail, loading } = useAppSelector((state: any) => state.auth);
+    const { pendingVerificationEmail, loading } = useAppSelector((state) => state.auth);
     
     const email = propEmail || pendingVerificationEmail;
     const [resendDisabled, setResendDisabled] = useState(false);

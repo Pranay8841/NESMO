@@ -1,15 +1,16 @@
 /**
- * @fileoverview Alumni Directory Controller - Firestore Version
+ * @fileoverview Alumni Directory Controller
  * Handles fetching and filtering the alumni directory with pagination.
  * 
  * @module controllers/alumniDirectory
  */
 
-import { getDocuments, getDocument } from "../config/firestore.js";
+import User from "../models/user.js";
+import mongoose from "mongoose";
 
 /**
- * Get paginated alumni directory with filtering and search (Firestore version).
- * Fetches users with profile data and applies filters in-memory.
+ * Get paginated alumni directory with filtering and search.
+ * Uses MongoDB aggregation pipeline for efficient querying.
  * 
  * @async
  * @function getAlumniDirectory
@@ -28,111 +29,150 @@ import { getDocuments, getDocument } from "../config/firestore.js";
  * @returns {Object} JSON response with alumni list, pagination info
  * 
  * @requires protect middleware
+ * 
+ * @example
+ * // GET /api/profile/alumni?page=1&limit=10&city=Delhi&passoutBatch=2015
+ * // Response
+ * {
+ *   "success": true,
+ *   "page": 1,
+ *   "limit": 10,
+ *   "count": 5,
+ *   "totalCount": 25,
+ *   "data": [{ "id": "...", "name": "John Doe", ... }]
+ * }
  */
 export const getAlumniDirectory = async (req, res) => {
   try {
-    /* ------------------ Pagination & Limits ------------------ */
+    /* ------------------ Pagination ------------------ */
     const page = Math.max(parseInt(req.query.page) || 1, 1);
     const limit = Math.min(parseInt(req.query.limit) || 20, 50);
     const skip = (page - 1) * limit;
 
-    /* ------------------ Fetch Active Users (Basic Filter) ------------------ */
-    let userFilters = [
-      { field: 'status', operator: '==', value: 'ACTIVE' }
-    ];
+    /* ------------------ Build Aggregation Pipeline ------------------ */
+    const pipeline = [];
 
-    // Apply role/membership filters
-    if (req.query.isMember === 'true') {
-      // Members: role in [MEMBER, EVENT_LEAD, ADMIN] or isMember flag
-      userFilters.push({ field: 'role', operator: 'in', value: ['MEMBER', 'EVENT_LEAD', 'ADMIN'] });
-    } else if (req.query.isMember === 'false') {
-      // Non-members: ALUMNI role
-      userFilters.push({ field: 'role', operator: '==', value: 'ALUMNI' });
+    // Stage 1: Match active users (excluding the current logged-in user)
+    const userMatch = { 
+      status: "ACTIVE",
+      _id: { $ne: new mongoose.Types.ObjectId(req.user.id) } // Exclude current user
+    };
+    if (req.query.isMember === "true") {
+      // Filter for paid members (MEMBER role or isMember flag)
+      userMatch.$or = [
+        { role: { $in: ["MEMBER", "EVENT_LEAD", "ADMIN"] } },
+        { isMember: true }
+      ];
+    } else if (req.query.isMember === "false") {
+      // Filter for non-members (ALUMNI role and isMember is false)
+      userMatch.role = "ALUMNI";
+      userMatch.isMember = false;
     }
+    pipeline.push({ $match: userMatch });
 
-    const allUsers = await getDocuments('users', userFilters);
-
-    // Filter out current user (if authenticated)
-    let users = req.user?.id ? allUsers.filter(u => u.uid !== req.user.id) : allUsers;
-    
-    console.log(`[Alumni Directory] isMember=${req.query.isMember}, Found ${allUsers.length} users matching role filter`);
-
-    /* ------------------ Enrich with Profile Data & Apply Profile Filters ------------------ */
-    let enrichedUsers = [];
-
-    for (const user of users) {
-      try {
-        const profile = user.profile ? await getDocument('profiles', user.profile) : {};
-
-        // Apply profile-based filters
-        let matchesFilters = true;
-
-        if (req.query.city && (!profile.currentAddress || !profile.currentAddress.toLowerCase().includes(req.query.city.toLowerCase()))) {
-          matchesFilters = false;
-        }
-
-        if (req.query.occupation && (!profile.occupation || !profile.occupation.toLowerCase().includes(req.query.occupation.toLowerCase()))) {
-          matchesFilters = false;
-        }
-
-        if (req.query.joinBatch && profile.joinBatch !== req.query.joinBatch) {
-          matchesFilters = false;
-        }
-
-        if (req.query.passoutBatch && profile.passoutBatch !== req.query.passoutBatch) {
-          matchesFilters = false;
-        }
-
-        if (req.query.bloodGroup) {
-          const normalizedBlood = req.query.bloodGroup.replace(/\s/g, '+').toUpperCase();
-          if (!profile.bloodGroup || profile.bloodGroup.toUpperCase() !== normalizedBlood) {
-            matchesFilters = false;
-          }
-        }
-
-        // Apply search filter (searches across name, email, city, occupation)
-        if (req.query.search) {
-          const searchLower = req.query.search.toLowerCase();
-          const nameMatch = (`${user.firstName} ${user.lastName}`).toLowerCase().includes(searchLower);
-          const emailMatch = user.email.toLowerCase().includes(searchLower);
-          const cityMatch = profile.currentAddress?.toLowerCase().includes(searchLower);
-          const occMatch = profile.occupation?.toLowerCase().includes(searchLower);
-
-          if (!nameMatch && !emailMatch && !cityMatch && !occMatch) {
-            matchesFilters = false;
-          }
-        }
-
-        if (matchesFilters) {
-          enrichedUsers.push({ user, profile });
-        }
-      } catch (err) {
-        console.warn(`Failed to load profile for user ${user.uid}:`, err);
+    // Stage 2: Lookup profile
+    pipeline.push({
+      $lookup: {
+        from: "profiles",
+        localField: "profile",
+        foreignField: "_id",
+        as: "profileData"
       }
+    });
+
+    // Stage 3: Unwind profile (convert array to object)
+    pipeline.push({
+      $unwind: {
+        path: "$profileData",
+        preserveNullAndEmptyArrays: false
+      }
+    });
+
+    // Stage 4: Apply profile filters
+    const profileMatch = {};
+
+    if (req.query.city) {
+      profileMatch["profileData.currentAddress"] = new RegExp(req.query.city, "i");
     }
 
-    /* ------------------ Pagination & Response Mapping ------------------ */
-    const totalCount = enrichedUsers.length;
-    const paginatedUsers = enrichedUsers.slice(skip, skip + limit);
+    if (req.query.occupation) {
+      profileMatch["profileData.occupation"] = new RegExp(req.query.occupation, "i");
+    }
 
-    console.log(`[Alumni Directory] After filtering: ${totalCount} total, returning ${paginatedUsers.length} on page ${page}`);
+    if (req.query.joinBatch) {
+      profileMatch["profileData.joinBatch"] = req.query.joinBatch;
+    }
 
-    const directory = paginatedUsers.map(({ user, profile }) => ({
-      id: user.uid,
+    if (req.query.passoutBatch) {
+      profileMatch["profileData.passoutBatch"] = req.query.passoutBatch;
+    }
+
+    if (req.query.bloodGroup) {
+      profileMatch["profileData.bloodGroup"] = req.query.bloodGroup
+        .replace(/\s/g, "+")
+        .toUpperCase();
+    }
+
+    // Stage 5: Apply search query (searches across name, email, city, occupation)
+    if (req.query.search) {
+      const searchRegex = new RegExp(req.query.search, "i");
+      profileMatch.$or = [
+        { firstName: searchRegex },
+        { lastName: searchRegex },
+        { email: searchRegex },
+        { "profileData.currentAddress": searchRegex },
+        { "profileData.occupation": searchRegex }
+      ];
+    }
+
+    if (Object.keys(profileMatch).length > 0) {
+      pipeline.push({ $match: profileMatch });
+    }
+
+    // Stage 6: Facet for pagination and count
+    pipeline.push({
+      $facet: {
+        metadata: [{ $count: "totalCount" }],
+        data: [
+          { $skip: skip },
+          { $limit: limit },
+          {
+            $project: {
+              _id: 1,
+              firstName: 1,
+              lastName: 1,
+              email: 1,
+              role: 1,
+              isMember: 1,
+              profile: "$profileData"
+            }
+          }
+        ]
+      }
+    });
+
+    const result = await User.aggregate(pipeline);
+    
+    const totalCount = result[0]?.metadata[0]?.totalCount || 0;
+    const users = result[0]?.data || [];
+
+    /* ------------------ Response Mapping ------------------ */
+    const directory = users.map(user => ({
+      id: user._id,
       name: `${user.firstName} ${user.lastName}`,
       email: user.email,
-      phone: profile?.phone || null,
-      city: profile?.currentAddress || null,
-      occupation: profile?.occupation || null,
-      organization: profile?.organization || null,
-      sector: profile?.sector || null,
-      joinBatch: profile?.joinBatch || null,
-      passoutBatch: profile?.passoutBatch || null,
-      bloodGroup: profile?.bloodGroup || null,
-      about: profile?.about || null,
-      photo: profile?.profilePhoto || null,
+      phone: user.profile?.phone || null,
+      city: user.profile?.currentAddress || null,
+      occupation: user.profile?.occupation || null,
+      organization: user.profile?.organization || null,
+      sector: user.profile?.sector || null,
+      joinBatch: user.profile?.joinBatch || null,
+      passoutBatch: user.profile?.passoutBatch || null,
+      bloodGroup: user.profile?.bloodGroup || null,
+      about: user.profile?.about || null,
+      photo: user.profile?.profilePhoto || null,
       role: user.role,
-      isMember: user.isMember || user.role !== 'ALUMNI'
+      isMember: user.isMember
     }));
 
     /* ------------------ Response ------------------ */
@@ -146,10 +186,11 @@ export const getAlumniDirectory = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Alumni Directory Error:', error);
+    console.error("Alumni Directory Error:", error);
+
     res.status(500).json({
       success: false,
-      message: 'Unable to load alumni directory'
+      message: "Unable to load alumni directory"
     });
   }
 };

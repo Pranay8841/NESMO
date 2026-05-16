@@ -6,7 +6,7 @@
  */
 
 import jwt from 'jsonwebtoken';
-import { getDocument } from '../config/firestore.js';
+import User from '../models/user.js';
 
 /**
  * Protect middleware - Validates JWT token and attaches user to request.
@@ -46,54 +46,24 @@ export const protect = async (req, res, next) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        // Support both uid (Firestore JWT) and userId (legacy MongoDB JWT for backwards compatibility)
-        if (decoded.userId) {
-            // Legacy flow - convert to Firestore lookup if needed, otherwise fail
-            const userId = decoded.userId;
-            const userDoc = await getDocument('users', userId);
+        const user = await User.findById(decoded.userId).select("role status");
 
-            if (!userDoc) {
-                return res.status(401).json({ message: 'User not found' });
-            }
-
-            if (userDoc.status === 'BLOCKED') {
-                return res.status(403).json({ message: 'Account is blocked' });
-            }
-
-            req.user = {
-                id: userDoc.id || userDoc.uid,
-                role: userDoc.role,
-                ...userDoc,
-            };
-
-            return next();
+        if (!user) {
+            return res.status(401).json({ message: "User not found" });
         }
 
-        if (decoded.uid) {
-            // Firestore user lookup
-            const userDoc = await getDocument('users', decoded.uid);
-
-            if (!userDoc) {
-                return res.status(401).json({ message: 'User not found' });
-            }
-
-            if (userDoc.status === 'BLOCKED') {
-                return res.status(403).json({ message: 'Account is blocked' });
-            }
-
-            req.user = {
-                id: userDoc.id || userDoc.uid,
-                role: userDoc.role,
-                ...userDoc,
-            };
-
-            return next();
+        if (user.status === "BLOCKED") {
+            return res.status(403).json({ message: "Account is blocked" });
         }
 
-        // If neither userId nor uid present, reject
-        return res.status(401).json({ message: 'Not authorized - invalid token payload' });
+        req.user = {
+            id: user._id,
+            role: user.role,
+        };
+
+        next();
     } catch (error) {
-        return res.status(401).json({ message: 'Not authorized - invalid token' });
+        return res.status(401).json({ message: "Not authorized - invalid token" });
     }
 };
 
