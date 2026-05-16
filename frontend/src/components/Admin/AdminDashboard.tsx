@@ -156,42 +156,43 @@ export default function AdminDashboard() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto pb-12">
+        <div className="max-w-7xl mx-auto pb-8 sm:pb-12 px-2 sm:px-3 md:px-4">
             {/* Page Header */}
-            <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard Overview</h1>
-                    <p className="text-gray-500 mt-1">
+                    <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Admin Dashboard Overview</h1>
+                    <p className="text-gray-500 mt-0.5 sm:mt-1 text-xs sm:text-sm">
                         Welcome back, here's what's happening with the NESMO Portal today.
                     </p>
                 </div>
                 <button 
                     onClick={handleRefresh}
                     disabled={dashboardLoading}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors self-start sm:self-auto"
+                    className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors w-full sm:w-auto justify-center sm:justify-start"
                 >
-                    <RefreshCw className={`w-4 h-4 ${dashboardLoading ? 'animate-spin' : ''}`} />
-                    Refresh
+                    <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${dashboardLoading ? 'animate-spin' : ''}`} />
+                    <span className="hidden sm:inline">Refresh</span>
+                    <span className="sm:hidden">Refresh</span>
                 </button>
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
                 {stats.map((stat, index) => (
                     <div 
                         key={index}
-                        className="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-md transition-shadow"
+                        className="bg-white rounded-lg sm:rounded-lg md:rounded-xl p-3 sm:p-4 md:p-5 border border-gray-200 hover:shadow-md transition-shadow"
                     >
-                        <div className="flex items-center justify-between mb-3">
-                            <span className="text-sm text-gray-500 font-medium">{stat.title}</span>
-                            <div className={`w-10 h-10 ${stat.iconBg} rounded-lg flex items-center justify-center`}>
+                        <div className="flex items-center justify-between mb-2 sm:mb-3">
+                            <span className="text-xs sm:text-sm text-gray-500 font-medium">{stat.title}</span>
+                            <div className={`w-8 h-8 sm:w-10 sm:h-10 ${stat.iconBg} rounded-lg flex items-center justify-center text-xs sm:text-sm`}>
                                 {stat.icon}
                             </div>
                         </div>
-                        <div className="text-3xl font-bold text-gray-900 mb-2">{stat.value}</div>
-                        <div className="flex items-center gap-2 flex-wrap">
+                        <div className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1.5 sm:mb-2">{stat.value}</div>
+                        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                             {stat.change && (
-                                <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
+                                <span className={`text-[10px] sm:text-xs font-semibold px-1.5 sm:px-2 py-0.5 rounded ${
                                     stat.changeType === 'positive' 
                                         ? 'bg-green-100 text-green-700' 
                                         : 'bg-gray-100 text-gray-600'
@@ -200,12 +201,12 @@ export default function AdminDashboard() {
                                 </span>
                             )}
                             {stat.badge && (
-                                <span className={`text-xs font-semibold px-2 py-0.5 rounded text-white ${stat.badge.color}`}>
+                                <span className={`text-[10px] sm:text-xs font-semibold px-1.5 sm:px-2 py-0.5 rounded text-white ${stat.badge.color}`}>
                                     {stat.badge.text}
                                 </span>
                             )}
                             {stat.subtitle && (
-                                <span className="text-xs text-gray-400">{stat.subtitle}</span>
+                                <span className="text-[10px] sm:text-xs text-gray-400">{stat.subtitle}</span>
                             )}
                         </div>
                     </div>

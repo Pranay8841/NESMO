@@ -4,11 +4,8 @@ import Navbar from "./LandingPage/Navbar";
 import Footer from "./LandingPage/Footer";
 import SignupModal from "./Authentication/SignupModal";
 import LoginModal from "./Authentication/LoginModal";
-import { useAppDispatch } from "../redux/hooks";
-import { clearPendingVerification } from "../redux/slices/authSlice";
 
 export default function Layout(): JSX.Element {
-  const dispatch = useAppDispatch();
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -16,8 +13,6 @@ export default function Layout(): JSX.Element {
   const openSignupModal = () => setIsSignupModalOpen(true);
   const closeSignupModal = () => {
     setIsSignupModalOpen(false);
-    // Clear pending verification state so reopening modal shows signup form
-    dispatch(clearPendingVerification());
     // Clear the query param when modal is closed
     if (searchParams.has('openSignup')) {
       searchParams.delete('openSignup');
@@ -27,8 +22,6 @@ export default function Layout(): JSX.Element {
   const openLoginModal = () => setIsLoginModalOpen(true);
   const closeLoginModal = () => {
     setIsLoginModalOpen(false);
-    // Clear pending verification state so reopening modal shows login form
-    dispatch(clearPendingVerification());
     // Clear the query param when modal is closed
     if (searchParams.has('openLogin')) {
       searchParams.delete('openLogin');

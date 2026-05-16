@@ -15,25 +15,13 @@ const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 /* ==================== Authentication Endpoints ==================== */
 
 /**
- * User authentication API endpoints.
+ * User authentication API endpoints (Firebase Google Sign-In only).
  */
 export const USER_API = {
-  /** POST - Login with email/password */
-  LOGIN: `${BASE_URL}/auth/login`,
-  /** POST - Register new user account */
-  REGISTER: `${BASE_URL}/auth/register`,
-  /** GET - Verify email (append /:token) */
-  VERIFY_EMAIL: `${BASE_URL}/auth/verify-email`,
-  /** POST - Resend verification email */
-  RESEND_VERIFICATION: `${BASE_URL}/auth/resend-verification`,
-  /** POST - Request password reset email */
-  FORGOT_PASSWORD: `${BASE_URL}/auth/forgot-password`,
-  /** POST - Reset password with token (append /:token) */
-  RESET_PASSWORD: `${BASE_URL}/auth/reset-password`,
-  /** GET - Initiate Google OAuth flow */
-  GOOGLE_AUTH: `${BASE_URL}/auth/google`,
-  /** GET - Google OAuth callback (handled by backend) */
-  GOOGLE_CALLBACK: `${BASE_URL}/auth/google/callback`,
+  /** Base auth endpoint */
+  AUTH: `${BASE_URL}/auth`,
+  /** POST - Google Sign-In with Firebase ID token */
+  GOOGLE_SIGNIN: `${BASE_URL}/auth/google-signin`,
   /** GET - Get current authenticated user */
   CURRENT_USER: `${BASE_URL}/auth/me`,
   /** POST - Logout user */
@@ -87,69 +75,30 @@ export const HELPLINE_API = {
 
 /**
  * Events management API endpoints.
+ * @future Not part of first release
  */
 export const EVENTS_API = {
-  /** GET - Get all public events */
-  GET_EVENTS: `${BASE_URL}/events`,
-  /** GET - Get single event by ID */
-  GET_EVENT_BY_ID: `${BASE_URL}/events`, // Append /:id
-  /** POST - Request to create an event */
   REQUEST_EVENT_CREATION: `${BASE_URL}/events/request`,
-  /** GET - Get user's own event requests */
-  GET_MY_EVENT_REQUESTS: `${BASE_URL}/events/user/my-requests`,
-  /** GET - Get user's event registrations */
-  GET_MY_REGISTRATIONS: `${BASE_URL}/events/user/my-registrations`,
-  /** GET - Check registration status for an event */
-  GET_REGISTRATION_STATUS: `${BASE_URL}/events`, // Append /:id/registration-status
-  /** POST - Register for an event */
-  REGISTER_FOR_EVENT: `${BASE_URL}/events`, // Append /:id/register
-  /** DELETE - Unregister from an event */
-  UNREGISTER_FROM_EVENT: `${BASE_URL}/events`, // Append /:id/unregister
-  /** POST - Create payment order for paid event */
-  CREATE_EVENT_PAYMENT_ORDER: `${BASE_URL}/events`, // Append /:id/payment/create-order
-  /** POST - Verify event payment */
-  VERIFY_EVENT_PAYMENT: `${BASE_URL}/events/payment/verifyEventPayment`,
-  /** GET - Get events created by user (Event Lead) */
-  GET_MY_EVENTS: `${BASE_URL}/events/lead/my-events`,
-  /** POST - Create a new event (Event Lead) */
+  REVIEW_EVENT_REQUEST: `${BASE_URL}/events/admin/request/:id`,
   CREATE_EVENT: `${BASE_URL}/events/create`,
-  /** PUT - Update an event (Event Lead) */
-  UPDATE_EVENT: `${BASE_URL}/events`, // Append /:id
-  /** DELETE - Delete an event (Event Lead) */
-  DELETE_EVENT: `${BASE_URL}/events`, // Append /:id
-  /** GET - Get event dashboard/registrations (Event Lead) */
-  GET_EVENT_DASHBOARD: `${BASE_URL}/events`, // Append /:id/dashboard
-  /** POST - Send reminder to event registrants (Event Lead) */
-  SEND_REMINDER: `${BASE_URL}/events`, // Append /:id/send-reminder
-  /** PUT - Admin review event request */
-  REVIEW_EVENT_REQUEST: `${BASE_URL}/events/admin/request`, // Append /:id
+  GET_EVENTS: `${BASE_URL}/events`,
+  REGISTER_FOR_EVENT: `${BASE_URL}/events/:id/register`,
+  EVENTS_DASHBOARD: `${BASE_URL}/events/:id/dashboard`,
+  CREATE_EVENT_PAYMENT_ORDER: `${BASE_URL}/events/:id/payment/createEventOrder`,
+  VERIFY_EVENT_PAYMENT: `${BASE_URL}/events/payment/verifyEventPayment`,
 };
 
 /**
- * Photo album/gallery API endpoints.
+ * Photo album API endpoints.
+ * @future Not part of first release
  */
 export const ALBUM_API = {
-  /** GET - Get all public albums with pagination & filters */
   GET_ALBUMS: `${BASE_URL}/albums`,
-  /** GET - Get single album by ID (append /:albumId) */
-  GET_ALBUM_BY_ID: `${BASE_URL}/albums`,
-  /** POST - Create a new album */
-  CREATE_ALBUM: `${BASE_URL}/albums/create-album`,
-  /** PUT - Update album (append /:albumId) */
-  UPDATE_ALBUM: `${BASE_URL}/albums`,
-  /** DELETE - Delete album (append /:albumId) */
-  DELETE_ALBUM: `${BASE_URL}/albums`,
-  /** POST - Upload media to album (append /:albumId/media) */
-  UPLOAD_MEDIA: `${BASE_URL}/albums`,
-  /** GET - Get album media (append /:albumId/media) */
-  GET_ALBUM_MEDIA: `${BASE_URL}/albums`,
-  /** DELETE - Delete media (append /:albumId/media/:mediaId) */
-  DELETE_MEDIA: `${BASE_URL}/albums`,
-  /** GET - Get distinct locations for filter */
-  GET_LOCATIONS: `${BASE_URL}/albums/locations`,
-  /** GET - Get distinct years for filter */
-  GET_YEARS: `${BASE_URL}/albums/years`,
-};
+  CREATE_ALBUM: `${BASE_URL}/create-album`,
+  UPLOAD_MEDIA:`${BASE_URL}/:albumId/media`,
+  GET_ALBUM_MEDIA:`${BASE_URL}/:albumId/media`,
+  Delete_ALBUM_MEDIA:`${BASE_URL}/:albumId/media/:mediaId`,
+}
 
 /**
  * Notifications API endpoints.
@@ -184,8 +133,6 @@ export const ADMIN_API = {
   MANUAL_VERIFY_PAYMENT: `${BASE_URL}/admin/payment/:id/verify`,
   /** GET - Get all support tickets */
   GET_ALL_SUPPORT_TICKETS: `${BASE_URL}/admin/support/tickets`,
-  /** GET - Get all event requests */
-  GET_ALL_EVENT_REQUESTS: `${BASE_URL}/admin/events/requests`,
   /** POST - Create news article */
   CREATE_NEWS: `${BASE_URL}/admin/news/create`,
   /** PATCH - Publish news article */
@@ -196,53 +143,16 @@ export const ADMIN_API = {
   BROADCAST_NOTIFICATION: `${BASE_URL}/admin/notifications/broadcast`,
 };
 
-/* ==================== Discussion Forum Endpoints ==================== */
-
 /**
- * Discussion Forum API endpoints.
+ * Newsletter API endpoints.
  */
-export const DISCUSSION_API = {
-  /** GET - Get all discussion rooms */
-  GET_ROOMS: `${BASE_URL}/discussions/rooms`,
-  /** POST - Create a discussion room (Admin) */
-  CREATE_ROOM: `${BASE_URL}/discussions/rooms`,
-  /** POST - Seed default rooms (Admin) */
-  SEED_ROOMS: `${BASE_URL}/discussions/rooms/seed`,
-  
-  /** GET - Get posts feed */
-  GET_POSTS: `${BASE_URL}/discussions/posts`,
-  /** GET - Get single post */
-  GET_POST_BY_ID: `${BASE_URL}/discussions/posts`, // Append /:id
-  /** POST - Create a new post */
-  CREATE_POST: `${BASE_URL}/discussions/posts`,
-  /** PUT - Update a post */
-  UPDATE_POST: `${BASE_URL}/discussions/posts`, // Append /:id
-  /** DELETE - Delete a post */
-  DELETE_POST: `${BASE_URL}/discussions/posts`, // Append /:id
-  
-  /** POST - Like/unlike a post */
-  TOGGLE_LIKE_POST: `${BASE_URL}/discussions/posts`, // Append /:id/like
-  /** POST - Vote on a poll */
-  VOTE_POLL: `${BASE_URL}/discussions/posts`, // Append /:id/vote
-  /** POST - Share a post */
-  SHARE_POST: `${BASE_URL}/discussions/posts`, // Append /:id/share
-  
-  /** GET - Get comments for a post */
-  GET_COMMENTS: `${BASE_URL}/discussions/posts`, // Append /:postId/comments
-  /** POST - Create a comment */
-  CREATE_COMMENT: `${BASE_URL}/discussions/posts`, // Append /:postId/comments
-  /** GET - Get replies for a comment */
-  GET_REPLIES: `${BASE_URL}/discussions/comments`, // Append /:commentId/replies
-  /** DELETE - Delete a comment */
-  DELETE_COMMENT: `${BASE_URL}/discussions/comments`, // Append /:id
-  /** POST - Like/unlike a comment */
-  TOGGLE_LIKE_COMMENT: `${BASE_URL}/discussions/comments`, // Append /:id/like
-  
-  /** GET - Get trending hashtags */
-  GET_TRENDING: `${BASE_URL}/discussions/trending`,
-  /** GET - Get posts by hashtag */
-  GET_POSTS_BY_HASHTAG: `${BASE_URL}/discussions/hashtag`, // Append /:tag
-  
-  /** POST - Seed default hashtags (Admin) */
-  SEED_HASHTAGS: `${BASE_URL}/discussions/hashtags/seed`,
+export const NEWSLETTER_API = {
+  /** POST - Subscribe email to newsletter */
+  SUBSCRIBE: `${BASE_URL}/newsletter/subscribe`,
+  /** POST - Unsubscribe email from newsletter */
+  UNSUBSCRIBE: `${BASE_URL}/newsletter/unsubscribe`,
+  /** GET - Get all active subscribers (admin only) */
+  GET_SUBSCRIBERS: `${BASE_URL}/newsletter/subscribers`,
+  /** GET - Get newsletter statistics (admin only) */
+  GET_STATS: `${BASE_URL}/newsletter/stats`,
 };

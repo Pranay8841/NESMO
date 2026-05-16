@@ -22,7 +22,7 @@ import {
   getProfileCompleteness
 } from "../controllers/profile.js";
 import { getAlumniDirectory } from "../controllers/alumniDirectory.js";
-import { protect } from "../middleware/auth.js";
+import { protect } from "../middleware/firebaseAuth.js";
 
 const router = express.Router();
 
@@ -42,7 +42,7 @@ router.get("/profileCompleteness", protect, getProfileCompleteness);
 
 /* ==================== Alumni Directory Routes ==================== */
 
-/** Get paginated alumni directory with filters */
-router.get("/alumni", protect, getAlumniDirectory);
+/** Get paginated alumni directory with filters (PUBLIC - no auth required) */
+router.get("/alumni", getAlumniDirectory);
 
 export default router;

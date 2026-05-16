@@ -39,21 +39,21 @@ export default function Dashboard() {
     const profileCompleteness = completeness || 0;
 
     return (
-        <div className="max-w-7xl mx-auto pb-8">
-            <div className="flex gap-6">
+        <div className="max-w-7xl mx-auto pb-6 sm:pb-8 px-2 sm:px-0">
+            <div className="flex gap-3 sm:gap-6 flex-col lg:flex-row">
                 {/* Left Column */}
                 <div className="flex-1">
                     {/* Welcome Banner */}
-                    <div className="bg-white rounded-xl p-6 mb-6 border border-gray-200">
-                        <div className="flex items-center gap-2 mb-3">
-                            <span className={`px-3 py-1 ${roleInfo.bgColor} text-white text-xs font-bold rounded-full uppercase tracking-wider`}>
+                    <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-6 mb-4 sm:mb-6 border border-gray-200">
+                        <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                            <span className={`px-2 sm:px-3 py-1 ${roleInfo.bgColor} text-white text-[10px] sm:text-xs font-bold rounded-full uppercase tracking-wider`}>
                                 {roleInfo.label}
                             </span>
                         </div>
-                        <h1 className="text-3xl font-black text-gray-900 mb-2">
+                        <h1 className="text-lg sm:text-2xl md:text-3xl font-black text-gray-900 mb-1 sm:mb-2">
                             Welcome back, {firstName}!
                         </h1>
-                        <p className="text-gray-600 text-sm mb-6">
+                        <p className="text-gray-600 text-xs sm:text-sm mb-4 sm:mb-6">
                             Great to see you again. Here's what's happening in your network.
                         </p>
 
@@ -61,10 +61,10 @@ export default function Dashboard() {
                         <div>
                             <div className="flex items-center justify-between mb-2">
                                 <div>
-                                    <div className="text-sm font-bold text-gray-900">Profile Completeness</div>
-                                    <div className="text-xs text-gray-500">Complete your profile to unlock all features</div>
+                                    <div className="text-xs sm:text-sm font-bold text-gray-900">Profile Completeness</div>
+                                    <div className="text-[10px] sm:text-xs text-gray-500">Complete your profile to unlock all features</div>
                                 </div>
-                                <div className="text-2xl font-black text-blue-600">{profileCompleteness}%</div>
+                                <div className="text-lg sm:text-2xl font-black text-blue-600">{profileCompleteness}%</div>
                             </div>
                             <div className="w-full bg-gray-200 rounded-full h-2">
                                 <div 
@@ -76,49 +76,49 @@ export default function Dashboard() {
                     </div>
 
                     {/* V1 Release: Quick Action Cards instead of Stats */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
                         {/* Update Profile Card */}
-                        <Link to="/profile" className="bg-white rounded-xl p-6 border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all group">
-                            <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg mb-4">
-                                <div className="w-6 h-6 rounded-full border-2 border-blue-600 flex items-center justify-center">
-                                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                        <Link to="/profile" className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-6 border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all group">
+                            <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg mb-3 sm:mb-4">
+                                <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 border-blue-600 flex items-center justify-center">
+                                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-600 rounded-full"></div>
                                 </div>
                             </div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-2">Update Your Profile</h3>
-                            <p className="text-sm text-gray-600 mb-4">
+                            <h3 className="text-sm sm:text-lg font-bold text-gray-900 mb-1 sm:mb-2">Update Your Profile</h3>
+                            <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
                                 Complete your profile to help other alumni find and connect with you.
                             </p>
-                            <span className="text-sm font-bold text-blue-600 group-hover:underline flex items-center gap-1">
-                                Edit Profile <ChevronRight className="w-4 h-4" />
+                            <span className="text-xs sm:text-sm font-bold text-blue-600 group-hover:underline flex items-center gap-1">
+                                Edit Profile <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
                             </span>
                         </Link>
 
                         {/* Browse Directory Card */}
-                        <Link to="/directory" className="bg-white rounded-xl p-6 border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all group">
-                            <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg mb-4">
-                                <Users className="w-6 h-6 text-green-600" />
+                        <Link to="/directory" className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-6 border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all group">
+                            <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg mb-3 sm:mb-4">
+                                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
                             </div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-2">Browse Alumni Directory</h3>
-                            <p className="text-sm text-gray-600 mb-4">
+                            <h3 className="text-sm sm:text-lg font-bold text-gray-900 mb-1 sm:mb-2">Browse Alumni Directory</h3>
+                            <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
                                 Discover and connect with fellow Navodayans from across the network.
                             </p>
-                            <span className="text-sm font-bold text-blue-600 group-hover:underline flex items-center gap-1">
-                                View Directory <ChevronRight className="w-4 h-4" />
+                            <span className="text-xs sm:text-sm font-bold text-blue-600 group-hover:underline flex items-center gap-1">
+                                View Directory <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
                             </span>
                         </Link>
                     </div>
 
                     {/* V1 Release: Info Banner */}
-                    <div className="bg-blue-50 rounded-xl p-6 border border-blue-200">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                            <div className="flex items-center justify-center w-12 h-12 bg-blue-600 rounded-full shrink-0">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <div className="bg-blue-50 rounded-lg sm:rounded-xl p-3 sm:p-6 border border-blue-200">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+                            <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-blue-600 rounded-full shrink-0">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="sm:w-6 sm:h-6">
                                     <path d="M12 16V12M12 8H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                 </svg>
                             </div>
                             <div>
-                                <h3 className="text-base font-bold text-gray-900 mb-1">Welcome to NESMO Alumni Network!</h3>
-                                <p className="text-sm text-gray-600">
+                                <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-1">Welcome to NESMO Alumni Network!</h3>
+                                <p className="text-xs sm:text-sm text-gray-600">
                                     This is the first release of our platform. More features like events, membership benefits, 
                                     and mentorship programs are coming soon. For now, update your profile and explore the alumni directory!
                                 </p>
