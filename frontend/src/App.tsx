@@ -19,17 +19,13 @@ import UserModeration from "./components/Admin/UserModeration";
 import AdminRoute from "./components/AdminRoute";
 
 /**
- * Scroll to top on route change for mobile screens
+ * Scroll to top on route change for all screens
  */
 function ScrollToTopOnRouteChange() {
   const location = useLocation();
 
   useEffect(() => {
-    // Check if on mobile or tablet (viewport width < 1024px)
-    const isMobile = window.innerWidth < 1024;
-    if (isMobile) {
-      window.scrollTo(0, 0);
-    }
+    window.scrollTo(0, 0);
   }, [location.pathname]);
 
   return null;
