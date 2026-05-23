@@ -5,10 +5,14 @@ import { Mail, MapPin, Phone, Twitter, Github, Linkedin, Instagram, CircleCheck 
 import toast from 'react-hot-toast';
 import nesmoLogo from '../../assets/nesmo-logo-transperant.png';
 import { subscribeToNewsletter } from '../../services/newsletterService';
+import { useScrollAnimation } from '../../hooks/useScrollAnimation';
 
 export default function Footer() {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const { ref: newsletterRef, isVisible: newsletterVisible } = useScrollAnimation();
+  const { ref: footerRef, isVisible: footerVisible } = useScrollAnimation({ threshold: 0.05 });
 
   /**
    * Handle newsletter subscription
@@ -37,11 +41,12 @@ export default function Footer() {
         <>
             {/* Newsletter Section */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-8 sm:mb-12">
-                <div className="bg-white rounded-lg sm:rounded-2xl shadow-sm p-6 sm:p-8 lg:p-12">
+                <div ref={newsletterRef}
+                     className={`bg-white rounded-lg sm:rounded-2xl shadow-sm p-6 sm:p-8 lg:p-12 card-lift scroll-scale-in ${newsletterVisible ? 'is-visible' : ''}`}>
                     <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-6">
                         <div className="max-w-lg">
                             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-3">
-                                Stay Connected with NESMO
+                                Stay Connected with <span className="gradient-text-blue">NESMO</span>
                             </h2>
                             <p className="text-gray-600 text-xs sm:text-sm md:text-base">
                                 Subscribe to our newsletter for the latest alumni success stories, upcoming reunions, and community updates.
@@ -57,13 +62,13 @@ export default function Footer() {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         disabled={isLoading}
-                                        className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-xs sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                        className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed transition-all"
                                     />
                                 </div>
                                 <button 
                                     type="submit"
                                     disabled={isLoading}
-                                    className="px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors whitespace-nowrap text-xs sm:text-sm w-full sm:w-auto disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-400"
+                                    className="glow-button px-4 sm:px-6 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isLoading ? 'Subscribing...' : 'Subscribe'}
                                 </button>
@@ -75,6 +80,8 @@ export default function Footer() {
 
             {/* Footer Content */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
+                <div ref={footerRef}
+                     className={`scroll-fade-in ${footerVisible ? 'is-visible' : ''}`}>
                 <div className="flex flex-col lg:flex-row gap-12 sm:gap-16 lg:gap-20 mb-8 sm:mb-12">
                     {/* Left Section - Brand */}
                     <div className="shrink-0 lg:w-1/4">
@@ -92,16 +99,16 @@ export default function Footer() {
                             </span>
                         </div>
                         <div className="flex items-center gap-2 sm:gap-3">
-                            <a href="#" className="w-8 h-8 sm:w-9 sm:h-9 bg-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-300 transition-colors">
+                            <a href="#" className="w-8 h-8 sm:w-9 sm:h-9 bg-gray-200 rounded-lg flex items-center justify-center hover:bg-blue-100 hover:text-blue-600 transition-all hover:scale-110">
                                 <Twitter className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-700" />
                             </a>
-                            <a href="#" className="w-8 h-8 sm:w-9 sm:h-9 bg-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-300 transition-colors">
+                            <a href="#" className="w-8 h-8 sm:w-9 sm:h-9 bg-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-800 hover:text-white transition-all hover:scale-110">
                                 <Github className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-700" />
                             </a>
-                            <a href="#" className="w-8 h-8 sm:w-9 sm:h-9 bg-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-300 transition-colors">
+                            <a href="#" className="w-8 h-8 sm:w-9 sm:h-9 bg-gray-200 rounded-lg flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all hover:scale-110">
                                 <Linkedin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-700" />
                             </a>
-                            <a href="#" className="w-8 h-8 sm:w-9 sm:h-9 bg-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-300 transition-colors">
+                            <a href="#" className="w-8 h-8 sm:w-9 sm:h-9 bg-gray-200 rounded-lg flex items-center justify-center hover:bg-gradient-to-br hover:from-purple-500 hover:to-pink-500 hover:text-white transition-all hover:scale-110">
                                 <Instagram className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-700" />
                             </a>
                         </div>
@@ -204,8 +211,9 @@ export default function Footer() {
                 {/* Bottom Bar */}
                 <div className="pt-6 sm:pt-8 border-t border-gray-300">
                     <p className="text-gray-600 text-xs sm:text-sm text-center">
-                        © 2023 NESMO. All rights reserved. Empowering Alumni Since 1988
+                        © {new Date().getFullYear()} NESMO. All rights reserved. Empowering Alumni Since 1988
                     </p>
+                </div>
                 </div>
             </div>
         </>

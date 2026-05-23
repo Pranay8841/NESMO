@@ -62,7 +62,7 @@ export default function Profile() {
         ADMIN: { label: 'Admin', bgColor: 'bg-red-500' },
         EVENT_LEAD: { label: 'Event Lead', bgColor: 'bg-purple-500' },
         MEMBER: { label: 'Member', bgColor: 'bg-blue-500' },
-        ALUMNI: { label: 'Alumni', bgColor: 'bg-gray-500' },
+        ALUMNI: { label: 'Alumni', bgColor: 'bg-slate-500' },
     };
     const roleInfo = roleConfig[user?.role || 'ALUMNI'] || roleConfig.ALUMNI;
     
@@ -125,7 +125,7 @@ export default function Profile() {
     const displayCompleteness = completeness || calculateCompleteness();
 
     return (
-        <div className="max-w-7xl mx-auto px-2 sm:px-3 md:px-4 pb-6 sm:pb-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 pb-12">
             {/* Hidden file input for photo upload */}
             <input
                 ref={fileInputRef}
@@ -135,89 +135,91 @@ export default function Profile() {
                 className="hidden"
             />
 
-            <div className="flex flex-col xl:flex-row gap-3 sm:gap-4 md:gap-6">
+            <div className="flex flex-col xl:flex-row gap-6">
                 {/* Main Content */}
                 <div className="w-full xl:flex-1">
                     {/* Profile Header */}
-                    <div className="bg-white rounded-lg sm:rounded-2xl p-3 sm:p-4 md:p-6 lg:p-8 mb-4 sm:mb-6 border border-gray-200">
-                        <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 md:gap-6">
+                    <div className="bg-white rounded-3xl p-6 sm:p-8 mb-6 border border-slate-200/80 shadow-sm relative overflow-hidden">
+                        {/* Abstract Background Accents */}
+                        <div className="absolute top-0 right-0 w-48 h-48 bg-blue-50/40 rounded-full blur-2xl pointer-events-none"></div>
+
+                        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 relative z-10">
                             {/* Avatar */}
-                            <div className="relative shrink-0 mx-auto sm:mx-0">
-                                <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 rounded-lg sm:rounded-lg md:rounded-lg overflow-hidden">
+                            <div className="relative shrink-0 group">
+                                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shadow-md border-2 border-white ring-4 ring-slate-50">
                                     <img
                                         src={profileImage}
                                         alt={fullName}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                     />
                                 </div>
                                 <button 
                                     onClick={handlePhotoClick}
                                     disabled={loading}
-                                    className="absolute bottom-0 right-0 w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 bg-blue-600 rounded-full flex items-center justify-center border-3 sm:border-4 border-white shadow-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+                                    className="absolute -bottom-2 -right-2 w-9 h-9 bg-blue-600 rounded-full flex items-center justify-center border-4 border-white shadow-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer transition-all active:scale-90"
+                                    title="Upload Photo"
                                 >
-                                    <Camera className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 text-white" />
+                                    <Camera className="w-4 h-4 text-white" />
                                 </button>
                             </div>
 
                             {/* Profile Info */}
-                            <div className="flex-1 w-full">
-                                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2 sm:mb-3 gap-2 sm:gap-3">
-                                    <div className="text-center sm:text-left">
-                                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5 sm:gap-2 md:gap-3 mb-1 sm:mb-2">
-                                            <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black text-gray-900 break-words">{fullName}</h1>
-                                            <span className={`px-2 sm:px-3 py-0.5 sm:py-1 ${roleInfo.bgColor} text-white text-[10px] sm:text-xs font-bold rounded-full uppercase tracking-wider`}>
+                            <div className="flex-1 w-full text-center sm:text-left">
+                                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-3 gap-3">
+                                    <div>
+                                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mb-1.5">
+                                            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">{fullName}</h1>
+                                            <span className={`px-2.5 py-0.5 ${roleInfo.bgColor} text-white text-[10px] font-extrabold rounded-full uppercase tracking-wider`}>
                                                 {roleInfo.label}
                                             </span>
                                         </div>
                                         {(profile?.occupation || isEditing) && (
-                                            <h2 className="text-xs sm:text-base md:text-lg lg:text-xl font-bold text-blue-600 mb-1 sm:mb-2">
+                                            <h2 className="text-sm sm:text-base md:text-lg font-bold text-blue-650 mb-2">
                                                 {profile?.occupation 
                                                     ? `${profile.occupation}${profile.organization ? ` at ${profile.organization}` : ''}`
                                                     : 'Add your occupation'}
                                             </h2>
                                         )}
-                                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5 sm:gap-2 md:gap-3 text-xs sm:text-sm text-gray-600">
+                                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3.5 text-xs sm:text-sm text-slate-500 font-medium">
                                             {(profile?.joinBatch || profile?.passoutBatch) && (
-                                                <div className="flex items-center gap-1">
-                                                    <GraduationCap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
+                                                <div className="flex items-center gap-1.5">
+                                                    <GraduationCap className="w-4 h-4 text-slate-400" />
                                                     <span>{profile.joinBatch || '?'} - {profile.passoutBatch || '?'}</span>
                                                 </div>
                                             )}
                                             {profile?.currentAddress && (
-                                                <div className="flex items-center gap-1">
-                                                    <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
-                                                    <span className="truncate max-w-[120px] sm:max-w-[150px] md:max-w-none">{profile.currentAddress.split(',')[0]}</span>
+                                                <div className="flex items-center gap-1.5">
+                                                    <MapPin className="w-4 h-4 text-slate-400" />
+                                                    <span className="truncate max-w-[150px] sm:max-w-none">{profile.currentAddress.split(',')[0]}</span>
                                                 </div>
                                             )}
                                             {profile?.sector && (
-                                                <div className="flex items-center gap-1">
-                                                    <Building2 className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 text-gray-400" />
+                                                <div className="flex items-center gap-1.5">
+                                                    <Building2 className="w-4 h-4 text-slate-400" />
                                                     <span>{profile.sector}</span>
                                                 </div>
                                             )}
                                         </div>
                                         {email && (
-                                            <p className="text-[10px] sm:text-xs md:text-sm text-gray-500 mt-1.5 sm:mt-2">{email}</p>
+                                            <p className="text-xs text-slate-400 mt-2 font-medium">{email}</p>
                                         )}
                                     </div>
                                     <button 
                                         onClick={isEditing ? handleSaveProfile : handleEditToggle}
                                         disabled={loading}
-                                        className="w-full sm:w-auto px-4 sm:px-5 py-2 sm:py-2.5 bg-blue-600 text-white rounded-lg font-bold text-xs sm:text-sm hover:bg-blue-700 flex items-center justify-center gap-1.5 sm:gap-2 mt-2 sm:mt-0 disabled:opacity-50 cursor-pointer"
+                                        className="w-full sm:w-auto px-5 py-2.5 bg-blue-600 hover:bg-blue-750 text-white rounded-xl font-bold text-xs sm:text-sm hover:shadow-md hover:shadow-blue-500/10 flex items-center justify-center gap-2 mt-2 sm:mt-0 disabled:opacity-50 cursor-pointer transition-all active:scale-[0.97]"
                                     >
                                         {loading ? (
-                                            <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
+                                            <Loader2 className="w-4 h-4 animate-spin" />
                                         ) : isEditing ? (
                                             <>
-                                                <Save className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                                <span className="hidden sm:inline">Save Changes</span>
-                                                <span className="sm:hidden">Save</span>
+                                                <Save className="w-4 h-4" />
+                                                <span>Save Changes</span>
                                             </>
                                         ) : (
                                             <>
-                                                <Pencil className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                                <span className="hidden sm:inline">Edit Profile</span>
-                                                <span className="sm:hidden">Edit</span>
+                                                <Pencil className="w-4 h-4" />
+                                                <span>Edit Profile</span>
                                             </>
                                         )}
                                     </button>
@@ -226,17 +228,17 @@ export default function Profile() {
                         </div>
 
                         {/* Profile Completeness */}
-                        <div className="mt-6 pt-6 border-t border-gray-100">
-                            <div className="flex items-center justify-between mb-2">
+                        <div className="mt-8 pt-6 border-t border-slate-100">
+                            <div className="flex items-center justify-between mb-2.5">
                                 <div>
-                                    <div className="text-sm font-bold text-gray-900">Profile Completeness</div>
-                                    <div className="text-xs text-gray-500">Complete your profile to be visible in the directory</div>
+                                    <div className="text-sm font-bold text-slate-800">Profile Completeness</div>
+                                    <div className="text-xs text-slate-400">Complete your profile to be visible in the directory</div>
                                 </div>
-                                <div className="text-2xl font-black text-blue-600">{displayCompleteness}%</div>
+                                <div className="text-2xl font-black text-blue-650">{displayCompleteness}%</div>
                             </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden border border-slate-50">
                                 <div 
-                                    className="bg-blue-600 h-2 rounded-full transition-all duration-500" 
+                                    className="bg-gradient-to-r from-blue-600 to-indigo-600 h-2.5 rounded-full transition-all duration-500 shadow-inner" 
                                     style={{ width: `${displayCompleteness}%` }}
                                 ></div>
                             </div>
@@ -244,21 +246,21 @@ export default function Profile() {
                     </div>
 
                     {/* About Me */}
-                    <div className="bg-white rounded-lg sm:rounded-xl md:rounded-2xl p-4 sm:p-5 md:p-6 mb-4 sm:mb-6 border border-gray-200">
-                        <div className="flex items-center justify-between mb-3 sm:mb-4">
-                            <div className="flex items-center gap-1.5 sm:gap-2">
-                                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="sm:w-5 sm:h-5">
-                                    <circle cx="10" cy="10" r="8" stroke="#3B82F6" strokeWidth="2"/>
-                                    <path d="M10 6V10M10 14H10.01" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round"/>
+                    <div className="bg-white rounded-3xl p-6 sm:p-8 mb-6 border border-slate-200/80 shadow-sm">
+                        <div className="flex items-center justify-between mb-4 sm:mb-5">
+                            <div className="flex items-center gap-2">
+                                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-blue-600">
+                                    <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="2.5"/>
+                                    <path d="M10 6V10M10 14H10.01" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
                                 </svg>
-                                <h2 className="text-base sm:text-lg font-black text-gray-900">About Me</h2>
+                                <h2 className="text-base sm:text-lg font-bold text-slate-800 uppercase tracking-wider">About Me</h2>
                             </div>
                             {isEditing && (
                                 <button 
                                     onClick={handleEditToggle}
-                                    className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                    className="p-1.5 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer"
                                 >
-                                    <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
+                                    <X className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 hover:text-slate-650" />
                                 </button>
                             )}
                         </div>
@@ -270,37 +272,37 @@ export default function Profile() {
                                 placeholder="Tell us about yourself, your journey, and what you're passionate about..."
                                 maxLength={500}
                                 rows={5}
-                                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-xs sm:text-sm"
+                                className="w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600/10 focus:border-blue-600 focus:outline-none resize-none text-sm text-slate-700 transition-all"
                             />
                         ) : (
-                            <p className="text-gray-700 leading-relaxed text-xs sm:text-sm">
+                            <p className="text-slate-650 leading-relaxed text-xs sm:text-sm">
                                 {profile?.about || 'No bio added yet. Click "Edit Profile" to add information about yourself.'}
                             </p>
                         )}
                         {isEditing && (
-                            <div className="text-[10px] sm:text-xs text-gray-400 mt-2 text-right">
+                            <div className="text-[10px] sm:text-xs text-slate-400 mt-2 text-right font-medium">
                                 {formData.about?.length || 0}/500 characters
                             </div>
                         )}
                     </div>
 
                     {/* Personal Information */}
-                    <div className="bg-white rounded-lg sm:rounded-xl md:rounded-2xl p-4 sm:p-5 md:p-6 border border-gray-200">
-                        <div className="flex items-center gap-1.5 sm:gap-2 mb-4 sm:mb-5">
-                            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="sm:w-5 sm:h-5">
-                                <circle cx="10" cy="7" r="3" fill="#F59E0B" />
-                                <path d="M4 17C4 14 6.5 12 10 12C13.5 12 16 14 16 17" fill="#F59E0B" />
+                    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm">
+                        <div className="flex items-center gap-2 mb-6">
+                            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-amber-500">
+                                <circle cx="10" cy="7" r="3" fill="currentColor" />
+                                <path d="M4 17C4 14 6.5 12 10 12C13.5 12 16 14 16 17" fill="currentColor" />
                             </svg>
-                            <h2 className="text-base sm:text-lg font-black text-gray-900">Personal Information</h2>
+                            <h2 className="text-base sm:text-lg font-bold text-slate-800 uppercase tracking-wider">Personal Information</h2>
                         </div>
 
-                        <div className="space-y-4 sm:space-y-5">
+                        <div className="space-y-6">
                             {/* Row 1: Phone and Blood Group */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 {/* Phone Number */}
                                 <div>
-                                    <div className="text-[10px] sm:text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1.5 sm:mb-2">
-                                        PHONE NUMBER
+                                    <div className="text-[10px] text-slate-400 uppercase tracking-widest font-extrabold mb-2">
+                                        Phone Number
                                     </div>
                                     {isEditing ? (
                                         <input
@@ -309,11 +311,11 @@ export default function Profile() {
                                             value={formData.phone}
                                             onChange={handleInputChange}
                                             placeholder="+91 98765 43210"
-                                            className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-xs sm:text-sm"
+                                            className="w-full px-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600/10 focus:border-blue-600 focus:outline-none text-sm text-slate-700 transition-all"
                                         />
                                     ) : (
-                                        <div className="flex items-center gap-1.5 sm:gap-2 text-gray-900 font-semibold text-xs sm:text-sm">
-                                            <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
+                                        <div className="flex items-center gap-2 text-slate-700 font-bold text-xs sm:text-sm">
+                                            <Phone className="w-4 h-4 text-slate-450" />
                                             <span>{profile?.phone || 'Not provided'}</span>
                                         </div>
                                     )}
@@ -321,15 +323,15 @@ export default function Profile() {
 
                                 {/* Blood Group */}
                                 <div>
-                                    <div className="text-[10px] sm:text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1.5 sm:mb-2">
-                                        BLOOD GROUP
+                                    <div className="text-[10px] text-slate-400 uppercase tracking-widest font-extrabold mb-2">
+                                        Blood Group
                                     </div>
                                     {isEditing ? (
                                         <select
                                             name="bloodGroup"
                                             value={formData.bloodGroup}
                                             onChange={handleInputChange}
-                                            className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-xs sm:text-sm bg-white"
+                                            className="w-full px-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600/10 focus:border-blue-600 focus:outline-none text-sm text-slate-700 transition-all bg-white"
                                         >
                                             <option value="">Select Blood Group</option>
                                             {BLOOD_GROUPS.map(bg => (
@@ -337,8 +339,8 @@ export default function Profile() {
                                             ))}
                                         </select>
                                     ) : (
-                                        <div className="flex items-center gap-1.5 sm:gap-2 text-gray-900 font-semibold text-xs sm:text-sm">
-                                            <Droplet className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-600" />
+                                        <div className="flex items-center gap-2 text-slate-700 font-bold text-xs sm:text-sm">
+                                            <Droplet className="w-4 h-4 text-red-500" />
                                             <span>{profile?.bloodGroup || 'Not provided'}</span>
                                         </div>
                                     )}
@@ -346,11 +348,11 @@ export default function Profile() {
                             </div>
 
                             {/* Row 2: Join Batch and Passout Batch */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 {/* Join Batch */}
                                 <div>
-                                    <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">
-                                        JOIN BATCH
+                                    <div className="text-[10px] text-slate-400 uppercase tracking-widest font-extrabold mb-2">
+                                        Join Batch
                                     </div>
                                     {isEditing ? (
                                         <input
@@ -359,11 +361,11 @@ export default function Profile() {
                                             value={formData.joinBatch}
                                             onChange={handleInputChange}
                                             placeholder="e.g., 2005"
-                                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                            className="w-full px-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600/10 focus:border-blue-600 focus:outline-none text-sm text-slate-700 transition-all"
                                         />
                                     ) : (
-                                        <div className="flex items-center gap-2 text-gray-900 font-semibold">
-                                            <GraduationCap className="w-4 h-4 text-gray-400" />
+                                        <div className="flex items-center gap-2 text-slate-700 font-bold text-xs sm:text-sm">
+                                            <GraduationCap className="w-4 h-4 text-slate-450" />
                                             <span>{profile?.joinBatch || 'Not provided'}</span>
                                         </div>
                                     )}
@@ -371,8 +373,8 @@ export default function Profile() {
 
                                 {/* Passout Batch */}
                                 <div>
-                                    <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">
-                                        PASSOUT BATCH
+                                    <div className="text-[10px] text-slate-400 uppercase tracking-widest font-extrabold mb-2">
+                                        Passout Batch
                                     </div>
                                     {isEditing ? (
                                         <input
@@ -381,11 +383,11 @@ export default function Profile() {
                                             value={formData.passoutBatch}
                                             onChange={handleInputChange}
                                             placeholder="e.g., 2012"
-                                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                            className="w-full px-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600/10 focus:border-blue-600 focus:outline-none text-sm text-slate-700 transition-all"
                                         />
                                     ) : (
-                                        <div className="flex items-center gap-2 text-gray-900 font-semibold">
-                                            <GraduationCap className="w-4 h-4 text-gray-400" />
+                                        <div className="flex items-center gap-2 text-slate-700 font-bold text-xs sm:text-sm">
+                                            <GraduationCap className="w-4 h-4 text-slate-450" />
                                             <span>{profile?.passoutBatch || 'Not provided'}</span>
                                         </div>
                                     )}
@@ -393,11 +395,11 @@ export default function Profile() {
                             </div>
 
                             {/* Row 3: Occupation and Organization */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 {/* Occupation */}
                                 <div>
-                                    <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">
-                                        OCCUPATION
+                                    <div className="text-[10px] text-slate-400 uppercase tracking-widest font-extrabold mb-2">
+                                        Occupation
                                     </div>
                                     {isEditing ? (
                                         <input
@@ -406,11 +408,11 @@ export default function Profile() {
                                             value={formData.occupation}
                                             onChange={handleInputChange}
                                             placeholder="e.g., Software Engineer"
-                                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                            className="w-full px-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600/10 focus:border-blue-600 focus:outline-none text-sm text-slate-700 transition-all"
                                         />
                                     ) : (
-                                        <div className="flex items-center gap-2 text-gray-900 font-semibold">
-                                            <Building2 className="w-4 h-4 text-gray-400" />
+                                        <div className="flex items-center gap-2 text-slate-700 font-bold text-xs sm:text-sm">
+                                            <Building2 className="w-4 h-4 text-slate-450" />
                                             <span>{profile?.occupation || 'Not provided'}</span>
                                         </div>
                                     )}
@@ -418,8 +420,8 @@ export default function Profile() {
 
                                 {/* Organization */}
                                 <div>
-                                    <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">
-                                        ORGANIZATION / COMPANY
+                                    <div className="text-[10px] text-slate-400 uppercase tracking-widest font-extrabold mb-2">
+                                        Organization / Company
                                     </div>
                                     {isEditing ? (
                                         <input
@@ -427,12 +429,12 @@ export default function Profile() {
                                             name="organization"
                                             value={formData.organization}
                                             onChange={handleInputChange}
-                                            placeholder="e.g., BlackRock, AIIMS, KV"
-                                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                            placeholder="e.g., BlackRock, AIIMS"
+                                            className="w-full px-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600/10 focus:border-blue-600 focus:outline-none text-sm text-slate-700 transition-all"
                                         />
                                     ) : (
-                                        <div className="flex items-center gap-2 text-gray-900 font-semibold">
-                                            <Building2 className="w-4 h-4 text-gray-400" />
+                                        <div className="flex items-center gap-2 text-slate-700 font-bold text-xs sm:text-sm">
+                                            <Building2 className="w-4 h-4 text-slate-455" />
                                             <span>{profile?.organization || 'Not provided'}</span>
                                         </div>
                                     )}
@@ -440,11 +442,11 @@ export default function Profile() {
                             </div>
 
                             {/* Row 4: Sector */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 {/* Sector */}
                                 <div>
-                                    <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">
-                                        SECTOR / INDUSTRY
+                                    <div className="text-[10px] text-slate-400 uppercase tracking-widest font-extrabold mb-2">
+                                        Sector / Industry
                                     </div>
                                     {isEditing ? (
                                         <input
@@ -453,11 +455,11 @@ export default function Profile() {
                                             value={formData.sector}
                                             onChange={handleInputChange}
                                             placeholder="e.g., Technology, Healthcare"
-                                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                            className="w-full px-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600/10 focus:border-blue-600 focus:outline-none text-sm text-slate-700 transition-all"
                                         />
                                     ) : (
-                                        <div className="flex items-center gap-2 text-gray-900 font-semibold">
-                                            <Building2 className="w-4 h-4 text-gray-400" />
+                                        <div className="flex items-center gap-2 text-slate-700 font-bold text-xs sm:text-sm">
+                                            <Building2 className="w-4 h-4 text-slate-450" />
                                             <span>{profile?.sector || 'Not provided'}</span>
                                         </div>
                                     )}
@@ -466,8 +468,8 @@ export default function Profile() {
 
                             {/* Row 5: Current Address */}
                             <div>
-                                <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-2">
-                                    CURRENT ADDRESS
+                                <div className="text-[10px] text-slate-400 uppercase tracking-widest font-extrabold mb-2">
+                                    Current Address
                                 </div>
                                 {isEditing ? (
                                     <input
@@ -476,11 +478,11 @@ export default function Profile() {
                                         value={formData.currentAddress}
                                         onChange={handleInputChange}
                                         placeholder="City, State, Country"
-                                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                        className="w-full px-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600/10 focus:border-blue-600 focus:outline-none text-sm text-slate-700 transition-all"
                                     />
                                 ) : (
-                                    <div className="flex items-start gap-2 text-gray-900 font-semibold">
-                                        <MapPin className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
+                                    <div className="flex items-start gap-2 text-slate-700 font-bold text-xs sm:text-sm">
+                                        <MapPin className="w-4 h-4 text-slate-450 mt-0.5 shrink-0" />
                                         <span className="break-words">{profile?.currentAddress || 'Not provided'}</span>
                                     </div>
                                 )}
@@ -489,17 +491,17 @@ export default function Profile() {
 
                         {/* Save/Cancel buttons for mobile when editing */}
                         {isEditing && (
-                            <div className="flex gap-3 mt-6 pt-6 border-t border-gray-100 sm:hidden">
+                            <div className="flex gap-3 mt-8 pt-6 border-t border-slate-100 sm:hidden">
                                 <button
                                     onClick={handleEditToggle}
-                                    className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg font-bold text-sm hover:bg-gray-50"
+                                    className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-650 rounded-xl font-bold text-sm hover:bg-slate-50"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleSaveProfile}
                                     disabled={loading}
-                                    className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                                    className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
                                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                                     Save
@@ -513,22 +515,22 @@ export default function Profile() {
                 <div className="hidden xl:block w-80 shrink-0">
                     <div className="sticky top-24 space-y-6">
                         {/* Quick Profile Stats */}
-                        <div className="bg-white rounded-2xl p-6 border border-gray-200">
-                            <h3 className="text-xs text-gray-400 uppercase tracking-wider font-bold mb-6">
-                                QUICK PROFILE STATS
+                        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                            <h3 className="text-[10px] text-slate-450 uppercase tracking-widest font-extrabold mb-6">
+                                Quick Stats
                             </h3>
 
                             <div className="space-y-6">
                                 {/* JNV Batch */}
                                 <div className="flex items-center gap-3">
-                                    <div className="flex items-center justify-center w-10 h-10 bg-red-100 rounded-lg shrink-0">
-                                        <GraduationCap className="w-5 h-5 text-red-600" />
+                                    <div className="flex items-center justify-center w-10 h-10 bg-red-50 border border-red-100/50 rounded-xl shrink-0">
+                                        <GraduationCap className="w-5 h-5 text-red-500" />
                                     </div>
                                     <div>
-                                        <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold">
+                                        <div className="text-[9px] text-slate-400 uppercase tracking-widest font-bold">
                                             JNV BATCH
                                         </div>
-                                        <div className="text-base font-black text-gray-900">
+                                        <div className="text-sm font-bold text-slate-800">
                                             {(profile?.joinBatch || profile?.passoutBatch) ? `${profile?.joinBatch || '?'} - ${profile?.passoutBatch || '?'}` : 'Not set'}
                                         </div>
                                     </div>
@@ -536,14 +538,14 @@ export default function Profile() {
 
                                 {/* Blood Group */}
                                 <div className="flex items-center gap-3">
-                                    <div className="flex items-center justify-center w-10 h-10 bg-yellow-100 rounded-lg shrink-0">
+                                    <div className="flex items-center justify-center w-10 h-10 bg-yellow-50 border border-yellow-100/50 rounded-xl shrink-0">
                                         <Droplet className="w-5 h-5 text-yellow-600" />
                                     </div>
                                     <div>
-                                        <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold">
+                                        <div className="text-[9px] text-slate-400 uppercase tracking-widest font-bold">
                                             BLOOD GROUP
                                         </div>
-                                        <div className="text-base font-black text-gray-900">
+                                        <div className="text-sm font-bold text-slate-800">
                                             {profile?.bloodGroup || 'Not set'}
                                         </div>
                                     </div>
@@ -552,12 +554,12 @@ export default function Profile() {
                                 {/* Profile Completion */}
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
-                                        <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold">
-                                            PROFILE COMPLETION
+                                        <div className="text-[9px] text-slate-400 uppercase tracking-widest font-bold">
+                                            COMPLETION
                                         </div>
-                                        <div className="text-sm font-black text-blue-600">{displayCompleteness}%</div>
+                                        <div className="text-xs font-black text-blue-650">{displayCompleteness}%</div>
                                     </div>
-                                    <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                                         <div 
                                             className="bg-blue-600 h-2 rounded-full transition-all duration-500" 
                                             style={{ width: `${displayCompleteness}%` }}
@@ -568,36 +570,36 @@ export default function Profile() {
                         </div>
 
                         {/* Quick Actions */}
-                        <div className="bg-blue-600 rounded-2xl p-6 text-white">
-                            <h2 className="text-xl font-black mb-5">Quick Actions</h2>
+                        <div className="bg-gradient-to-br from-blue-600 to-indigo-650 rounded-2xl p-6 text-white shadow-lg shadow-blue-500/10">
+                            <h2 className="text-lg font-extrabold mb-5 uppercase tracking-wider text-blue-100">Quick Actions</h2>
                             <div className="space-y-3">
                                 <button 
                                     onClick={handleEditToggle}
-                                    className="w-full flex items-center justify-between px-4 py-3.5 bg-white/10 hover:bg-white/20 rounded-xl transition-colors group cursor-pointer"
+                                    className="w-full flex items-center justify-between px-4 py-3.5 bg-white/10 hover:bg-white/20 border border-white/5 rounded-xl transition-all group cursor-pointer active:scale-98"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <Pencil className="w-5 h-5" />
+                                        <Pencil className="w-5 h-5 text-blue-200" />
                                         <div className="text-left">
                                             <div className="font-bold text-sm">
                                                 {isEditing ? 'Cancel Editing' : 'Edit Profile'}
                                             </div>
-                                            <div className="text-xs text-white/80">Update your info</div>
+                                            <div className="text-xs text-blue-100/80">Update your details</div>
                                         </div>
                                     </div>
-                                    <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                    <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                                 </button>
                                 <button 
                                     onClick={handlePhotoClick}
-                                    className="w-full flex items-center justify-between px-4 py-3.5 bg-white/10 hover:bg-white/20 rounded-xl transition-colors group cursor-pointer"
+                                    className="w-full flex items-center justify-between px-4 py-3.5 bg-white/10 hover:bg-white/20 border border-white/5 rounded-xl transition-all group cursor-pointer active:scale-98"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <Camera className="w-5 h-5" />
+                                        <Camera className="w-5 h-5 text-blue-200" />
                                         <div className="text-left">
                                             <div className="font-bold text-sm">Update Photo</div>
-                                            <div className="text-xs text-white/80">Change your picture</div>
+                                            <div className="text-xs text-blue-100/80">Change your picture</div>
                                         </div>
                                     </div>
-                                    <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                    <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                                 </button>
                             </div>
                         </div>

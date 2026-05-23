@@ -38,22 +38,19 @@ import { getProfilePhotoUrl } from '../../utils/avatarHelper';
 import type { AdminUser } from '../../redux/slices/adminSlice';
 
 /** Role configuration for display */
-const roleConfig: Record<string, { label: string; color: string; bgColor: string }> = {
-    ALUMNI: { label: 'Alumni', color: 'text-blue-700', bgColor: 'bg-blue-100' },
-    MEMBER: { label: 'Member', color: 'text-green-700', bgColor: 'bg-green-100' },
-    EVENT_LEAD: { label: 'Event Lead', color: 'text-purple-700', bgColor: 'bg-purple-100' },
-    ADMIN: { label: 'Admin', color: 'text-red-700', bgColor: 'bg-red-100' },
+const roleConfig: Record<string, { label: string; color: string; bgColor: string; border: string }> = {
+    ALUMNI: { label: 'Alumni', color: 'text-blue-600', bgColor: 'bg-blue-50', border: 'border-blue-100/50' },
+    MEMBER: { label: 'Member', color: 'text-green-600', bgColor: 'bg-green-50', border: 'border-green-100/50' },
+    EVENT_LEAD: { label: 'Event Lead', color: 'text-purple-600', bgColor: 'bg-purple-50', border: 'border-purple-100/50' },
+    ADMIN: { label: 'Admin', color: 'text-red-600', bgColor: 'bg-red-50', border: 'border-red-100/50' },
 };
 
 /** Status configuration for display */
-const statusConfig: Record<string, { label: string; color: string; bgColor: string }> = {
-    ACTIVE: { label: 'Active', color: 'text-green-700', bgColor: 'bg-green-100' },
-    BLOCKED: { label: 'Blocked', color: 'text-red-700', bgColor: 'bg-red-100' },
+const statusConfig: Record<string, { label: string; color: string; bgColor: string; border: string }> = {
+    ACTIVE: { label: 'Active', color: 'text-green-600', bgColor: 'bg-green-50', border: 'border-green-100/50' },
+    BLOCKED: { label: 'Blocked', color: 'text-red-650', bgColor: 'bg-red-50', border: 'border-red-100/50' },
 };
 
-/**
- * User Moderation Page Component
- */
 const UserModeration = () => {
     const dispatch = useAppDispatch();
     const { users } = useAppSelector(state => state.admin);
@@ -215,59 +212,57 @@ const UserModeration = () => {
     };
 
     return (
-        <div className="p-3 sm:p-4 md:p-6 pb-8 sm:pb-12 px-2 sm:px-3 md:px-4 lg:px-6">
+        <div className="max-w-7xl mx-auto pb-8 sm:pb-12 px-3 sm:px-4 lg:px-6">
             {/* Header */}
-            <div className="mb-4 sm:mb-6">
-                <div className="flex items-start sm:items-center justify-between gap-3 flex-col sm:flex-row">
-                    <div className="flex items-start gap-2 sm:gap-3">
-                        <div className="p-1.5 sm:p-2 bg-indigo-100 rounded-lg mt-0.5">
-                            <Users className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600" />
+            <div className="mb-6">
+                <div className="flex items-start sm:items-center justify-between gap-4 flex-col sm:flex-row">
+                    <div className="flex items-start gap-3">
+                        <div className="p-2 bg-indigo-50 border border-indigo-100 rounded-xl mt-0.5">
+                            <Users className="w-5.5 h-5.5 text-indigo-650" />
                         </div>
                         <div>
-                            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">User Moderation</h1>
-                            <p className="text-xs sm:text-sm text-gray-500">Manage users, roles, and account status</p>
+                            <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">User Moderation</h1>
+                            <p className="text-xs sm:text-sm text-slate-500 font-medium">Manage user credentials, active roles, and account permissions.</p>
                         </div>
                     </div>
                     <button
                         onClick={() => loadUsers(users.page)}
-                        className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 w-full sm:w-auto justify-center sm:justify-start"
+                        className="flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-650 bg-white border border-slate-200 hover:border-slate-350 hover:bg-slate-50 rounded-xl transition-all shadow-sm active:scale-98 w-full sm:w-auto justify-center"
                     >
-                        <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        <span className="hidden sm:inline">Refresh</span>
-                        <span className="sm:hidden">Refresh</span>
+                        <RefreshCw className="w-4 h-4" />
+                        <span>Refresh</span>
                     </button>
                 </div>
             </div>
 
             {/* Search and Filters */}
-            <div className="mb-4 sm:mb-6 bg-white rounded-lg sm:rounded-lg md:rounded-xl shadow-sm border border-gray-200 p-3 sm:p-4">
-                <div className="flex flex-col lg:flex-row gap-3 sm:gap-4">
+            <div className="mb-6 bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm">
+                <div className="flex flex-col lg:flex-row gap-4">
                     {/* Search */}
                     <div className="flex-1 relative">
-                        <Search className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+                        <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 w-4.5 h-4.5 text-slate-400" />
                         <input
                             type="text"
                             placeholder="Search by name or email..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xs sm:text-sm"
+                            className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-650/10 focus:border-indigo-650 text-slate-700 placeholder:text-slate-400 transition-all"
                         />
                     </div>
                     
                     {/* Filter Toggle */}
                     <button
                         onClick={() => setShowFilters(!showFilters)}
-                        className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 border rounded-lg font-medium transition-colors text-xs sm:text-sm ${
+                        className={`flex items-center gap-2 px-4 py-2.5 border rounded-xl font-bold transition-all text-xs sm:text-sm cursor-pointer active:scale-98 ${
                             showFilters || statusFilter || roleFilter || verifiedFilter
                                 ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
-                                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300'
                         }`}
                     >
-                        <Filter className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        <span className="hidden sm:inline">Filters</span>
-                        <span className="sm:hidden">Filter</span>
+                        <Filter className="w-4 h-4" />
+                        <span>Filters</span>
                         {(statusFilter || roleFilter || verifiedFilter) && (
-                            <span className="px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs bg-indigo-600 text-white rounded-full font-bold">
+                            <span className="px-2 py-0.5 text-[10px] bg-indigo-600 text-white rounded-full font-black">
                                 {[statusFilter, roleFilter, verifiedFilter].filter(Boolean).length}
                             </span>
                         )}
@@ -276,16 +271,16 @@ const UserModeration = () => {
 
                 {/* Expanded Filters */}
                 {showFilters && (
-                    <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+                    <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-4">
                         {/* Status Filter */}
                         <div>
-                            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">Status</label>
+                            <label className="block text-[10px] text-slate-400 uppercase tracking-widest font-extrabold mb-2">Status</label>
                             <select
                                 value={statusFilter}
                                 onChange={(e) => setStatusFilter(e.target.value as any)}
-                                className="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-xs sm:text-sm"
+                                className="w-full px-3 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-650/10 focus:border-indigo-650 focus:outline-none text-sm text-slate-700 transition-all bg-white"
                             >
-                                <option value="">All Status</option>
+                                <option value="">All Statuses</option>
                                 <option value="active">Active</option>
                                 <option value="blocked">Blocked</option>
                             </select>
@@ -293,11 +288,11 @@ const UserModeration = () => {
                         
                         {/* Role Filter */}
                         <div>
-                            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">Role</label>
+                            <label className="block text-[10px] text-slate-400 uppercase tracking-widest font-extrabold mb-2">Role</label>
                             <select
                                 value={roleFilter}
                                 onChange={(e) => setRoleFilter(e.target.value as any)}
-                                className="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-xs sm:text-sm"
+                                className="w-full px-3 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-650/10 focus:border-indigo-650 focus:outline-none text-sm text-slate-700 transition-all bg-white"
                             >
                                 <option value="">All Roles</option>
                                 <option value="ALUMNI">Alumni</option>
@@ -309,11 +304,11 @@ const UserModeration = () => {
                         
                         {/* Verified Filter */}
                         <div>
-                            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">Email Verified</label>
+                            <label className="block text-[10px] text-slate-400 uppercase tracking-widest font-extrabold mb-2">Email Verification</label>
                             <select
                                 value={verifiedFilter}
                                 onChange={(e) => setVerifiedFilter(e.target.value as any)}
-                                className="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-xs sm:text-sm"
+                                className="w-full px-3 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-650/10 focus:border-indigo-650 focus:outline-none text-sm text-slate-700 transition-all bg-white"
                             >
                                 <option value="">All</option>
                                 <option value="true">Verified</option>
@@ -326,7 +321,7 @@ const UserModeration = () => {
                             <div className="md:col-span-3 flex justify-end">
                                 <button
                                     onClick={clearFilters}
-                                    className="text-xs sm:text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                                    className="text-xs font-bold text-indigo-600 hover:text-indigo-800"
                                 >
                                     Clear all filters
                                 </button>
@@ -337,151 +332,149 @@ const UserModeration = () => {
             </div>
 
             {/* Users Table */}
-            <div className="bg-white rounded-lg sm:rounded-lg md:rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
                 {users.loading ? (
-                    <div className="flex items-center justify-center py-16 sm:py-20">
-                        <div className="animate-spin rounded-full h-8 h-8 sm:h-10 sm:w-10 border-b-2 border-indigo-600"></div>
+                    <div className="flex items-center justify-center py-20">
+                        <div className="animate-spin rounded-full h-9 w-9 border-b-2 border-indigo-600"></div>
                     </div>
                 ) : users.data.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-12 sm:py-20 text-gray-500 px-4">
-                        <Users className="w-8 h-8 sm:w-12 sm:h-12 mb-3 sm:mb-4 opacity-50" />
-                        <p className="text-base sm:text-lg font-medium">No users found</p>
-                        <p className="text-xs sm:text-sm">Try adjusting your filters</p>
+                    <div className="flex flex-col items-center justify-center py-20 text-slate-500 px-4">
+                        <Users className="w-12 h-12 mb-4 opacity-30 text-slate-400" />
+                        <p className="text-base font-bold text-slate-800">No users found</p>
+                        <p className="text-xs text-slate-400 font-semibold mt-1">Try adjusting your filters</p>
                     </div>
                 ) : (
                     <>
                         {/* Table */}
                         <div className="overflow-x-auto">
-                            <table className="w-full text-xs sm:text-sm">
-                                <thead className="bg-gray-50 border-b border-gray-200">
-                                    <tr>
-                                        <th className="px-3 sm:px-6 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-gray-600 uppercase tracking-wider">User</th>
-                                        <th className="px-3 sm:px-6 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-gray-600 uppercase tracking-wider">Role</th>
-                                        <th className="px-3 sm:px-6 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                                        <th className="px-3 sm:px-6 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-gray-600 uppercase tracking-wider">Verified</th>
-                                        <th className="px-3 sm:px-6 py-2.5 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-gray-600 uppercase tracking-wider">Joined</th>
-                                        <th className="px-3 sm:px-6 py-2.5 sm:py-3 text-right text-[10px] sm:text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                            <table className="w-full text-left border-collapse text-xs sm:text-sm">
+                                <thead className="bg-slate-50/50 border-b border-slate-200">
+                                    <tr className="text-left text-[10px] font-extrabold text-slate-450 uppercase tracking-widest">
+                                        <th className="px-6 py-3.5">User</th>
+                                        <th className="px-6 py-3.5">Role</th>
+                                        <th className="px-6 py-3.5">Status</th>
+                                        <th className="px-6 py-3.5">Verified</th>
+                                        <th className="px-6 py-3.5">Joined</th>
+                                        <th className="px-6 py-3.5 text-right">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-200">
+                                <tbody className="divide-y divide-slate-100">
                                     {users.data.map((user) => (
-                                        <tr key={user._id} className="hover:bg-gray-50 transition-colors">
+                                        <tr key={user._id} className="hover:bg-slate-50/20 transition-colors">
                                             {/* User Info */}
-                                            <td className="px-3 sm:px-6 py-2.5 sm:py-4 whitespace-nowrap">
-                                                <div className="flex items-center gap-2 sm:gap-3">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="flex items-center gap-3">
                                                     <img
                                                         src={getAvatarUrl(user)}
                                                         alt={`${user.firstName} ${user.lastName}`}
-                                                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover flex-shrink-0"
+                                                        className="w-9 h-9 rounded-full object-cover flex-shrink-0 border border-slate-100"
                                                     />
                                                     <div>
-                                                        <div className="font-medium text-gray-900 text-xs sm:text-sm">
+                                                        <div className="font-bold text-slate-800 text-xs sm:text-sm">
                                                             {user.firstName} {user.lastName}
                                                         </div>
-                                                        <div className="text-xs sm:text-sm text-gray-500">{user.email}</div>
+                                                        <div className="text-xs text-slate-400 font-medium">{user.email}</div>
                                                     </div>
                                                 </div>
                                             </td>
                                             
                                             {/* Role */}
-                                            <td className="px-3 sm:px-6 py-2.5 sm:py-4 whitespace-nowrap">
-                                                <span className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium ${roleConfig[user.role]?.bgColor} ${roleConfig[user.role]?.color}`}>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider border ${roleConfig[user.role]?.bgColor} ${roleConfig[user.role]?.color} ${roleConfig[user.role]?.border}`}>
                                                     {roleConfig[user.role]?.label || user.role}
                                                 </span>
                                             </td>
                                             
                                             {/* Status */}
-                                            <td className="px-3 sm:px-6 py-2.5 sm:py-4 whitespace-nowrap">
-                                                <span className={`inline-flex items-center gap-0.5 sm:gap-1 px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium ${statusConfig[user.status]?.bgColor} ${statusConfig[user.status]?.color}`}>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider border ${statusConfig[user.status]?.bgColor} ${statusConfig[user.status]?.color} ${statusConfig[user.status]?.border}`}>
                                                     {user.status === 'ACTIVE' ? (
-                                                        <Shield className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                                                        <Shield className="w-3 h-3 shrink-0" />
                                                     ) : (
-                                                        <ShieldOff className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                                                        <ShieldOff className="w-3 h-3 shrink-0" />
                                                     )}
-                                                    {statusConfig[user.status]?.label || user.status}
+                                                    <span>{statusConfig[user.status]?.label || user.status}</span>
                                                 </span>
                                             </td>
                                             
                                             {/* Email Verified */}
-                                            <td className="px-3 sm:px-6 py-2.5 sm:py-4 whitespace-nowrap">
+                                            <td className="px-6 py-4 whitespace-nowrap">
                                                 {user.isEmailVerified ? (
-                                                    <span className="inline-flex items-center gap-0.5 sm:gap-1 text-green-600 text-xs sm:text-sm">
-                                                        <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />
-                                                        <span className="hidden sm:inline">Yes</span>
-                                                        <span className="sm:hidden">✓</span>
+                                                    <span className="inline-flex items-center gap-1 text-green-600 text-xs font-semibold">
+                                                        <CheckCircle className="w-4 h-4 shrink-0" />
+                                                        <span>Verified</span>
                                                     </span>
                                                 ) : (
-                                                    <span className="inline-flex items-center gap-0.5 sm:gap-1 text-red-500 text-xs sm:text-sm">
-                                                        <XCircle className="w-3 h-3 sm:w-4 sm:h-4" />
-                                                        <span className="hidden sm:inline">No</span>
-                                                        <span className="sm:hidden">✕</span>
+                                                    <span className="inline-flex items-center gap-1 text-red-500 text-xs font-semibold">
+                                                        <XCircle className="w-4 h-4 shrink-0" />
+                                                        <span>Not Verified</span>
                                                     </span>
                                                 )}
                                             </td>
                                             
                                             {/* Joined Date */}
-                                            <td className="px-3 sm:px-6 py-2.5 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                                            <td className="px-6 py-4 whitespace-nowrap text-xs text-slate-500 font-medium">
                                                 {formatDate(user.createdAt)}
                                             </td>
                                             
                                             {/* Actions */}
-                                            <td className="px-3 sm:px-6 py-2.5 sm:py-4 whitespace-nowrap text-right">
-                                                <div className="relative">
+                                            <td className="px-6 py-4 whitespace-nowrap text-right">
+                                                <div className="relative inline-block">
                                                     <button
                                                         onClick={() => setOpenDropdown(openDropdown === user._id ? null : user._id)}
-                                                        className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                                        className="p-1.5 hover:bg-slate-100 rounded-xl transition-all cursor-pointer active:scale-95 border border-transparent hover:border-slate-200"
                                                     >
-                                                        <MoreVertical className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
+                                                        <MoreVertical className="w-4 h-4 text-slate-500" />
                                                     </button>
                                                     
                                                     {/* Dropdown Menu */}
                                                     {openDropdown === user._id && (
-                                                        <div className="absolute right-0 mt-1 sm:mt-2 w-40 sm:w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                                                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-200/60 py-1.5 z-55 text-left transform origin-top-right transition-all">
                                                             <button
                                                                 onClick={() => openUserDetail(user)}
-                                                                className="w-full flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-50"
+                                                                className="w-full flex items-center gap-2.5 px-4 py-2 text-xs sm:text-sm text-slate-700 hover:bg-slate-50 font-medium cursor-pointer"
                                                             >
-                                                                <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                                                View Details
+                                                                <Eye className="w-4 h-4 text-slate-400" />
+                                                                <span>View Details</span>
                                                             </button>
                                                             
                                                             <button
                                                                 onClick={() => openRoleModal(user)}
-                                                                className="w-full flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-50"
+                                                                className="w-full flex items-center gap-2.5 px-4 py-2 text-xs sm:text-sm text-slate-700 hover:bg-slate-50 font-medium cursor-pointer"
                                                                 disabled={user._id === currentUser?._id}
                                                             >
-                                                                <UserCog className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                                                Change Role
+                                                                <UserCog className="w-4 h-4 text-slate-400" />
+                                                                <span>Change Role</span>
                                                             </button>
                                                             
                                                             {!user.isEmailVerified && (
                                                                 <button
                                                                     onClick={() => handleVerifyEmail(user)}
-                                                                    className="w-full flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-50"
+                                                                    className="w-full flex items-center gap-2.5 px-4 py-2 text-xs sm:text-sm text-slate-700 hover:bg-slate-50 font-medium cursor-pointer"
                                                                 >
-                                                                    <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                                                    Verify Email
+                                                                    <Mail className="w-4 h-4 text-slate-400" />
+                                                                    <span>Verify Email</span>
                                                                 </button>
                                                             )}
                                                             
-                                                            <div className="border-t border-gray-100 my-0.5 sm:my-1"></div>
+                                                            <div className="border-t border-slate-100 my-1"></div>
                                                             
                                                             {user.status === 'ACTIVE' ? (
                                                                 <button
                                                                     onClick={() => openBlockModal(user)}
-                                                                    className="w-full flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-red-600 hover:bg-red-50"
+                                                                    className="w-full flex items-center gap-2.5 px-4 py-2 text-xs sm:text-sm text-red-600 hover:bg-red-50 font-bold cursor-pointer"
                                                                     disabled={user.role === 'ADMIN' || user._id === currentUser?._id}
                                                                 >
-                                                                    <Ban className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                                                    Block User
+                                                                    <Ban className="w-4 h-4" />
+                                                                    <span>Block User</span>
                                                                 </button>
                                                             ) : (
                                                                 <button
                                                                     onClick={() => handleUnblockUser(user)}
-                                                                    className="w-full flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-green-600 hover:bg-green-50"
+                                                                    className="w-full flex items-center gap-2.5 px-4 py-2 text-xs sm:text-sm text-green-600 hover:bg-green-50 font-bold cursor-pointer"
                                                                 >
-                                                                    <Unlock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                                                    Unblock User
+                                                                    <Unlock className="w-4 h-4" />
+                                                                    <span>Unblock User</span>
                                                                 </button>
                                                             )}
                                                         </div>
@@ -495,27 +488,27 @@ const UserModeration = () => {
                         </div>
 
                         {/* Pagination */}
-                        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
-                            <div className="text-sm text-gray-600">
+                        <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div className="text-xs sm:text-sm text-slate-500 font-semibold">
                                 Showing {((users.page - 1) * 20) + 1} to {Math.min(users.page * 20, users.total)} of {users.total} users
                             </div>
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => handlePageChange(users.page - 1)}
                                     disabled={users.page === 1}
-                                    className="p-2 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="p-2 border border-slate-250 hover:bg-slate-50 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:scale-95 transition-all"
                                 >
-                                    <ChevronLeft className="w-4 h-4" />
+                                    <ChevronLeft className="w-4 h-4 text-slate-600" />
                                 </button>
-                                <span className="px-4 py-2 text-sm font-medium">
+                                <span className="px-4 py-2 text-xs sm:text-sm font-bold text-slate-700">
                                     Page {users.page} of {users.pages}
                                 </span>
                                 <button
                                     onClick={() => handlePageChange(users.page + 1)}
                                     disabled={users.page === users.pages}
-                                    className="p-2 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="p-2 border border-slate-250 hover:bg-slate-50 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:scale-95 transition-all"
                                 >
-                                    <ChevronRight className="w-4 h-4" />
+                                    <ChevronRight className="w-4 h-4 text-slate-600" />
                                 </button>
                             </div>
                         </div>
@@ -525,32 +518,30 @@ const UserModeration = () => {
 
             {/* Block User Modal */}
             {showBlockModal && selectedUser && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-3 sm:p-4">
-                    <div className="bg-white rounded-lg sm:rounded-xl shadow-xl max-w-md w-full">
-                        <div className="p-4 sm:p-6 border-b border-gray-200">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-base sm:text-lg font-semibold text-gray-900">Block User</h3>
-                                <button
-                                    onClick={() => setShowBlockModal(false)}
-                                    className="p-1 hover:bg-gray-100 rounded"
-                                >
-                                    <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
-                                </button>
-                            </div>
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4">
+                    <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-md w-full border border-slate-200/50 overflow-hidden">
+                        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+                            <h3 className="text-base sm:text-lg font-bold text-slate-800 uppercase tracking-wider">Block User</h3>
+                            <button
+                                onClick={() => setShowBlockModal(false)}
+                                className="p-1.5 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-slate-650 cursor-pointer"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
                         </div>
-                        <div className="p-4 sm:p-6">
-                            <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 p-2 sm:p-3 bg-gray-50 rounded-lg">
+                        <div className="p-5 sm:p-6">
+                            <div className="flex items-center gap-3 mb-4 p-3 bg-slate-50 rounded-2xl border border-slate-100">
                                 <img
                                     src={getAvatarUrl(selectedUser)}
                                     alt=""
-                                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0"
+                                    className="w-10 h-10 rounded-full flex-shrink-0 object-cover"
                                 />
                                 <div className="min-w-0">
-                                    <div className="font-medium text-xs sm:text-sm truncate">{selectedUser.firstName} {selectedUser.lastName}</div>
-                                    <div className="text-xs sm:text-sm text-gray-500 truncate">{selectedUser.email}</div>
+                                    <div className="font-bold text-slate-800 text-xs sm:text-sm truncate">{selectedUser.firstName} {selectedUser.lastName}</div>
+                                    <div className="text-xs text-slate-400 font-medium truncate">{selectedUser.email}</div>
                                 </div>
                             </div>
-                            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
+                            <label className="block text-[10px] text-slate-400 uppercase tracking-widest font-extrabold mb-2">
                                 Reason for blocking <span className="text-red-500">*</span>
                             </label>
                             <textarea
@@ -558,23 +549,23 @@ const UserModeration = () => {
                                 onChange={(e) => setBlockReason(e.target.value)}
                                 placeholder="Enter the reason for blocking this user..."
                                 rows={3}
-                                className="w-full px-2.5 sm:px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-xs sm:text-sm"
+                                className="w-full px-3 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-650/10 focus:border-red-650 focus:outline-none text-xs sm:text-sm text-slate-700 resize-none transition-all"
                             />
-                            <p className="mt-2 text-xs sm:text-sm text-gray-500">
-                                Blocked users will be unable to access the platform.
+                            <p className="mt-2 text-xs text-slate-400 font-medium">
+                                Blocked users will be immediately locked out and unable to log in.
                             </p>
                         </div>
-                        <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gray-50 rounded-b-lg sm:rounded-b-xl flex justify-end gap-2 sm:gap-3">
+                        <div className="px-5 py-4 bg-slate-50/60 rounded-b-2xl border-t border-slate-100 flex justify-end gap-2.5">
                             <button
                                 onClick={() => setShowBlockModal(false)}
-                                className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                                className="px-4 py-2 text-xs sm:text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:border-slate-350 rounded-xl transition-all cursor-pointer active:scale-95"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleBlockUser}
                                 disabled={!blockReason.trim()}
-                                className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-4 py-2 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-md shadow-red-500/10 rounded-xl transition-all cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 Block User
                             </button>
@@ -585,57 +576,55 @@ const UserModeration = () => {
 
             {/* Change Role Modal */}
             {showRoleModal && selectedUser && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-3 sm:p-4">
-                    <div className="bg-white rounded-lg sm:rounded-xl shadow-xl max-w-md w-full">
-                        <div className="p-4 sm:p-6 border-b border-gray-200">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-base sm:text-lg font-semibold text-gray-900">Change User Role</h3>
-                                <button
-                                    onClick={() => setShowRoleModal(false)}
-                                    className="p-1 hover:bg-gray-100 rounded"
-                                >
-                                    <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
-                                </button>
-                            </div>
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4">
+                    <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-md w-full border border-slate-200/50 overflow-hidden">
+                        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+                            <h3 className="text-base sm:text-lg font-bold text-slate-800 uppercase tracking-wider">Change User Role</h3>
+                            <button
+                                onClick={() => setShowRoleModal(false)}
+                                className="p-1.5 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-slate-650 cursor-pointer"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
                         </div>
-                        <div className="p-4 sm:p-6">
-                            <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 p-2 sm:p-3 bg-gray-50 rounded-lg">
+                        <div className="p-5 sm:p-6">
+                            <div className="flex items-center gap-3 mb-4 p-3 bg-slate-50 rounded-2xl border border-slate-100">
                                 <img
                                     src={getAvatarUrl(selectedUser)}
                                     alt=""
-                                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0"
+                                    className="w-10 h-10 rounded-full flex-shrink-0 object-cover"
                                 />
                                 <div className="min-w-0">
-                                    <div className="font-medium text-xs sm:text-sm truncate">{selectedUser.firstName} {selectedUser.lastName}</div>
-                                    <div className="text-xs sm:text-sm text-gray-500">Current: {roleConfig[selectedUser.role]?.label}</div>
+                                    <div className="font-bold text-slate-800 text-xs sm:text-sm truncate">{selectedUser.firstName} {selectedUser.lastName}</div>
+                                    <div className="text-xs text-slate-400 font-semibold truncate">Current: {roleConfig[selectedUser.role]?.label}</div>
                                 </div>
                             </div>
-                            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">New Role</label>
+                            <label className="block text-[10px] text-slate-400 uppercase tracking-widest font-extrabold mb-2">New Role</label>
                             <select
                                 value={newRole}
                                 onChange={(e) => setNewRole(e.target.value as any)}
-                                className="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-xs sm:text-sm"
+                                className="w-full px-3 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-650/10 focus:border-indigo-650 focus:outline-none text-sm text-slate-700 transition-all bg-white"
                             >
-                                <option value="ALUMNI">Alumni - Basic access</option>
-                                <option value="MEMBER">Member - Paid member with full access</option>
-                                <option value="EVENT_LEAD">Event Lead - Can manage events</option>
-                                <option value="ADMIN">Admin - Full administrative access</option>
+                                <option value="ALUMNI">Alumni — Basic access</option>
+                                <option value="MEMBER">Member — Paid member privileges</option>
+                                <option value="EVENT_LEAD">Event Lead — Manage portal events</option>
+                                <option value="ADMIN">Admin — Full platform settings control</option>
                             </select>
-                            <p className="mt-2 text-xs sm:text-sm text-gray-500">
-                                Changing to Admin will grant full administrative privileges.
+                            <p className="mt-2 text-xs text-slate-400 font-medium">
+                                Granting the Admin role will provide complete edit and delete rights.
                             </p>
                         </div>
-                        <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gray-50 rounded-b-lg sm:rounded-b-xl flex justify-end gap-2 sm:gap-3">
+                        <div className="px-5 py-4 bg-slate-50/60 rounded-b-2xl border-t border-slate-100 flex justify-end gap-2.5">
                             <button
                                 onClick={() => setShowRoleModal(false)}
-                                className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                                className="px-4 py-2 text-xs sm:text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:border-slate-350 rounded-xl transition-all cursor-pointer active:scale-95"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleRoleChange}
                                 disabled={newRole === selectedUser.role}
-                                className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-4 py-2 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-750 hover:to-indigo-850 shadow-md shadow-indigo-600/10 rounded-xl transition-all cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 Update Role
                             </button>
@@ -646,117 +635,113 @@ const UserModeration = () => {
 
             {/* User Detail Modal */}
             {showUserDetail && selectedUser && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-3 sm:p-4">
-                    <div className="bg-white rounded-lg sm:rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-                        <div className="p-4 sm:p-6 border-b border-gray-200 sticky top-0 bg-white">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-base sm:text-lg font-semibold text-gray-900">User Details</h3>
-                                <button
-                                    onClick={() => setShowUserDetail(false)}
-                                    className="p-1 hover:bg-gray-100 rounded"
-                                >
-                                    <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
-                                </button>
-                            </div>
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4">
+                    <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-slate-200/50">
+                        <div className="p-5 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
+                            <h3 className="text-base sm:text-lg font-bold text-slate-800 uppercase tracking-wider">User Profile Detail</h3>
+                            <button
+                                onClick={() => setShowUserDetail(false)}
+                                className="p-1.5 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-slate-650 cursor-pointer"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
                         </div>
-                        <div className="p-4 sm:p-6">
+                        <div className="p-5 sm:p-6 space-y-6">
                             {/* Profile Header */}
-                            <div className="flex items-center gap-3 sm:gap-4 mb-6">
+                            <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-2xl border border-slate-100">
                                 <img
                                     src={getAvatarUrl(selectedUser)}
                                     alt=""
-                                    className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover flex-shrink-0"
+                                    className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover flex-shrink-0 border-2 border-white shadow-sm"
                                 />
                                 <div className="min-w-0">
-                                    <h4 className="text-base sm:text-xl font-semibold text-gray-900 truncate">
+                                    <h4 className="text-base sm:text-lg font-extrabold text-slate-800 truncate">
                                         {selectedUser.firstName} {selectedUser.lastName}
                                     </h4>
-                                    <p className="text-xs sm:text-sm text-gray-500 truncate">{selectedUser.email}</p>
+                                    <p className="text-xs sm:text-sm text-slate-450 font-semibold truncate">{selectedUser.email}</p>
                                 </div>
                             </div>
                             
                             {/* Details Grid */}
-                            <div className="space-y-4">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="p-3 bg-gray-50 rounded-lg">
-                                        <div className="text-sm text-gray-500 mb-1">Role</div>
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${roleConfig[selectedUser.role]?.bgColor} ${roleConfig[selectedUser.role]?.color}`}>
-                                            {roleConfig[selectedUser.role]?.label}
-                                        </span>
-                                    </div>
-                                    <div className="p-3 bg-gray-50 rounded-lg">
-                                        <div className="text-sm text-gray-500 mb-1">Status</div>
-                                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${statusConfig[selectedUser.status]?.bgColor} ${statusConfig[selectedUser.status]?.color}`}>
-                                            {statusConfig[selectedUser.status]?.label}
-                                        </span>
-                                    </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl">
+                                    <div className="text-[10px] text-slate-450 uppercase tracking-wider font-extrabold mb-1.5">Role</div>
+                                    <span className={`inline-flex px-2.5 py-0.5 rounded-lg text-xs font-bold uppercase tracking-wider border ${roleConfig[selectedUser.role]?.bgColor} ${roleConfig[selectedUser.role]?.color} ${roleConfig[selectedUser.role]?.border}`}>
+                                        {roleConfig[selectedUser.role]?.label}
+                                    </span>
                                 </div>
-                                
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="p-3 bg-gray-50 rounded-lg">
-                                        <div className="text-sm text-gray-500 mb-1">Email Verified</div>
-                                        <div className="font-medium">
-                                            {selectedUser.isEmailVerified ? (
-                                                <span className="text-green-600 flex items-center gap-0.5 sm:gap-1 text-xs sm:text-sm">
-                                                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" /> Verified
-                                                </span>
-                                            ) : (
-                                                <span className="text-red-500 flex items-center gap-0.5 sm:gap-1 text-xs sm:text-sm">
-                                                    <XCircle className="w-3 h-3 sm:w-4 sm:h-4" /> Not Verified
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="p-2 sm:p-3 bg-gray-50 rounded-lg">
-                                        <div className="text-xs sm:text-sm text-gray-500 mb-1">Membership</div>
-                                        <div className="font-medium text-xs sm:text-sm">
-                                            {selectedUser.isMember ? (
-                                                <span className="text-green-600">Paid Member</span>
-                                            ) : (
-                                                <span className="text-gray-600">Free</span>
-                                            )}
-                                        </div>
-                                    </div>
+                                <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl">
+                                    <div className="text-[10px] text-slate-455 uppercase tracking-wider font-extrabold mb-1.5">Status</div>
+                                    <span className={`inline-flex gap-1 px-2.5 py-0.5 rounded-lg text-xs font-bold uppercase tracking-wider border ${statusConfig[selectedUser.status]?.bgColor} ${statusConfig[selectedUser.status]?.color} ${statusConfig[selectedUser.status]?.border}`}>
+                                        {statusConfig[selectedUser.status]?.label}
+                                    </span>
                                 </div>
-                                
-                                <div className="p-2 sm:p-3 bg-gray-50 rounded-lg">
-                                    <div className="text-xs sm:text-sm text-gray-500 mb-1">Joined</div>
-                                    <div className="font-medium text-xs sm:text-sm">{formatDate(selectedUser.createdAt)}</div>
-                                </div>
-                                
-                                {selectedUser.profile?.city && (
-                                    <div className="p-2 sm:p-3 bg-gray-50 rounded-lg">
-                                        <div className="text-xs sm:text-sm text-gray-500 mb-1">City</div>
-                                        <div className="font-medium text-xs sm:text-sm">{selectedUser.profile.city}</div>
-                                    </div>
-                                )}
-                                
-                                {selectedUser.profile?.currentCompany && (
-                                    <div className="p-2 sm:p-3 bg-gray-50 rounded-lg">
-                                        <div className="text-xs sm:text-sm text-gray-500 mb-1">Company</div>
-                                        <div className="font-medium text-xs sm:text-sm">{selectedUser.profile.currentCompany}</div>
-                                    </div>
-                                )}
-                                
-                                {selectedUser.status === 'BLOCKED' && selectedUser.blockedReason && (
-                                    <div className="p-2 sm:p-3 bg-red-50 rounded-lg border border-red-200">
-                                        <div className="text-xs sm:text-sm text-red-600 font-medium mb-1">Block Reason</div>
-                                        <div className="text-red-700 text-xs sm:text-sm">{selectedUser.blockedReason}</div>
-                                        {selectedUser.blockedAt && (
-                                            <div className="text-xs sm:text-sm text-red-500 mt-2">
-                                                Blocked on: {formatDate(selectedUser.blockedAt)}
-                                            </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl">
+                                    <div className="text-[10px] text-slate-450 uppercase tracking-wider font-extrabold mb-1.5">Email Verified</div>
+                                    <div className="font-bold text-xs sm:text-sm mt-0.5">
+                                        {selectedUser.isEmailVerified ? (
+                                            <span className="text-green-600 flex items-center gap-1">
+                                                <CheckCircle className="w-4 h-4 shrink-0" /> Verified
+                                            </span>
+                                        ) : (
+                                            <span className="text-red-500 flex items-center gap-1">
+                                                <XCircle className="w-4 h-4 shrink-0" /> Unverified
+                                            </span>
                                         )}
                                     </div>
-                                )}
+                                </div>
+                                <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl">
+                                    <div className="text-[10px] text-slate-450 uppercase tracking-wider font-extrabold mb-1.5">Membership</div>
+                                    <div className="font-bold text-xs sm:text-sm mt-0.5">
+                                        {selectedUser.isMember ? (
+                                            <span className="text-green-650">Paid Member Privilege</span>
+                                        ) : (
+                                            <span className="text-slate-500">Free Tier</span>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
+                            
+                            <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl">
+                                <div className="text-[10px] text-slate-450 uppercase tracking-wider font-extrabold mb-1">Joined Date</div>
+                                <div className="font-bold text-xs sm:text-sm text-slate-700">{formatDate(selectedUser.createdAt)}</div>
+                            </div>
+                            
+                            {selectedUser.profile?.city && (
+                                <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl">
+                                    <div className="text-[10px] text-slate-450 uppercase tracking-wider font-extrabold mb-1">City / Location</div>
+                                    <div className="font-bold text-xs sm:text-sm text-slate-700">{selectedUser.profile.city}</div>
+                                </div>
+                            )}
+                            
+                            {selectedUser.profile?.currentCompany && (
+                                <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl">
+                                    <div className="text-[10px] text-slate-450 uppercase tracking-wider font-extrabold mb-1">Company / Organization</div>
+                                    <div className="font-bold text-xs sm:text-sm text-slate-700">{selectedUser.profile.currentCompany}</div>
+                                </div>
+                            )}
+                            
+                            {selectedUser.status === 'BLOCKED' && selectedUser.blockedReason && (
+                                <div className="p-4 bg-red-50 border border-red-100 rounded-2xl">
+                                    <div className="text-[10px] text-red-600 font-extrabold uppercase tracking-widest mb-1.5">Block Reason</div>
+                                    <p className="text-red-700 text-xs sm:text-sm font-semibold leading-relaxed">{selectedUser.blockedReason}</p>
+                                    {selectedUser.blockedAt && (
+                                        <div className="text-[10px] text-red-500 font-bold mt-2.5 uppercase tracking-wider">
+                                            Blocked on: {formatDate(selectedUser.blockedAt)}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
-                        <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gray-50 rounded-b-lg sm:rounded-b-xl flex justify-end border-t border-gray-200 sticky bottom-0">
+                        <div className="px-5 py-4 bg-slate-50/60 rounded-b-2xl border-t border-slate-100 flex justify-end sticky bottom-0 z-10">
                             <button
                                 onClick={() => setShowUserDetail(false)}
-                                className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                                className="px-5 py-2.5 text-xs sm:text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:border-slate-350 rounded-xl transition-all cursor-pointer active:scale-95"
                             >
-                                Close
+                                Close Details
                             </button>
                         </div>
                     </div>

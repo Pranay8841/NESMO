@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { apiConnector } from "../../utils/APIsConnector";
 import { ALUMNI_API, EVENTS_API } from "../../utils/api";
+import { useScrollAnimation } from "../../hooks/useScrollAnimation";
 
 const aboutImage =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuCk9mlifc_Z2mUTedPuqK_1HlkASNMT1AdtbHeOv92RSt-nsH0ExK4qqw6owWjAvUMWccLRlHvj_PtxbzKmkZw_5E3tlEyevZjxmppmna9RYj43qe7U5uOVrYeIWUwDEBfL6Xp2Sa8rM3vC5J5DLeZv2bH8n8BSP1Qe7fKWTOETh0pZz7M6K6zzWkpScOCxiW4ZwLdj0MNJeGnoihEwZBHad_xvK84ElBxVzKNfU6hBvxxWb0QAPTXEHUYDOzPKZgccy7_06u7PQN4V";
@@ -34,6 +35,10 @@ export default function App() {
     events: "10+",
     years: new Date().getFullYear() - FOUNDED_YEAR,
   });
+
+  const { ref: headerRef, isVisible: headerVisible } = useScrollAnimation();
+  const { ref: cardsRef, isVisible: cardsVisible } = useScrollAnimation({ threshold: 0.05 });
+  const { ref: sidebarRef, isVisible: sidebarVisible } = useScrollAnimation();
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -79,7 +84,8 @@ export default function App() {
           {/* Left Section - Main Content */}
           <div className="lg:col-span-2">
             {/* Header */}
-            <div className="mb-6 sm:mb-8 md:mb-10 lg:mb-12">
+            <div ref={headerRef}
+                 className={`mb-6 sm:mb-8 md:mb-10 lg:mb-12 scroll-fade-in ${headerVisible ? 'is-visible' : ''}`}>
               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
                 <div className="w-4 sm:w-6 md:w-8 h-0.5 bg-yellow-500"></div>
                 <span className="text-[10px] sm:text-xs md:text-sm font-semibold text-gray-700 uppercase tracking-wide">
@@ -88,7 +94,7 @@ export default function App() {
               </div>
               <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 mb-2 sm:mb-3 md:mb-4">
                 Connects, Supports, and{" "}
-                <span className="text-blue-600">Grow</span>
+                <span className="gradient-text">Grow</span>
               </h1>
               <p className="text-gray-600 text-xs sm:text-sm md:text-base lg:text-lg leading-relaxed max-w-2xl">
                 We bring together alumni, students, and professionals to foster
@@ -98,9 +104,10 @@ export default function App() {
             </div>
 
             {/* Feature Cards Grid */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
+            <div ref={cardsRef}
+                 className={`grid sm:grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 stagger-children ${cardsVisible ? 'is-visible' : ''}`}>
               {/* Alumni Directory */}
-              <div className="bg-white rounded-lg sm:rounded-lg md:rounded-xl p-3 sm:p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white rounded-lg sm:rounded-lg md:rounded-xl p-3 sm:p-4 md:p-6 shadow-sm card-lift card-gradient-top">
                 <div className="w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-2 sm:mb-3 md:mb-4">
                   <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-blue-600" />
                 </div>
@@ -118,7 +125,7 @@ export default function App() {
               </div>
 
               {/* Membership Benefits */}
-              <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm card-lift card-gradient-top">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
                   <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
                 </div>
@@ -135,7 +142,7 @@ export default function App() {
               </div>
 
               {/* Medical Helpline */}
-              <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm card-lift card-gradient-top">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
                   <Stethoscope className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
                 </div>
@@ -151,7 +158,7 @@ export default function App() {
               </div>
 
               {/* Career Guidance */}
-              <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm card-lift card-gradient-top">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
                   <Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
                 </div>
@@ -168,7 +175,7 @@ export default function App() {
               </div>
 
               {/* Financial Aid */}
-              <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm card-lift card-gradient-top">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
                   <HandHeart className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
                 </div>
@@ -184,7 +191,7 @@ export default function App() {
               </div>
 
               {/* Events */}
-              <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm card-lift card-gradient-top">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
                   <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
                 </div>
@@ -203,7 +210,8 @@ export default function App() {
 
           {/* Right Section - About Card */}
           <div className="lg:col-span-1 mt-8 lg:mt-0">
-            <div className="bg-white rounded-lg sm:rounded-xl overflow-hidden shadow-sm sticky top-20 sm:top-24">
+            <div ref={sidebarRef}
+                 className={`bg-white rounded-lg sm:rounded-xl overflow-hidden shadow-sm sticky top-20 sm:top-24 card-lift scroll-fade-in-right ${sidebarVisible ? 'is-visible' : ''}`}>
               {/* Image */}
               <div className="relative h-40 sm:h-48">
                 <img
@@ -245,7 +253,7 @@ export default function App() {
                 {/* Stats */}
                 <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
                   <div className="text-center">
-                    <p className="text-lg sm:text-2xl font-bold text-blue-600">
+                    <p className="text-lg sm:text-2xl font-bold gradient-text-blue stat-number">
                       {stats.members}
                     </p>
                     <p className="text-xs text-gray-500 uppercase tracking-wide mt-1">
@@ -253,7 +261,7 @@ export default function App() {
                     </p>
                   </div>
                   <div className="text-center">
-                    <p className="text-lg sm:text-2xl font-bold text-blue-600">
+                    <p className="text-lg sm:text-2xl font-bold gradient-text-blue stat-number">
                       {stats.events}
                     </p>
                     <p className="text-xs text-gray-500 uppercase tracking-wide mt-1">
@@ -261,7 +269,7 @@ export default function App() {
                     </p>
                   </div>
                   <div className="text-center">
-                    <p className="text-lg sm:text-2xl font-bold text-blue-600">
+                    <p className="text-lg sm:text-2xl font-bold gradient-text-blue stat-number">
                       {stats.years}
                     </p>
                     <p className="text-xs text-gray-500 uppercase tracking-wide mt-1">
@@ -271,7 +279,7 @@ export default function App() {
                 </div>
 
                 {/* CTA Button */}
-                <button className="w-full bg-blue-600 text-white py-2 sm:py-3 px-4 sm:px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base">
+                <button className="glow-button w-full py-2 sm:py-3 px-4 sm:px-6 text-sm sm:text-base flex items-center justify-center gap-2">
                   Read Full Story
                   <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
                 </button>

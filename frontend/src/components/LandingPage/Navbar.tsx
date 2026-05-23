@@ -1,5 +1,5 @@
 import { LogIn, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppSelector } from '../../redux/hooks';
 import nesmoLogo from '../../assets/nesmo-logo-transperant.png';
@@ -11,8 +11,18 @@ interface NavbarProps {
 
 export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
     
     const { user } = useAppSelector((state) => state.auth);
+
+    // Scroll-aware navbar styling
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 20);
+        };
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     const handleSignupClick = () => {
         setIsMenuOpen(false); // Close mobile menu if open
@@ -42,19 +52,19 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
 
     return (
         <>            {/* Header */}
-            <header className="border-b border-gray-200 sticky top-0 bg-white z-50">
+            <header className={`border-b border-gray-200 sticky top-0 bg-white z-50 navbar-scroll ${isScrolled ? 'scrolled' : ''}`}>
                 <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 h-14 sm:h-16 flex items-center justify-between">
                     {/* Logo */}
-                    <Link to="/" className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 hover:opacity-80 transition">
-                        <img src={nesmoLogo} alt="NESMO" className="w-7 h-7 sm:w-8 sm:h-8" />
+                    <Link to="/" className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 hover:opacity-80 transition group">
+                        <img src={nesmoLogo} alt="NESMO" className="w-7 h-7 sm:w-8 sm:h-8 transition-transform duration-300 group-hover:scale-110" />
                         <span className="text-sm sm:text-base md:text-lg font-bold text-blue-600">NESMO</span>
                     </Link>
 
                     {/* Navigation */}
                     <nav className="hidden md:flex items-center gap-4 md:gap-6 lg:gap-8">
-                        <Link to="/" className="text-gray-700 text-xs md:text-sm hover:text-gray-900 transition">Home</Link>
-                        <Link to="/about" className="text-gray-700 text-xs md:text-sm hover:text-gray-900 transition">About</Link>
-                        <Link to="/directory" className="text-gray-700 text-xs md:text-sm hover:text-gray-900 transition">Directory</Link>
+                        <Link to="/" className="nav-link text-gray-700 text-xs md:text-sm hover:text-gray-900 py-1">Home</Link>
+                        <Link to="/about" className="nav-link text-gray-700 text-xs md:text-sm hover:text-gray-900 py-1">About</Link>
+                        <Link to="/directory" className="nav-link text-gray-700 text-xs md:text-sm hover:text-gray-900 py-1">Directory</Link>
                     </nav>
 
                     {/* Auth Buttons - Desktop */}
@@ -91,7 +101,7 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
                                 </button>
                                 <button
                                     onClick={handleSignupClick}
-                                    className="px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 bg-blue-600 text-white rounded-lg text-[10px] sm:text-xs md:text-sm font-medium hover:bg-blue-700 transition"
+                                    className="glow-button px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs md:text-sm"
                                 >
                                     Join Now
                                 </button>
@@ -108,9 +118,9 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
                     </button>
                 </div>
 
-                {/* Mobile Menu */}
-                {isMenuOpen && (
-                    <div className="md:hidden border-t border-gray-200 bg-white">
+                {/* Mobile Menu — smooth slide */}
+                <div className={`md:hidden overflow-hidden transition-all duration-300 ease-out ${isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+                    <div className="border-t border-gray-200 bg-white">
                         <nav className="flex flex-col px-3 sm:px-4 py-3 space-y-2.5">
                             <Link to="/" className="text-gray-700 hover:text-gray-900 text-sm" onClick={() => setIsMenuOpen(false)}>Home</Link>
                             <Link to="/about" className="text-gray-700 hover:text-gray-900 text-sm" onClick={() => setIsMenuOpen(false)}>About</Link>
@@ -148,7 +158,7 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
                                         </button>
                                         <button
                                             onClick={handleSignupClick}
-                                            className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700"
+                                            className="glow-button flex-1 px-3 py-2 text-xs"
                                         >
                                             Join Now
                                         </button>
@@ -157,7 +167,7 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
                             </div>
                         </nav>
                     </div>
-                )}
+                </div>
             </header>
         </>
     );

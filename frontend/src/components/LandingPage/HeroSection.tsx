@@ -5,6 +5,7 @@ import heroImage from '../../assets/Banner.jpeg';
 import { apiConnector } from '../../utils/APIsConnector';
 import { ALUMNI_API } from '../../utils/api';
 import { useAppSelector } from '../../redux/hooks';
+import { useScrollAnimation } from '../../hooks/useScrollAnimation';
 
 interface RecentMember {
     id: string;
@@ -20,6 +21,9 @@ export default function HeroSection() {
     const [loading, setLoading] = useState(true);
     const { token } = useAppSelector(state => state.auth);
     const navigate = useNavigate();
+
+    const { ref: leftRef, isVisible: leftVisible } = useScrollAnimation({ threshold: 0.05 });
+    const { ref: rightRef, isVisible: rightVisible } = useScrollAnimation({ threshold: 0.1 });
 
     useEffect(() => {
         const fetchRecentMembers = async () => {
@@ -73,8 +77,8 @@ export default function HeroSection() {
         <>
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
                 <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
-                    {/* Left Content */}
-                    <div>
+                    {/* Left Content — scroll animated */}
+                    <div ref={leftRef} className={`scroll-fade-in-left ${leftVisible ? 'is-visible' : ''}`}>
                         <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
                             <div className="inline-block">
                                 <span className="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-blue-100 text-blue-600 rounded-md text-[10px] sm:text-xs font-medium whitespace-nowrap">
@@ -85,7 +89,7 @@ export default function HeroSection() {
 
                         <h1 className="mt-2 sm:mt-4 lg:mt-6 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black text-gray-900 leading-tight">
                             Where Navodayans<br />
-                            Stay Connected<br />
+                            <span className="gradient-text">Stay Connected</span><br />
                             For Life
                         </h1>
 
@@ -94,29 +98,29 @@ export default function HeroSection() {
                         </p>
 
                         <div className="flex flex-wrap items-center gap-3 mt-3 sm:mt-4">
-                            <span className="px-1.5 sm:px-2 py-0.5 bg-blue-300 text-blue-800 rounded text-[10px] sm:text-xs font-medium whitespace-nowrap">
+                            <span className="tag-pill bg-blue-100 text-blue-800 border-l-2 border-blue-500">
                                 Connect
                             </span>
-                            <span className="px-1.5 sm:px-2 py-0.5 bg-green-300 text-green-800 rounded text-[10px] sm:text-xs font-medium whitespace-nowrap">
+                            <span className="tag-pill bg-green-100 text-green-800 border-l-2 border-green-500">
                                 Support
                             </span>
-                            <span className="px-1.5 sm:px-2 py-0.5 bg-red-300 text-red-800 rounded text-[10px] sm:text-xs font-medium whitespace-nowrap">
+                            <span className="tag-pill bg-red-100 text-red-800 border-l-2 border-red-500">
                                 Grow
                             </span>
-                            <span className="px-1.5 sm:px-2 py-0.5 bg-yellow-300 text-yellow-800 rounded text-[10px] sm:text-xs font-medium whitespace-nowrap">
+                            <span className="tag-pill bg-yellow-100 text-yellow-800 border-l-2 border-yellow-500">
                                 Give Back
                             </span>
                         </div>
 
                         {/* CTA Buttons */}
                         <div className="mt-4 sm:mt-6 lg:mt-8 flex flex-col sm:flex-row flex-wrap items-center gap-2 sm:gap-3 lg:gap-4">
-                            <button className="w-full sm:w-auto px-3 sm:px-6 py-2 sm:py-3 bg-orange-500 text-white rounded-lg font-medium text-xs sm:text-sm hover:bg-orange-600 transition flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2">
+                            <button className="glow-button w-full sm:w-auto px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2">
                                 <Users className="w-3 h-3 sm:w-4 sm:h-4" />
                                 Join Membership
                             </button>
                             <button 
                                 onClick={() => navigate('/directory')}
-                                className="w-full sm:w-auto px-3 sm:px-6 py-2 sm:py-3 border-2 border-blue-600 text-blue-600 rounded-lg font-medium text-xs sm:text-sm hover:bg-blue-200 transition cursor-pointer flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2"
+                                className="w-full sm:w-auto px-3 sm:px-6 py-2 sm:py-3 border-2 border-blue-600 text-blue-600 rounded-lg font-medium text-xs sm:text-sm hover:bg-blue-50 transition-all cursor-pointer flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 hover:-translate-y-0.5"
                             >
                                 <Search className="w-3 h-3 sm:w-4 sm:h-4" />
                                 Explore Directory
@@ -130,7 +134,7 @@ export default function HeroSection() {
                                     {recentMembers.slice(0, 4).map((member) => (
                                         <div
                                             key={member.id}
-                                            className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 rounded-full border border-sm border-white sm:border-2 overflow-hidden flex-shrink-0 flex items-center justify-center bg-gray-300"
+                                            className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 rounded-full border border-sm border-white sm:border-2 overflow-hidden flex-shrink-0 flex items-center justify-center bg-gray-300 transition-transform hover:scale-110 hover:z-10"
                                             title={member.name}
                                         >
                                             {member.photo ? (
@@ -174,9 +178,10 @@ export default function HeroSection() {
                         )}
                     </div>
 
-                    {/* Right Content - Image Card */}
-                    <div className="mt-6 sm:mt-8 lg:mt-12 lg:mt-0 lg:shrink-0 lg:grow w-full max-w-2xl mx-auto lg:mx-0">
-                        <div className="relative rounded-lg sm:rounded-xl lg:rounded-2xl bg-gray-900/5 p-1 sm:p-1.5 lg:p-2 ring-1 ring-inset ring-gray-900/10 lg:-m-4 lg:rounded-2xl lg:p-4 group">
+                    {/* Right Content - Image Card — scroll animated */}
+                    <div ref={rightRef}
+                         className={`mt-6 sm:mt-8 lg:mt-12 lg:mt-0 lg:shrink-0 lg:grow w-full max-w-2xl mx-auto lg:mx-0 scroll-fade-in-right ${rightVisible ? 'is-visible' : ''}`}>
+                        <div className="relative rounded-lg sm:rounded-xl lg:rounded-2xl bg-gray-900/5 p-1 sm:p-1.5 lg:p-2 ring-1 ring-inset ring-gray-900/10 lg:-m-4 lg:rounded-2xl lg:p-4 group hover-gradient-ring">
                             <div className="relative overflow-hidden rounded-lg sm:rounded-lg lg:rounded-xl bg-blue-600 shadow-lg sm:shadow-xl lg:shadow-2xl">
 
                                 {/* Image Overlay Gradient */}
@@ -191,29 +196,6 @@ export default function HeroSection() {
 
                                 {/* Floating Event Card */}
                                 <div className="absolute bottom-2 sm:bottom-3 lg:bottom-6 left-2 sm:left-3 lg:left-6 right-2 sm:right-3 lg:right-6 z-20">
-                                    {/* <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 lg:gap-4 rounded-lg bg-white/95 p-2 sm:p-3 lg:p-4 shadow-lg backdrop-blur supports-backdrop-filter:bg-white/60"> */}
-
-                                        {/* Icon */}
-                                        {/* <div className="flex h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600 flex-shrink-0">
-                                            <Calendar className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6" />
-                                        </div> */}
-
-                                        {/* Text */}
-                                        {/* <div className="flex-1 min-w-0">
-                                            <p className="text-[8px] sm:text-xs font-semibold uppercase tracking-wide text-gray-500">
-                                                Next Major Event
-                                            </p>
-                                            <p className="text-xs sm:text-sm lg:text-base font-bold text-gray-900 truncate">
-                                                Annual Alumni Meet 2024
-                                            </p>
-                                        </div> */}
-
-                                        {/* Arrow */}
-                                        {/* <div className="hidden sm:block ml-auto text-gray-400 flex-shrink-0">
-                                            →
-                                        </div> */}
-
-                                    {/* </div> */}
                                 </div>
 
                             </div>
