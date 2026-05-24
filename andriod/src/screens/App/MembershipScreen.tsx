@@ -1,20 +1,27 @@
 /**
  * @fileoverview Membership Screen
- * Membership status and upgrade
+ * Enforces guest restriction and renders guest welcome CTA or membership placeholder.
  * 
  * @module screens/App/MembershipScreen
  */
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useAppSelector } from '../../redux/hooks';
+import GuestPlaceholder from '../../components/GuestPlaceholder';
 
-/**
- * Membership Screen Component
- * 
- * @component
- * @returns {JSX.Element} Membership screen
- */
 export default function MembershipScreen() {
+  const { token, user } = useAppSelector((state) => state.auth);
+
+  if (!token || !user) {
+    return (
+      <GuestPlaceholder
+        title="Membership Portal"
+        description="Verify your membership, unlock special alumni privileges, pay dues, and support NESMO initiatives."
+      />
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Membership</Text>

@@ -32,7 +32,7 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Provider store={store}>
-        <ToastProvider>
+        <ToastProvider placement="top" offsetTop={60} duration={3000}>
           <RootNavigator />
         </ToastProvider>
       </Provider>

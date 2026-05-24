@@ -31,6 +31,7 @@ import type { AlumniMember } from '../../redux/slices/alumniSlice';
 import { fetchAlumniDirectory } from '../../services/alumniService';
 import AlumniProfileModal from '../../components/Directory/AlumniProfileModal';
 import { Feather, Ionicons, FontAwesome } from '@expo/vector-icons';
+import GuestPlaceholder from '../../components/GuestPlaceholder';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 const JOIN_BATCH_OPTIONS = Array.from({ length: 41 }, (_, i) => `${1986 + i}`);
@@ -62,22 +63,36 @@ export default function DirectoryScreen() {
     appliedFilters,
     searchQuery,
   } = useAppSelector((state) => state.alumni);
+  const { token, user } = useAppSelector((state) => state.auth);
 
   // Load directory on page/filters/search change
   const loadDirectory = useCallback(() => {
-    dispatch(
-      fetchAlumniDirectory({
-        page,
-        limit: LIMIT,
-        filters: appliedFilters,
-        search: searchQuery,
-      })
-    );
-  }, [dispatch, page, appliedFilters, searchQuery]);
+    // Only fetch if authenticated to prevent API errors
+    if (token && user) {
+      dispatch(
+        fetchAlumniDirectory({
+          page,
+          limit: LIMIT,
+          filters: appliedFilters,
+          search: searchQuery,
+        })
+      );
+    }
+  }, [dispatch, page, appliedFilters, searchQuery, token, user]);
 
   useEffect(() => {
     loadDirectory();
   }, [loadDirectory]);
+
+  // If guest (not logged in), show Sign In CTA placeholder
+  if (!token || !user) {
+    return (
+      <GuestPlaceholder
+        title="Alumni Directory"
+        description="Search, discover, and connect with fellow Navodayans globally by batch, JNV branch, blood group, and profession."
+      />
+    );
+  }
 
   const handleApplyFilters = () => {
     dispatch(applyFilters());

@@ -10,15 +10,15 @@ export const APP_CONSTANTS = {
   SCREENS: {
     // Auth Stack (Firebase only)
     LOGIN: 'Login',
-    
+
     // App Stack
     HOME: 'Home',
-    PROFILE: 'Profile',
     DIRECTORY: 'Directory',
     EVENTS: 'Events',
     MEMBERSHIP: 'Membership',
-    SETTINGS: 'Settings',
+    PROFILE: 'Profile',
     USER_MODERATION: 'UserModeration',
+    ADMIN_DASHBOARD: 'AdminDashboard',
   },
 
   // Navigation names

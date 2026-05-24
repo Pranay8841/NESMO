@@ -1,20 +1,27 @@
 /**
  * @fileoverview Events Screen
- * Events listing and registration
+ * Enforces guest restriction and renders guest welcome CTA or events placeholder.
  * 
  * @module screens/App/EventsScreen
  */
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useAppSelector } from '../../redux/hooks';
+import GuestPlaceholder from '../../components/GuestPlaceholder';
 
-/**
- * Events Screen Component
- * 
- * @component
- * @returns {JSX.Element} Events screen
- */
 export default function EventsScreen() {
+  const { token, user } = useAppSelector((state) => state.auth);
+
+  if (!token || !user) {
+    return (
+      <GuestPlaceholder
+        title="NESMO Events"
+        description="Stay updated with upcoming chapter meetings, local JNV get-togethers, webinars, and annual reunions."
+      />
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Events</Text>

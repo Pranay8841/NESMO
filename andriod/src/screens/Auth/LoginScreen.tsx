@@ -44,7 +44,20 @@ GoogleSignin.configure({
  */
 export default function LoginScreen({ navigation }: LoginScreenProps) {
   const dispatch = useAppDispatch();
-  const { loading, error } = useAppSelector((state) => state.auth);
+  const { loading, error, token, user } = useAppSelector((state) => state.auth);
+
+  // Automatically close the login modal when authentication succeeds
+  useEffect(() => {
+    if (token && user) {
+      // Retrieve parent navigator (RootNavigator) and navigate back to AppStack or close modal
+      const parentNav = navigation.getParent();
+      if (parentNav && parentNav.canGoBack()) {
+        parentNav.goBack();
+      } else {
+        navigation.navigate('AppStack');
+      }
+    }
+  }, [token, user, navigation]);
 
   /**
    * Handle Google Sign-In button press

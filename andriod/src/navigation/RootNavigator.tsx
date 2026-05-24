@@ -69,22 +69,17 @@ export default function RootNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {token && user ? (
-          // User is authenticated - show app stack
-          <Stack.Screen
-            name="AppStack"
-            component={AppNavigator}
-            options={{
-              animationTypeForReplace: 'pop',
-            }}
-          />
-        ) : (
-          // User is not authenticated - show auth stack
-          <Stack.Screen
-            name="AuthStack"
-            component={AuthNavigator}
-          />
-        )}
+        <Stack.Screen
+          name="AppStack"
+          component={AppNavigator}
+        />
+        <Stack.Screen
+          name="AuthStack"
+          component={AuthNavigator}
+          options={{
+            presentation: 'modal',
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

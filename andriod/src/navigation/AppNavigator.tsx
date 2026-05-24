@@ -18,6 +18,7 @@ import EventsScreen from '../screens/App/EventsScreen';
 import MembershipScreen from '../screens/App/MembershipScreen';
 import SettingsScreen from '../screens/App/SettingsScreen';
 import UserModerationScreen from '../screens/App/UserModerationScreen';
+import AdminDashboardScreen from '../screens/App/AdminDashboardScreen';
 
 import { APP_CONSTANTS } from '../constants';
 import { Ionicons } from '@expo/vector-icons';
@@ -31,7 +32,7 @@ export type AppTabParamList = {
   [APP_CONSTANTS.SCREENS.DIRECTORY]: undefined;
   [APP_CONSTANTS.SCREENS.EVENTS]: undefined;
   [APP_CONSTANTS.SCREENS.MEMBERSHIP]: undefined;
-  [APP_CONSTANTS.SCREENS.SETTINGS]: undefined;
+  [APP_CONSTANTS.SCREENS.PROFILE]: undefined;
 };
 
 /**
@@ -44,6 +45,7 @@ export type AppStackParamList = {
     userId?: string;
   };
   [APP_CONSTANTS.SCREENS.USER_MODERATION]: undefined;
+  [APP_CONSTANTS.SCREENS.ADMIN_DASHBOARD]: undefined;
 };
 
 
@@ -95,8 +97,8 @@ function TabNavigator() {
             case APP_CONSTANTS.SCREENS.MEMBERSHIP:
               iconName = focused ? 'card' : 'card-outline';
               break;
-            case APP_CONSTANTS.SCREENS.SETTINGS:
-              iconName = focused ? 'settings' : 'settings-outline';
+            case APP_CONSTANTS.SCREENS.PROFILE:
+              iconName = focused ? 'person' : 'person-outline';
               break;
             default:
               iconName = 'home';
@@ -112,7 +114,7 @@ function TabNavigator() {
         name={APP_CONSTANTS.SCREENS.HOME}
         component={HomeScreen}
         options={{
-          title: 'Home',
+          headerShown: false,
         }}
       />
       <Tab.Screen
@@ -137,10 +139,10 @@ function TabNavigator() {
         }}
       />
       <Tab.Screen
-        name={APP_CONSTANTS.SCREENS.SETTINGS}
+        name={APP_CONSTANTS.SCREENS.PROFILE}
         component={SettingsScreen}
         options={{
-          title: 'Settings',
+          title: 'Profile',
         }}
       />
     </Tab.Navigator>
@@ -182,6 +184,15 @@ export default function AppNavigator() {
           component={UserModerationScreen}
           options={{
             title: 'User Moderation',
+            headerShown: true,
+            headerTitleAlign: 'center',
+          }}
+        />
+        <Stack.Screen
+          name={APP_CONSTANTS.SCREENS.ADMIN_DASHBOARD}
+          component={AdminDashboardScreen}
+          options={{
+            title: 'Admin Dashboard',
             headerShown: true,
             headerTitleAlign: 'center',
           }}
