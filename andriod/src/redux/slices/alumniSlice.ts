@@ -81,6 +81,8 @@ interface AlumniState {
   appliedFilters: AlumniFilters;
   /** Current search query */
   searchQuery: string;
+  /** Error message from failed operations */
+  error: string | null;
 }
 
 const initialFilters: AlumniFilters = {
@@ -100,6 +102,7 @@ const initialState: AlumniState = {
   filters: { ...initialFilters },
   appliedFilters: { ...initialFilters },
   searchQuery: '',
+  error: null,
 };
 
 export const alumniSlice = createSlice({
@@ -142,6 +145,9 @@ export const alumniSlice = createSlice({
       state.searchQuery = action.payload;
       state.page = 1; // Reset to page 1 when searching
     },
+    setError: (state, action: PayloadAction<string | null>) => {
+      state.error = action.payload;
+    },
     resetAlumniState: () => initialState,
   },
 });
@@ -157,6 +163,7 @@ export const {
   clearFilters,
   removeFilter,
   setSearchQuery,
+  setError,
   resetAlumniState,
 } = alumniSlice.actions;
 

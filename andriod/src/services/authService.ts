@@ -200,3 +200,33 @@ export const restoreToken = createAsyncThunk(
     }
   }
 );
+
+/**
+ * Mock email signup (legacy - googleSignIn is used)
+ */
+export const emailSignup = createAsyncThunk(
+  'auth/emailSignup',
+  async (payload: any, { rejectWithValue }) => {
+    return rejectWithValue('Email signup is not implemented');
+  }
+);
+
+/**
+ * Mock verify email (legacy)
+ */
+export const verifyEmail = createAsyncThunk(
+  'auth/verifyEmail',
+  async (payload: any, { rejectWithValue }) => {
+    return rejectWithValue('Email verification is not implemented');
+  }
+);
+
+/**
+ * Mock resend verification email (legacy)
+ */
+export const resendVerificationEmail = createAsyncThunk(
+  'auth/resendVerificationEmail',
+  async (email: string, { rejectWithValue }) => {
+    return rejectWithValue('Resend verification email is not implemented');
+  }
+);

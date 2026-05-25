@@ -5,7 +5,7 @@
  * @module screens/App/DirectoryScreen
  */
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import {
   ScrollView,
   Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import {
   setFilters,
@@ -39,9 +40,9 @@ const PASSOUT_BATCH_OPTIONS = Array.from({ length: 41 }, (_, i) => `${1993 + i}`
 const LIMIT = 12;
 
 const roleConfig: Record<string, { label: string; bgColor: string; textColor: string }> = {
-  ADMIN: { label: 'Admin', bgColor: '#FEF2F2', textColor: '#B91C1C' },
-  EVENT_LEAD: { label: 'Event Lead', bgColor: '#F5F3FF', textColor: '#6D28D9' },
-  MEMBER: { label: 'Member', bgColor: '#EFF6FF', textColor: '#1D4ED8' },
+  ADMIN: { label: 'Admin', bgColor: '#EF4444', textColor: '#FFFFFF' },
+  EVENT_LEAD: { label: 'Event Lead', bgColor: '#8B5CF6', textColor: '#FFFFFF' },
+  MEMBER: { label: 'Member', bgColor: '#3B82F6', textColor: '#FFFFFF' },
   ALUMNI: { label: 'Alumni', bgColor: '#F3F4F6', textColor: '#4B5563' },
 };
 
@@ -53,6 +54,8 @@ export default function DirectoryScreen() {
 
   // Dropdown Picker state
   const [pickerType, setPickerType] = useState<'joinBatch' | 'passoutBatch' | null>(null);
+
+  const flatListRef = useRef<FlatList<AlumniMember>>(null);
 
   const {
     alumni,
@@ -83,6 +86,13 @@ export default function DirectoryScreen() {
   useEffect(() => {
     loadDirectory();
   }, [loadDirectory]);
+
+  // Scroll to top on page changes
+  useEffect(() => {
+    if (flatListRef.current) {
+      flatListRef.current.scrollToOffset({ offset: 0, animated: true });
+    }
+  }, [page]);
 
   // If guest (not logged in), show Sign In CTA placeholder
   if (!token || !user) {
@@ -138,7 +148,15 @@ export default function DirectoryScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+      {/* Directory Title & Stats Header */}
+      <View style={styles.directoryHeader}>
+        <Text style={styles.directoryTitle}>Directory</Text>
+        <Text style={styles.directorySubtitle}>
+          Search and connect with fellow Navodayans globally.
+        </Text>
+      </View>
+
       {/* Search Header */}
       <View style={styles.searchBarContainer}>
         <View style={styles.searchInputWrapper}>
@@ -179,7 +197,7 @@ export default function DirectoryScreen() {
         >
           {appliedFilters.joinBatch && (
             <View style={styles.chip}>
-              <Text style={styles.chipText}>Joined {appliedFilters.joinBatch}</Text>
+              <Text style={styles.chipText} numberOfLines={1}>Joined {appliedFilters.joinBatch}</Text>
               <TouchableOpacity onPress={() => handleRemoveFilter('joinBatch')} style={styles.chipClose}>
                 <Feather name="x" size={10} color="#2563EB" />
               </TouchableOpacity>
@@ -187,7 +205,7 @@ export default function DirectoryScreen() {
           )}
           {appliedFilters.passoutBatch && (
             <View style={styles.chip}>
-              <Text style={styles.chipText}>Passout {appliedFilters.passoutBatch}</Text>
+              <Text style={styles.chipText} numberOfLines={1}>Passout {appliedFilters.passoutBatch}</Text>
               <TouchableOpacity onPress={() => handleRemoveFilter('passoutBatch')} style={styles.chipClose}>
                 <Feather name="x" size={10} color="#2563EB" />
               </TouchableOpacity>
@@ -195,7 +213,7 @@ export default function DirectoryScreen() {
           )}
           {appliedFilters.city && (
             <View style={styles.chip}>
-              <Text style={styles.chipText}>{appliedFilters.city}</Text>
+              <Text style={styles.chipText} numberOfLines={1}>{appliedFilters.city}</Text>
               <TouchableOpacity onPress={() => handleRemoveFilter('city')} style={styles.chipClose}>
                 <Feather name="x" size={10} color="#2563EB" />
               </TouchableOpacity>
@@ -203,7 +221,7 @@ export default function DirectoryScreen() {
           )}
           {appliedFilters.occupation && (
             <View style={styles.chip}>
-              <Text style={styles.chipText}>{appliedFilters.occupation}</Text>
+              <Text style={styles.chipText} numberOfLines={1}>{appliedFilters.occupation}</Text>
               <TouchableOpacity onPress={() => handleRemoveFilter('occupation')} style={styles.chipClose}>
                 <Feather name="x" size={10} color="#2563EB" />
               </TouchableOpacity>
@@ -211,7 +229,7 @@ export default function DirectoryScreen() {
           )}
           {appliedFilters.bloodGroup && (
             <View style={[styles.chip, { backgroundColor: '#FEE2E2', borderColor: '#FECACA' }]}>
-              <Text style={[styles.chipText, { color: '#EF4444' }]}>Blood: {appliedFilters.bloodGroup}</Text>
+              <Text style={[styles.chipText, { color: '#EF4444' }]} numberOfLines={1}>Blood: {appliedFilters.bloodGroup}</Text>
               <TouchableOpacity onPress={() => handleRemoveFilter('bloodGroup')} style={styles.chipClose}>
                 <Feather name="x" size={10} color="#EF4444" />
               </TouchableOpacity>
@@ -219,7 +237,7 @@ export default function DirectoryScreen() {
           )}
           {appliedFilters.isMember === 'true' && (
             <View style={[styles.chip, { backgroundColor: '#D1FAE5', borderColor: '#A7F3D0' }]}>
-              <Text style={[styles.chipText, { color: '#059669' }]}>NESMO Members</Text>
+              <Text style={[styles.chipText, { color: '#059669' }]} numberOfLines={1}>NESMO Members</Text>
               <TouchableOpacity onPress={() => handleRemoveFilter('isMember')} style={styles.chipClose}>
                 <Feather name="x" size={10} color="#059669" />
               </TouchableOpacity>
@@ -228,10 +246,19 @@ export default function DirectoryScreen() {
         </ScrollView>
       )}
 
+      {/* Stats Count Label */}
+      {!loading && totalCount > 0 && (
+        <View style={styles.statsContainer}>
+          <Text style={styles.statsText}>
+            Found {totalCount} Navodaya Ex-Students
+          </Text>
+        </View>
+      )}
+
       {/* Grid of Alumni */}
-      {loading ? (
+      {loading && alumni.length === 0 ? (
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
+          <ActivityIndicator size="large" color="#2563EB" />
         </View>
       ) : alumni.length === 0 ? (
         <View style={styles.centerContainer}>
@@ -246,10 +273,13 @@ export default function DirectoryScreen() {
         </View>
       ) : (
         <FlatList
+          ref={flatListRef}
           data={alumni}
           keyExtractor={(item) => item.id}
           numColumns={2}
           contentContainerStyle={styles.gridContainer}
+          refreshing={loading && alumni.length > 0}
+          onRefresh={loadDirectory}
           renderItem={({ item }) => {
             const isPaid = item.role !== 'ALUMNI' || item.isMember;
             const rInfo = roleConfig[item.role] || roleConfig.ALUMNI;
@@ -333,7 +363,7 @@ export default function DirectoryScreen() {
                   onPress={() => handlePageChange(Math.max(1, page - 1))}
                   disabled={page === 1}
                 >
-                  <Feather name="chevron-left" size={18} color="#007AFF" />
+                  <Feather name="chevron-left" size={18} color="#2563EB" />
                 </TouchableOpacity>
                 <Text style={styles.pageIndicator}>
                   Page {page} of {totalPages}
@@ -343,7 +373,7 @@ export default function DirectoryScreen() {
                   onPress={() => handlePageChange(Math.min(totalPages, page + 1))}
                   disabled={page === totalPages}
                 >
-                  <Feather name="chevron-right" size={18} color="#007AFF" />
+                  <Feather name="chevron-right" size={18} color="#2563EB" />
                 </TouchableOpacity>
               </View>
             ) : null
@@ -516,7 +546,7 @@ export default function DirectoryScreen() {
         }}
         member={selectedMember}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -524,6 +554,35 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8FAFC',
+  },
+  directoryHeader: {
+    paddingHorizontal: 16,
+    paddingTop: 24,
+    paddingBottom: 8,
+  },
+  directoryTitle: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  directorySubtitle: {
+    fontSize: 15,
+    color: '#64748B',
+    marginTop: 6,
+    fontWeight: '400',
+    lineHeight: 20,
+  },
+  statsContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginTop: 4,
+  },
+  statsText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#64748B',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   searchBarContainer: {
     flexDirection: 'row',
@@ -565,8 +624,8 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   filterButtonActive: {
-    backgroundColor: '#007AFF',
-    borderColor: '#007AFF',
+    backgroundColor: '#2563EB',
+    borderColor: '#2563EB',
   },
   badge: {
     position: 'absolute',
@@ -586,11 +645,11 @@ const styles = StyleSheet.create({
   },
   chipsContainer: {
     maxHeight: 46,
-    paddingHorizontal: 16,
     marginBottom: 8,
   },
   chipsContent: {
     alignItems: 'center',
+    paddingLeft: 16,
     paddingRight: 32,
   },
   chip: {
@@ -620,7 +679,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    fontWeight: '750',
+    fontWeight: '700',
     color: '#475569',
     marginTop: 12,
   },
@@ -633,7 +692,7 @@ const styles = StyleSheet.create({
   resetBtn: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#2563EB',
     borderRadius: 8,
   },
   resetBtnText: {
@@ -750,7 +809,7 @@ const styles = StyleSheet.create({
     maxWidth: 90,
   },
   viewBtn: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#2563EB',
     borderRadius: 8,
     paddingVertical: 6,
     alignItems: 'center',
@@ -871,8 +930,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   bloodGroupBtnSelected: {
-    backgroundColor: '#007AFF',
-    borderColor: '#007AFF',
+    backgroundColor: '#2563EB',
+    borderColor: '#2563EB',
   },
   bloodGroupText: {
     fontSize: 12,
@@ -899,8 +958,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   checkboxChecked: {
-    backgroundColor: '#007AFF',
-    borderColor: '#007AFF',
+    backgroundColor: '#2563EB',
+    borderColor: '#2563EB',
   },
   checkboxLabel: {
     fontSize: 13,
@@ -929,7 +988,7 @@ const styles = StyleSheet.create({
   sheetApplyBtn: {
     width: '48%',
     height: 42,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#2563EB',
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',

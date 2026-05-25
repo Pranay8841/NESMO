@@ -9,13 +9,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { apiConnector } from '../utils/APIsConnector';
 import { PROFILE_API } from '../utils/api';
-import {
-  setProfile,
-  setLoading,
-  setError,
-  setCompleteness,
-  updateProfile as updateProfileAction,
-} from '../redux/slices/profileSlice';
+// No slice actions are manually dispatched, extraReducers handles the state flow
 
 /**
  * Fetch current user's profile
@@ -28,21 +22,13 @@ import {
  */
 export const fetchProfile = createAsyncThunk(
   'profile/fetchProfile',
-  async (_, { dispatch, rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      dispatch(setLoading(true));
-      dispatch(setError(null));
-
       const response = await apiConnector('GET', PROFILE_API.GET_PROFILE);
-      dispatch(setProfile(response.data.profile));
-
       return response.data.profile;
     } catch (error: any) {
       const message = error.response?.data?.message || 'Failed to fetch profile';
-      dispatch(setError(message));
       return rejectWithValue(message);
-    } finally {
-      dispatch(setLoading(false));
     }
   }
 );
@@ -61,12 +47,9 @@ export const updateProfile = createAsyncThunk(
   'profile/updateProfile',
   async (
     profileData: Record<string, any>,
-    { dispatch, rejectWithValue }
+    { rejectWithValue }
   ) => {
     try {
-      dispatch(setLoading(true));
-      dispatch(setError(null));
-
       const backendData = {
         ...profileData,
         city: profileData.currentAddress,
@@ -78,15 +61,10 @@ export const updateProfile = createAsyncThunk(
         backendData
       );
 
-      dispatch(updateProfileAction(response.data.profile));
-
       return response.data.profile;
     } catch (error: any) {
       const message = error.response?.data?.message || 'Failed to update profile';
-      dispatch(setError(message));
       return rejectWithValue(message);
-    } finally {
-      dispatch(setLoading(false));
     }
   }
 );
@@ -96,7 +74,7 @@ export const updateProfile = createAsyncThunk(
  * 
  * @async
  * @param {Object} data - FormData containing image file
- * @returns {Promise<Object>} Updated profile with new photo URL
+ * @returns {Promise<string>} Updated profile photo URL
  * 
  * @example
  * const formData = new FormData();
@@ -105,11 +83,8 @@ export const updateProfile = createAsyncThunk(
  */
 export const uploadProfilePhoto = createAsyncThunk(
   'profile/uploadProfilePhoto',
-  async (formData: FormData, { dispatch, rejectWithValue }) => {
+  async (formData: FormData, { rejectWithValue }) => {
     try {
-      dispatch(setLoading(true));
-      dispatch(setError(null));
-
       const response = await apiConnector(
         'PUT',
         PROFILE_API.UPLOAD_PROFILE_PHOTO,
@@ -117,15 +92,10 @@ export const uploadProfilePhoto = createAsyncThunk(
         null
       );
 
-      dispatch(updateProfileAction(response.data.profile));
-
-      return response.data.profile;
+      return response.data.profile.profilePhoto;
     } catch (error: any) {
       const message = error.response?.data?.message || 'Failed to upload profile photo';
-      dispatch(setError(message));
       return rejectWithValue(message);
-    } finally {
-      dispatch(setLoading(false));
     }
   }
 );
@@ -141,19 +111,16 @@ export const uploadProfilePhoto = createAsyncThunk(
  */
 export const fetchProfileCompleteness = createAsyncThunk(
   'profile/fetchProfileCompleteness',
-  async (_, { dispatch, rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const response = await apiConnector(
         'GET',
         PROFILE_API.GET_PROFILE_COMPLETENESS
       );
 
-      dispatch(setCompleteness(response.data.completeness || 0));
-
       return response.data.completeness;
     } catch (error: any) {
       const message = error.response?.data?.message || 'Failed to fetch profile completeness';
-      dispatch(setError(message));
       return rejectWithValue(message);
     }
   }

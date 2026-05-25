@@ -18,7 +18,7 @@ import {
   Linking,
   Alert,
 } from 'react-native';
-import { Feather, FontAwesome, Ionicons } from '@expo/vector-icons';
+import { Feather, FontAwesome, FontAwesome5, Ionicons } from '@expo/vector-icons';
 import type { AlumniMember } from '../../redux/slices/alumniSlice';
 
 interface AlumniProfileModalProps {
@@ -28,9 +28,9 @@ interface AlumniProfileModalProps {
 }
 
 const roleConfig: Record<string, { label: string; color: string; bgColor: string }> = {
-  ADMIN: { label: 'Admin', color: '#B91C1C', bgColor: '#FEF2F2' },
-  EVENT_LEAD: { label: 'Event Lead', color: '#6D28D9', bgColor: '#F5F3FF' },
-  MEMBER: { label: 'Member', color: '#1D4ED8', bgColor: '#EFF6FF' },
+  ADMIN: { label: 'Admin', color: '#FFFFFF', bgColor: '#EF4444' },
+  EVENT_LEAD: { label: 'Event Lead', color: '#FFFFFF', bgColor: '#8B5CF6' },
+  MEMBER: { label: 'Member', color: '#FFFFFF', bgColor: '#3B82F6' },
   ALUMNI: { label: 'Alumni', color: '#4B5563', bgColor: '#F3F4F6' },
 };
 
@@ -45,15 +45,13 @@ export default function AlumniProfileModal({ isOpen, onClose, member }: AlumniPr
     // Strip non-numeric characters except for leading plus
     const cleanPhone = member.phone.replace(/[^0-9]/g, '');
     const url = `https://wa.me/${cleanPhone}`;
-    Linking.canOpenURL(url)
-      .then((supported) => {
-        if (supported) {
-          Linking.openURL(url);
-        } else {
-          Alert.alert('Error', 'WhatsApp is not installed on this device.');
-        }
-      })
-      .catch((err) => console.error('An error occurred', err));
+    
+    // Bypassing canOpenURL check because on Android 11+ package visibility restrictions
+    // cause canOpenURL to return false even when WhatsApp is installed.
+    Linking.openURL(url).catch((err) => {
+      console.error('An error occurred opening WhatsApp', err);
+      Alert.alert('Error', 'Could not open WhatsApp on this device.');
+    });
   };
 
   const handleCall = () => {
@@ -75,20 +73,15 @@ export default function AlumniProfileModal({ isOpen, onClose, member }: AlumniPr
     <Modal visible={isOpen} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
         <View style={styles.sheetContainer}>
-          {/* Header Bar */}
-          <View style={styles.sheetHeader}>
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <Feather name="x" size={22} color="#1E293B" />
+          {/* Premium Header Banner (Deep Blue) */}
+          <View style={styles.bannerHeader}>
+            {/* Close Button - absolute top right */}
+            <TouchableOpacity style={styles.closeButtonAbsolute} onPress={onClose}>
+              <Feather name="x" size={20} color="#FFFFFF" />
             </TouchableOpacity>
-            <Text style={styles.sheetTitle} numberOfLines={1}>
-              Profile Details
-            </Text>
-            <View style={{ width: 32 }} /> {/* balance spacing */}
-          </View>
 
-          <ScrollView contentContainerStyle={styles.scrollContent}>
-            {/* Profile Overview (Gradient Accent) */}
-            <View style={styles.overviewBox}>
+            <View style={styles.bannerRow}>
+              {/* Profile Picture */}
               <View style={styles.avatarContainer}>
                 {member.photo ? (
                   <Image source={{ uri: member.photo }} style={styles.profileImage} />
@@ -111,29 +104,37 @@ export default function AlumniProfileModal({ isOpen, onClose, member }: AlumniPr
                 )}
               </View>
 
-              <Text style={styles.memberName}>{member.name}</Text>
-              {member.occupation && (
-                <Text style={styles.memberOccupation} numberOfLines={1}>
-                  {member.occupation}
-                  {member.organization ? ` at ${member.organization}` : ''}
-                </Text>
-              )}
-
-              <View style={styles.badgeRow}>
-                <View style={[styles.roleBadge, { backgroundColor: roleInfo.bgColor }]}>
-                  <Text style={[styles.roleBadgeText, { color: roleInfo.color }]}>
-                    {roleInfo.label}
-                  </Text>
+              {/* Profile Text Info */}
+              <View style={styles.bannerInfo}>
+                <View style={styles.nameRow}>
+                  <Text style={styles.memberName} numberOfLines={1}>{member.name}</Text>
+                  {isPaidMember && (
+                    <FontAwesome name="check-circle" size={16} color="#F59E0B" style={{ marginLeft: 6 }} />
+                  )}
                 </View>
-                {member.city && (
-                  <View style={styles.locationBadge}>
-                    <Feather name="map-pin" size={10} color="#64748B" style={{ marginRight: 4 }} />
-                    <Text style={styles.locationBadgeText}>{member.city}</Text>
-                  </View>
+                {member.occupation && (
+                  <Text style={styles.memberOccupation} numberOfLines={2}>
+                    {member.occupation}{member.organization ? ` at ${member.organization}` : ''}
+                  </Text>
                 )}
+                <View style={styles.badgeRow}>
+                  <View style={[styles.roleBadge, { backgroundColor: roleInfo.bgColor }]}>
+                    <Text style={[styles.roleBadgeText, { color: roleInfo.color }]}>
+                      {roleInfo.label}
+                    </Text>
+                  </View>
+                  {member.city && (
+                    <View style={styles.locationBadge}>
+                      <Feather name="map-pin" size={10} color="#E2E8F0" style={{ marginRight: 4 }} />
+                      <Text style={styles.locationBadgeText}>{member.city}</Text>
+                    </View>
+                  )}
+                </View>
               </View>
             </View>
+          </View>
 
+          <ScrollView contentContainerStyle={styles.scrollContent}>
             {/* About Me Section */}
             {member.about && (
               <View style={styles.infoSection}>
@@ -149,8 +150,8 @@ export default function AlumniProfileModal({ isOpen, onClose, member }: AlumniPr
             {(member.joinBatch || member.passoutBatch) && (
               <View style={styles.infoSection}>
                 <View style={styles.sectionTitleRow}>
-                  <Feather
-                    name="graduation-cap"
+                  <FontAwesome5
+                    name="user-graduate"
                     size={16}
                     color="#2563EB"
                     style={{ marginRight: 8 }}
@@ -207,22 +208,7 @@ export default function AlumniProfileModal({ isOpen, onClose, member }: AlumniPr
               </View>
             )}
 
-            {/* Quick Stats & Call options */}
-            <View style={styles.quickStatsCard}>
-              <Text style={styles.quickStatsHeader}>QUICK STATS</Text>
-              {member.bloodGroup && (
-                <View style={styles.statRow}>
-                  <Text style={styles.statLabel}>Blood Group</Text>
-                  <Text style={styles.statValue}>🩸 {member.bloodGroup}</Text>
-                </View>
-              )}
-              <View style={styles.statRow}>
-                <Text style={styles.statLabel}>JNV Batch</Text>
-                <Text style={styles.statValue}>
-                  {member.joinBatch || '?'} - {member.passoutBatch || '?'}
-                </Text>
-              </View>
-            </View>
+
 
             {/* Action buttons */}
             {member.phone && (
@@ -261,42 +247,49 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 12,
     elevation: 8,
+    overflow: 'hidden',
   },
-  sheetHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  bannerHeader: {
+    backgroundColor: '#1E3A8A',
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 24,
+    position: 'relative',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+  },
+  closeButtonAbsolute: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderColor: '#E2E8F0',
+    zIndex: 10,
   },
-  closeButton: {
-    padding: 4,
+  bannerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
   },
-  sheetTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#0F172A',
+  bannerInfo: {
     flex: 1,
-    textAlign: 'center',
+    marginLeft: 16,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
   },
   scrollContent: {
     padding: 16,
     paddingBottom: 40,
   },
-  overviewBox: {
-    alignItems: 'center',
-    marginBottom: 20,
-    backgroundColor: '#F8FAFC',
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
   avatarContainer: {
     position: 'relative',
-    marginBottom: 12,
   },
   profileImage: {
     width: 88,
@@ -325,22 +318,22 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 3,
-    borderColor: '#F8FAFC',
+    borderColor: '#1E3A8A',
     justifyContent: 'center',
     alignItems: 'center',
   },
   memberName: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#0F172A',
-    marginBottom: 4,
+    color: '#FFFFFF',
+    flexShrink: 1,
   },
   memberOccupation: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#2563EB',
-    marginBottom: 12,
-    textAlign: 'center',
+    color: '#DBEAFE',
+    marginBottom: 8,
+    lineHeight: 18,
   },
   badgeRow: {
     flexDirection: 'row',
@@ -360,14 +353,14 @@ const styles = StyleSheet.create({
   locationBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F1F5F9',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 4,
   },
   locationBadgeText: {
     fontSize: 11,
-    color: '#475569',
+    color: '#E2E8F0',
     fontWeight: '600',
   },
   infoSection: {
@@ -447,35 +440,7 @@ const styles = StyleSheet.create({
     color: '#334155',
     marginTop: 2,
   },
-  quickStatsCard: {
-    backgroundColor: '#1E293B',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 20,
-  },
-  quickStatsHeader: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#F59E0B',
-    letterSpacing: 1,
-    marginBottom: 12,
-  },
-  statRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#E2E8F0',
-    fontWeight: '500',
-  },
-  statValue: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
+
   buttonsContainer: {
     marginTop: 10,
   },

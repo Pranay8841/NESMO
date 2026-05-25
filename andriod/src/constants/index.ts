@@ -8,8 +8,10 @@
 export const APP_CONSTANTS = {
   // Screen names
   SCREENS: {
-    // Auth Stack (Firebase only)
+    // Auth Stack
     LOGIN: 'Login',
+    SIGNUP: 'Signup',
+    VERIFY_EMAIL: 'VerifyEmail',
 
     // App Stack
     HOME: 'Home',

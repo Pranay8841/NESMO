@@ -122,6 +122,7 @@ function TabNavigator() {
         component={DirectoryScreen}
         options={{
           title: 'Directory',
+          headerShown: false,
         }}
       />
       <Tab.Screen
@@ -129,6 +130,7 @@ function TabNavigator() {
         component={EventsScreen}
         options={{
           title: 'Events',
+          headerShown: false,
         }}
       />
       <Tab.Screen
@@ -136,6 +138,7 @@ function TabNavigator() {
         component={MembershipScreen}
         options={{
           title: 'Membership',
+          headerShown: false,
         }}
       />
       <Tab.Screen
@@ -143,6 +146,7 @@ function TabNavigator() {
         component={SettingsScreen}
         options={{
           title: 'Profile',
+          headerShown: false,
         }}
       />
     </Tab.Navigator>
