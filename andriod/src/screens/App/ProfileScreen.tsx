@@ -30,13 +30,15 @@ import {
 import { setIsEditing } from '../../redux/slices/profileSlice';
 import * as ImagePicker from 'expo-image-picker';
 import { Feather, FontAwesome, Ionicons } from '@expo/vector-icons';
+import { useToast } from 'react-native-toast-notifications';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 const JOIN_BATCH_OPTIONS = Array.from({ length: 41 }, (_, i) => `${1986 + i}`);
 const PASSOUT_BATCH_OPTIONS = Array.from({ length: 41 }, (_, i) => `${1993 + i}`);
 
-export default function ProfileScreen() {
+export default function ProfileScreen({ route }: any) {
   const dispatch = useAppDispatch();
+  const toast = useToast();
   const { user } = useAppSelector((state) => state.auth);
   const { profile, loading, isEditing, completeness } = useAppSelector((state) => state.profile);
 
@@ -60,7 +62,13 @@ export default function ProfileScreen() {
   useEffect(() => {
     dispatch(fetchProfile());
     dispatch(fetchProfileCompleteness());
-  }, [dispatch]);
+    
+    if (route?.params?.edit) {
+      dispatch(setIsEditing(true));
+    } else {
+      dispatch(setIsEditing(false));
+    }
+  }, [dispatch, route?.params?.edit]);
 
   // Sync form state when profile data loads
   useEffect(() => {
@@ -104,19 +112,26 @@ export default function ProfileScreen() {
   };
 
   const handleSaveProfile = async () => {
-    await dispatch(updateProfile(formData));
-    dispatch(fetchProfileCompleteness());
+    const resultAction = await dispatch(updateProfile(formData));
+    if (updateProfile.fulfilled.match(resultAction)) {
+      dispatch(fetchProfileCompleteness());
+      toast.show('Profile updated successfully!', { type: 'success' });
+      dispatch(setIsEditing(false));
+    } else {
+      const errorMsg = resultAction.payload || 'Failed to update profile';
+      toast.show(errorMsg as string, { type: 'danger' });
+    }
   };
 
   const handlePhotoUpload = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission Denied', 'We need storage permission to upload your photo.');
+      toast.show('Permission Denied: We need storage permission to upload your photo.', { type: 'danger' });
       return;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
@@ -135,9 +150,15 @@ export default function ProfileScreen() {
         type: fileType,
       } as any);
 
-      await dispatch(uploadProfilePhoto(uploadData));
-      dispatch(fetchProfile());
-      dispatch(fetchProfileCompleteness());
+      const resultAction = await dispatch(uploadProfilePhoto(uploadData));
+      if (uploadProfilePhoto.fulfilled.match(resultAction)) {
+        dispatch(fetchProfile());
+        dispatch(fetchProfileCompleteness());
+        toast.show('Profile photo updated successfully!', { type: 'success' });
+      } else {
+        const errorMsg = resultAction.payload || 'Failed to upload photo';
+        toast.show(errorMsg as string, { type: 'danger' });
+      }
     }
   };
 
@@ -227,143 +248,167 @@ export default function ProfileScreen() {
           <Text style={styles.sectionTitle}>Personal & Education</Text>
           
           {/* Phone */}
-          <View style={styles.fieldRow}>
-            <Text style={styles.fieldLabel}>Phone Number</Text>
-            {isEditing ? (
+          {isEditing ? (
+            <View style={styles.fieldRowEdit}>
+              <Text style={styles.fieldLabelEdit}>Phone Number</Text>
               <TextInput
-                style={styles.input}
+                style={styles.inputEdit}
                 value={formData.phone}
                 onChangeText={(txt) => handleInputChange('phone', txt)}
                 placeholder="+91 XXXXX XXXXX"
                 placeholderTextColor="#94A3B8"
                 keyboardType="phone-pad"
               />
-            ) : (
+            </View>
+          ) : (
+            <View style={styles.fieldRow}>
+              <Text style={styles.fieldLabel}>Phone Number</Text>
               <Text style={styles.fieldVal}>{profile?.phone || 'Not set'}</Text>
-            )}
-          </View>
+            </View>
+          )}
 
           {/* Blood Group */}
-          <View style={styles.fieldRow}>
-            <Text style={styles.fieldLabel}>Blood Group</Text>
-            {isEditing ? (
+          {isEditing ? (
+            <View style={styles.fieldRowEdit}>
+              <Text style={styles.fieldLabelEdit}>Blood Group</Text>
               <TouchableOpacity
-                style={styles.pickerSelector}
+                style={styles.pickerSelectorEdit}
                 onPress={() => setActivePicker('bloodGroup')}
               >
-                <Text style={styles.pickerSelectorText}>
+                <Text style={styles.pickerSelectorEditText}>
                   {formData.bloodGroup || 'Select Blood Group'}
                 </Text>
                 <Feather name="chevron-down" size={16} color="#64748B" />
               </TouchableOpacity>
-            ) : (
+            </View>
+          ) : (
+            <View style={styles.fieldRow}>
+              <Text style={styles.fieldLabel}>Blood Group</Text>
               <Text style={styles.fieldVal}>{profile?.bloodGroup || 'Not set'}</Text>
-            )}
-          </View>
+            </View>
+          )}
 
           {/* Join Batch */}
-          <View style={styles.fieldRow}>
-            <Text style={styles.fieldLabel}>Join Batch</Text>
-            {isEditing ? (
+          {isEditing ? (
+            <View style={styles.fieldRowEdit}>
+              <Text style={styles.fieldLabelEdit}>Join Batch</Text>
               <TouchableOpacity
-                style={styles.pickerSelector}
+                style={styles.pickerSelectorEdit}
                 onPress={() => setActivePicker('joinBatch')}
               >
-                <Text style={styles.pickerSelectorText}>
+                <Text style={styles.pickerSelectorEditText}>
                   {formData.joinBatch || 'Select Join Year'}
                 </Text>
                 <Feather name="chevron-down" size={16} color="#64748B" />
               </TouchableOpacity>
-            ) : (
+            </View>
+          ) : (
+            <View style={styles.fieldRow}>
+              <Text style={styles.fieldLabel}>Join Batch</Text>
               <Text style={styles.fieldVal}>{profile?.joinBatch || 'Not set'}</Text>
-            )}
-          </View>
+            </View>
+          )}
 
           {/* Passout Batch */}
-          <View style={styles.fieldRow}>
-            <Text style={styles.fieldLabel}>Passout Batch</Text>
-            {isEditing ? (
+          {isEditing ? (
+            <View style={styles.fieldRowEdit}>
+              <Text style={styles.fieldLabelEdit}>Passout Batch</Text>
               <TouchableOpacity
-                style={styles.pickerSelector}
+                style={styles.pickerSelectorEdit}
                 onPress={() => setActivePicker('passoutBatch')}
               >
-                <Text style={styles.pickerSelectorText}>
+                <Text style={styles.pickerSelectorEditText}>
                   {formData.passoutBatch || 'Select Passout Year'}
                 </Text>
                 <Feather name="chevron-down" size={16} color="#64748B" />
               </TouchableOpacity>
-            ) : (
+            </View>
+          ) : (
+            <View style={styles.fieldRow}>
+              <Text style={styles.fieldLabel}>Passout Batch</Text>
               <Text style={styles.fieldVal}>{profile?.passoutBatch || 'Not set'}</Text>
-            )}
-          </View>
+            </View>
+          )}
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Professional Information</Text>
 
           {/* Occupation */}
-          <View style={styles.fieldRow}>
-            <Text style={styles.fieldLabel}>Occupation</Text>
-            {isEditing ? (
+          {isEditing ? (
+            <View style={styles.fieldRowEdit}>
+              <Text style={styles.fieldLabelEdit}>Occupation</Text>
               <TextInput
-                style={styles.input}
+                style={styles.inputEdit}
                 value={formData.occupation}
                 onChangeText={(txt) => handleInputChange('occupation', txt)}
                 placeholder="e.g. Software Engineer"
                 placeholderTextColor="#94A3B8"
               />
-            ) : (
+            </View>
+          ) : (
+            <View style={styles.fieldRow}>
+              <Text style={styles.fieldLabel}>Occupation</Text>
               <Text style={styles.fieldVal}>{profile?.occupation || 'Not set'}</Text>
-            )}
-          </View>
+            </View>
+          )}
 
           {/* Organization */}
-          <View style={styles.fieldRow}>
-            <Text style={styles.fieldLabel}>Organization</Text>
-            {isEditing ? (
+          {isEditing ? (
+            <View style={styles.fieldRowEdit}>
+              <Text style={styles.fieldLabelEdit}>Organization / Company</Text>
               <TextInput
-                style={styles.input}
+                style={styles.inputEdit}
                 value={formData.organization}
                 onChangeText={(txt) => handleInputChange('organization', txt)}
                 placeholder="Company, hospital, school..."
                 placeholderTextColor="#94A3B8"
               />
-            ) : (
+            </View>
+          ) : (
+            <View style={styles.fieldRow}>
+              <Text style={styles.fieldLabel}>Organization</Text>
               <Text style={styles.fieldVal}>{profile?.organization || 'Not set'}</Text>
-            )}
-          </View>
+            </View>
+          )}
 
           {/* Sector */}
-          <View style={styles.fieldRow}>
-            <Text style={styles.fieldLabel}>Sector</Text>
-            {isEditing ? (
+          {isEditing ? (
+            <View style={styles.fieldRowEdit}>
+              <Text style={styles.fieldLabelEdit}>Sector</Text>
               <TextInput
-                style={styles.input}
+                style={styles.inputEdit}
                 value={formData.sector}
                 onChangeText={(txt) => handleInputChange('sector', txt)}
                 placeholder="e.g. Technology, Finance, Education"
                 placeholderTextColor="#94A3B8"
               />
-            ) : (
+            </View>
+          ) : (
+            <View style={styles.fieldRow}>
+              <Text style={styles.fieldLabel}>Sector</Text>
               <Text style={styles.fieldVal}>{profile?.sector || 'Not set'}</Text>
-            )}
-          </View>
+            </View>
+          )}
 
           {/* Current Address */}
-          <View style={styles.fieldRow}>
-            <Text style={styles.fieldLabel}>Location</Text>
-            {isEditing ? (
+          {isEditing ? (
+            <View style={styles.fieldRowEdit}>
+              <Text style={styles.fieldLabelEdit}>Location</Text>
               <TextInput
-                style={styles.input}
+                style={styles.inputEdit}
                 value={formData.currentAddress}
                 onChangeText={(txt) => handleInputChange('currentAddress', txt)}
                 placeholder="City, State, Country"
                 placeholderTextColor="#94A3B8"
               />
-            ) : (
+            </View>
+          ) : (
+            <View style={styles.fieldRow}>
+              <Text style={styles.fieldLabel}>Location</Text>
               <Text style={styles.fieldVal}>{profile?.currentAddress || 'Not set'}</Text>
-            )}
-          </View>
+            </View>
+          )}
         </View>
       </ScrollView>
 
@@ -605,6 +650,49 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#0F172A',
     fontWeight: '700',
+  },
+  fieldRowEdit: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  fieldLabelEdit: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#64748B',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  inputEdit: {
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    height: 44,
+    fontSize: 13,
+    color: '#334155',
+    backgroundColor: '#FFFFFF',
+  },
+  pickerSelectorEdit: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    height: 44,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#FFFFFF',
+  },
+  pickerSelectorEditText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#334155',
   },
   input: {
     width: '60%',

@@ -206,7 +206,7 @@ export default function UserModerationScreen() {
       ) : (
         <FlatList
           data={users.data}
-          keyExtractor={(item) => item._id}
+          keyExtractor={(item, index) => item._id ? `${item._id}-${index}` : index.toString()}
           contentContainerStyle={styles.listContainer}
           renderItem={({ item }) => {
             const rConfig = roleConfig[item.role] || roleConfig.ALUMNI;
@@ -297,7 +297,7 @@ export default function UserModerationScreen() {
               <View style={styles.optionRow}>
                 {['', 'active', 'blocked'].map((opt) => (
                   <TouchableOpacity
-                    key={opt}
+                    key={`status-${opt || 'all'}`}
                     style={[styles.optionTag, statusFilter === opt && styles.optionTagSelected]}
                     onPress={() => setStatusFilter(opt as any)}
                   >
@@ -318,7 +318,7 @@ export default function UserModerationScreen() {
               <View style={styles.optionRow}>
                 {['', 'ALUMNI', 'MEMBER', 'EVENT_LEAD', 'ADMIN'].map((opt) => (
                   <TouchableOpacity
-                    key={opt}
+                    key={`role-${opt || 'all'}`}
                     style={[styles.optionTag, roleFilter === opt && styles.optionTagSelected]}
                     onPress={() => setRoleFilter(opt as any)}
                   >
@@ -339,7 +339,7 @@ export default function UserModerationScreen() {
               <View style={styles.optionRow}>
                 {['', 'true', 'false'].map((opt) => (
                   <TouchableOpacity
-                    key={opt}
+                    key={`verified-${opt || 'all'}`}
                     style={[styles.optionTag, verifiedFilter === opt && styles.optionTagSelected]}
                     onPress={() => setVerifiedFilter(opt as any)}
                   >
@@ -491,7 +491,7 @@ export default function UserModerationScreen() {
             <View style={styles.rolePickerBox}>
               {['ALUMNI', 'MEMBER', 'EVENT_LEAD', 'ADMIN'].map((roleOpt) => (
                 <TouchableOpacity
-                  key={roleOpt}
+                  key={`role-option-${roleOpt}`}
                   style={[styles.roleOptRow, newRole === roleOpt && styles.roleOptRowSelected]}
                   onPress={() => setNewRole(roleOpt as any)}
                 >

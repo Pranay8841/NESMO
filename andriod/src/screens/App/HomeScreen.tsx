@@ -1,11 +1,3 @@
-/**
- * @fileoverview Home Screen (Main Feed)
- * Displays the main marketing feed (HeroSection, About, Testimonial, Spotlight)
- * for all authenticated users.
- * 
- * @module screens/App/HomeScreen
- */
-
 import React, { useEffect } from 'react';
 import {
   View,

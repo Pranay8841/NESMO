@@ -1,15 +1,7 @@
-/**
- * @fileoverview Profile Service
- * Redux async thunks for profile management.
- * Handles fetching and updating user profiles.
- * 
- * @module services/profileService
- */
-
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { apiConnector } from '../utils/APIsConnector';
 import { PROFILE_API } from '../utils/api';
-// No slice actions are manually dispatched, extraReducers handles the state flow
+import { updateUserProfilePhoto } from '../redux/slices/authSlice';
 
 /**
  * Fetch current user's profile
@@ -25,7 +17,8 @@ export const fetchProfile = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await apiConnector('GET', PROFILE_API.GET_PROFILE);
-      return response.data.profile;
+      // Support various response schemas: data.profile, profile, or the payload itself
+      return response.data.data?.profile || response.data.profile || response.data.data;
     } catch (error: any) {
       const message = error.response?.data?.message || 'Failed to fetch profile';
       return rejectWithValue(message);
@@ -83,16 +76,25 @@ export const updateProfile = createAsyncThunk(
  */
 export const uploadProfilePhoto = createAsyncThunk(
   'profile/uploadProfilePhoto',
-  async (formData: FormData, { rejectWithValue }) => {
+  async (formData: FormData, { dispatch, rejectWithValue }) => {
     try {
       const response = await apiConnector(
         'PUT',
         PROFILE_API.UPLOAD_PROFILE_PHOTO,
         formData as any,
-        null
+        {
+          'Content-Type': 'multipart/form-data',
+        } as any
       );
 
-      return response.data.profile.profilePhoto;
+      const photoUrl = response.data.profilePhoto || response.data.profile?.profilePhoto;
+      
+      // Update global auth user profile photo as well for real-time header/settings sync
+      if (photoUrl) {
+        dispatch(updateUserProfilePhoto(photoUrl));
+      }
+
+      return photoUrl;
     } catch (error: any) {
       const message = error.response?.data?.message || 'Failed to upload profile photo';
       return rejectWithValue(message);

@@ -43,6 +43,7 @@ export type AppStackParamList = {
   [APP_CONSTANTS.NAVIGATION.APP_TABS]: undefined;
   [APP_CONSTANTS.SCREENS.PROFILE]: {
     userId?: string;
+    edit?: boolean;
   };
   [APP_CONSTANTS.SCREENS.USER_MODERATION]: undefined;
   [APP_CONSTANTS.SCREENS.ADMIN_DASHBOARD]: undefined;
