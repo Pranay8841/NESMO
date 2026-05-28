@@ -69,6 +69,16 @@ export default function AlumniProfileModal({ isOpen, onClose, member }: AlumniPr
       .slice(0, 2);
   };
 
+  const levelConfig: Record<string, { label: string; color: string; bgColor: string }> = {
+    UG: { label: 'UG', color: '#1D4ED8', bgColor: '#DBEAFE' },
+    PG: { label: 'PG', color: '#7C3AED', bgColor: '#EDE9FE' },
+    PhD: { label: 'PhD', color: '#B45309', bgColor: '#FEF3C7' },
+    Diploma: { label: 'Diploma', color: '#047857', bgColor: '#D1FAE5' },
+    Other: { label: 'Other', color: '#64748B', bgColor: '#F1F5F9' },
+  };
+
+  const educationHistory = member.educationHistory || [];
+
   return (
     <Modal visible={isOpen} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
@@ -146,7 +156,7 @@ export default function AlumniProfileModal({ isOpen, onClose, member }: AlumniPr
               </View>
             )}
 
-            {/* Alumni & Education */}
+            {/* Alumni & Education (JNV) */}
             {(member.joinBatch || member.passoutBatch) && (
               <View style={styles.infoSection}>
                 <View style={styles.sectionTitleRow}>
@@ -169,6 +179,40 @@ export default function AlumniProfileModal({ isOpen, onClose, member }: AlumniPr
                     </Text>
                   </View>
                 </View>
+              </View>
+            )}
+
+            {/* Education Journey (UG, PG, PhD, etc.) */}
+            {educationHistory.length > 0 && (
+              <View style={styles.infoSection}>
+                <View style={styles.sectionTitleRow}>
+                  <Ionicons name="school-outline" size={16} color="#2563EB" style={{ marginRight: 8 }} />
+                  <Text style={styles.sectionTitle}>Education Journey</Text>
+                </View>
+                {educationHistory.map((entry, index) => {
+                  const lvlCfg = levelConfig[entry.level] || levelConfig.Other;
+                  return (
+                    <View key={entry.id || index} style={styles.eduJourneyCard}>
+                      <View style={styles.eduJourneyHeader}>
+                        <View style={[styles.eduJourneyBadge, { backgroundColor: lvlCfg.bgColor }]}>
+                          <Text style={[styles.eduJourneyBadgeText, { color: lvlCfg.color }]}>
+                            {lvlCfg.label}
+                          </Text>
+                        </View>
+                        <Text style={styles.eduJourneyYears}>
+                          {entry.startYear} – {entry.endYear || 'Present'}
+                        </Text>
+                      </View>
+                      <Text style={styles.eduJourneyDegree}>
+                        {entry.degree}{entry.field ? ` in ${entry.field}` : ''}
+                      </Text>
+                      <View style={styles.eduJourneyInstitutionRow}>
+                        <Ionicons name="business-outline" size={12} color="#64748B" style={{ marginRight: 4 }} />
+                        <Text style={styles.eduJourneyInstitution}>{entry.institution}</Text>
+                      </View>
+                    </View>
+                  );
+                })}
               </View>
             )}
 
@@ -472,5 +516,53 @@ const styles = StyleSheet.create({
     color: '#1E293B',
     fontSize: 14,
     fontWeight: '700',
+  },
+
+  // Education Journey Styles
+  eduJourneyCard: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  eduJourneyHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  eduJourneyBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 5,
+  },
+  eduJourneyBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  eduJourneyYears: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#94A3B8',
+  },
+  eduJourneyDegree: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 4,
+  },
+  eduJourneyInstitutionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  eduJourneyInstitution: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#64748B',
+    flex: 1,
   },
 });

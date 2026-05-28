@@ -12,14 +12,18 @@ import {
   updateProfile,
   uploadProfilePhoto,
   fetchProfileCompleteness,
+  addEducation,
+  updateEducation,
+  deleteEducation,
 } from '../../services/profileService';
+import type { EducationEntry } from '../../services/profileService';
 
 /**
  * User profile data structure.
- * Represents the Profile document from MongoDB.
+ * Represents the Profile document from Firestore.
  */
 export interface UserProfile {
-  /** MongoDB ObjectId */
+  /** Document ID */
   _id?: string;
   /** User bio/description (max 500 chars) */
   about?: string;
@@ -41,6 +45,8 @@ export interface UserProfile {
   bloodGroup?: string;
   /** Cloudinary URL of profile photo */
   profilePhoto?: string;
+  /** Education history entries */
+  educationHistory?: EducationEntry[];
   /** Document creation timestamp */
   createdAt?: string;
   /** Document update timestamp */
@@ -61,6 +67,8 @@ interface ProfileState {
   completeness: number;
   /** Whether profile edit mode is active */
   isEditing: boolean;
+  /** Loading state specifically for education operations */
+  educationLoading: boolean;
 }
 
 const initialState: ProfileState = {
@@ -69,6 +77,7 @@ const initialState: ProfileState = {
   error: null,
   completeness: 0,
   isEditing: false,
+  educationLoading: false,
 };
 
 export const profileSlice = createSlice({
@@ -141,6 +150,54 @@ export const profileSlice = createSlice({
     builder.addCase(fetchProfileCompleteness.fulfilled, (state, action) => {
       state.completeness = action.payload;
     });
+
+    // Add education
+    builder.addCase(addEducation.pending, (state) => {
+      state.educationLoading = true;
+      state.error = null;
+    });
+    builder.addCase(addEducation.fulfilled, (state, action) => {
+      state.educationLoading = false;
+      if (state.profile) {
+        state.profile.educationHistory = action.payload;
+      }
+    });
+    builder.addCase(addEducation.rejected, (state, action) => {
+      state.educationLoading = false;
+      state.error = action.payload as string;
+    });
+
+    // Update education
+    builder.addCase(updateEducation.pending, (state) => {
+      state.educationLoading = true;
+      state.error = null;
+    });
+    builder.addCase(updateEducation.fulfilled, (state, action) => {
+      state.educationLoading = false;
+      if (state.profile) {
+        state.profile.educationHistory = action.payload;
+      }
+    });
+    builder.addCase(updateEducation.rejected, (state, action) => {
+      state.educationLoading = false;
+      state.error = action.payload as string;
+    });
+
+    // Delete education
+    builder.addCase(deleteEducation.pending, (state) => {
+      state.educationLoading = true;
+      state.error = null;
+    });
+    builder.addCase(deleteEducation.fulfilled, (state, action) => {
+      state.educationLoading = false;
+      if (state.profile) {
+        state.profile.educationHistory = action.payload;
+      }
+    });
+    builder.addCase(deleteEducation.rejected, (state, action) => {
+      state.educationLoading = false;
+      state.error = action.payload as string;
+    });
   },
 });
 
@@ -152,3 +209,4 @@ export const {
 } = profileSlice.actions;
 
 export default profileSlice.reducer;
+

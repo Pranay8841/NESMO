@@ -44,6 +44,12 @@ export const PROFILE_API = {
   UPLOAD_PROFILE_PHOTO: `${BASE_URL}/profile/profilePhoto`,
   /** GET - Get profile completeness percentage */
   GET_PROFILE_COMPLETENESS: `${BASE_URL}/profile/profileCompleteness`,
+  /** POST - Add a new education entry */
+  ADD_EDUCATION: `${BASE_URL}/profile/education`,
+  /** PUT - Update an education entry */
+  UPDATE_EDUCATION: `${BASE_URL}/profile/education`,
+  /** DELETE - Delete an education entry */
+  DELETE_EDUCATION: `${BASE_URL}/profile/education`,
 };
 
 /* ==================== Membership Endpoints ==================== */

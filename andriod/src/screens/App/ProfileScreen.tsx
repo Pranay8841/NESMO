@@ -1,7 +1,7 @@
 /**
  * @fileoverview Profile Screen
  * Renders user profile details with editing capabilities, completeness progress,
- * and profile picture uploads using expo-image-picker.
+ * profile picture uploads, and education history management.
  * 
  * @module screens/App/ProfileScreen
  */
@@ -26,7 +26,11 @@ import {
   updateProfile,
   uploadProfilePhoto,
   fetchProfileCompleteness,
+  addEducation,
+  updateEducation,
+  deleteEducation,
 } from '../../services/profileService';
+import type { EducationEntry } from '../../services/profileService';
 import { setIsEditing } from '../../redux/slices/profileSlice';
 import * as ImagePicker from 'expo-image-picker';
 import { Feather, FontAwesome, Ionicons } from '@expo/vector-icons';
@@ -36,14 +40,40 @@ const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 const JOIN_BATCH_OPTIONS = Array.from({ length: 41 }, (_, i) => `${1986 + i}`);
 const PASSOUT_BATCH_OPTIONS = Array.from({ length: 41 }, (_, i) => `${1993 + i}`);
 
+const EDUCATION_LEVELS = ['UG', 'PG', 'PhD', 'Diploma', 'Other'];
+const YEAR_OPTIONS = Array.from({ length: 50 }, (_, i) => `${1990 + i}`);
+
+const LEVEL_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
+  UG: { label: 'UG', color: '#1D4ED8', bgColor: '#DBEAFE' },
+  PG: { label: 'PG', color: '#7C3AED', bgColor: '#EDE9FE' },
+  PhD: { label: 'PhD', color: '#B45309', bgColor: '#FEF3C7' },
+  Diploma: { label: 'Diploma', color: '#047857', bgColor: '#D1FAE5' },
+  Other: { label: 'Other', color: '#64748B', bgColor: '#F1F5F9' },
+};
+
+const EMPTY_EDU_FORM = {
+  level: '',
+  degree: '',
+  field: '',
+  institution: '',
+  startYear: '',
+  endYear: '',
+};
+
 export default function ProfileScreen({ route }: any) {
   const dispatch = useAppDispatch();
   const toast = useToast();
   const { user } = useAppSelector((state) => state.auth);
-  const { profile, loading, isEditing, completeness } = useAppSelector((state) => state.profile);
+  const { profile, loading, isEditing, completeness, educationLoading } = useAppSelector((state) => state.profile);
 
   // Picker States
   const [activePicker, setActivePicker] = useState<'joinBatch' | 'passoutBatch' | 'bloodGroup' | null>(null);
+
+  // Education Form State
+  const [showEduModal, setShowEduModal] = useState(false);
+  const [editingEduId, setEditingEduId] = useState<string | null>(null);
+  const [eduForm, setEduForm] = useState(EMPTY_EDU_FORM);
+  const [eduPicker, setEduPicker] = useState<'level' | 'startYear' | 'endYear' | null>(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -161,6 +191,78 @@ export default function ProfileScreen({ route }: any) {
       }
     }
   };
+
+  // ==================== Education Handlers ====================
+
+  const handleOpenEduForm = (entry?: EducationEntry) => {
+    if (entry) {
+      setEditingEduId(entry.id);
+      setEduForm({
+        level: entry.level,
+        degree: entry.degree,
+        field: entry.field,
+        institution: entry.institution,
+        startYear: entry.startYear,
+        endYear: entry.endYear,
+      });
+    } else {
+      setEditingEduId(null);
+      setEduForm(EMPTY_EDU_FORM);
+    }
+    setShowEduModal(true);
+  };
+
+  const handleSaveEducation = async () => {
+    if (!eduForm.level || !eduForm.degree || !eduForm.institution || !eduForm.startYear) {
+      toast.show('Please fill Level, Degree, Institution, and Start Year.', { type: 'warning' });
+      return;
+    }
+
+    if (editingEduId) {
+      const resultAction = await dispatch(updateEducation({ eduId: editingEduId, data: eduForm }));
+      if (updateEducation.fulfilled.match(resultAction)) {
+        toast.show('Education entry updated!', { type: 'success' });
+        setShowEduModal(false);
+        setEditingEduId(null);
+        setEduForm(EMPTY_EDU_FORM);
+      } else {
+        toast.show((resultAction.payload as string) || 'Failed to update', { type: 'danger' });
+      }
+    } else {
+      const resultAction = await dispatch(addEducation(eduForm));
+      if (addEducation.fulfilled.match(resultAction)) {
+        toast.show('Education entry added!', { type: 'success' });
+        setShowEduModal(false);
+        setEduForm(EMPTY_EDU_FORM);
+      } else {
+        toast.show((resultAction.payload as string) || 'Failed to add', { type: 'danger' });
+      }
+    }
+  };
+
+  const handleDeleteEducation = (eduId: string) => {
+    Alert.alert(
+      'Delete Education',
+      'Are you sure you want to remove this education entry?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            const resultAction = await dispatch(deleteEducation(eduId));
+            if (deleteEducation.fulfilled.match(resultAction)) {
+              toast.show('Education entry deleted.', { type: 'success' });
+            } else {
+              toast.show((resultAction.payload as string) || 'Failed to delete', { type: 'danger' });
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const educationHistory = profile?.educationHistory || [];
 
   const fullName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : 'User';
   const roleConfig: Record<string, { label: string; bgColor: string }> = {
@@ -410,9 +512,96 @@ export default function ProfileScreen({ route }: any) {
             </View>
           )}
         </View>
+
+        {/* ==================== Education History Section ==================== */}
+        <View style={styles.section}>
+          <View style={styles.eduSectionHeader}>
+            <View>
+              <Text style={styles.sectionTitle}>Education History</Text>
+              <Text style={styles.eduSubtitle}>Add your academic journey after JNV</Text>
+            </View>
+          </View>
+
+          {/* Education Cards */}
+          {educationHistory.length > 0 ? (
+            educationHistory.map((entry, index) => {
+              const levelCfg = LEVEL_CONFIG[entry.level] || LEVEL_CONFIG.Other;
+              return (
+                <View key={entry.id} style={styles.eduCard}>
+                  <View style={styles.eduCardHeader}>
+                    <View style={[styles.eduLevelBadge, { backgroundColor: levelCfg.bgColor }]}>
+                      <Text style={[styles.eduLevelText, { color: levelCfg.color }]}>
+                        {levelCfg.label}
+                      </Text>
+                    </View>
+                    {isEditing && (
+                      <View style={styles.eduCardActions}>
+                        <TouchableOpacity
+                          style={styles.eduActionBtn}
+                          onPress={() => handleOpenEduForm(entry)}
+                        >
+                          <Feather name="edit-2" size={14} color="#3B82F6" />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={[styles.eduActionBtn, styles.eduDeleteBtn]}
+                          onPress={() => handleDeleteEducation(entry.id)}
+                        >
+                          <Feather name="trash-2" size={14} color="#EF4444" />
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                  </View>
+
+                  <Text style={styles.eduDegree}>
+                    {entry.degree}{entry.field ? ` in ${entry.field}` : ''}
+                  </Text>
+                  <View style={styles.eduInstitutionRow}>
+                    <Ionicons name="school-outline" size={14} color="#64748B" style={{ marginRight: 6 }} />
+                    <Text style={styles.eduInstitution}>{entry.institution}</Text>
+                  </View>
+                  <View style={styles.eduYearRow}>
+                    <Feather name="calendar" size={12} color="#94A3B8" style={{ marginRight: 4 }} />
+                    <Text style={styles.eduYear}>
+                      {entry.startYear} – {entry.endYear || 'Present'}
+                    </Text>
+                  </View>
+
+                  {/* Connector line between cards */}
+                  {index < educationHistory.length - 1 && (
+                    <View style={styles.eduConnector} />
+                  )}
+                </View>
+              );
+            })
+          ) : (
+            <View style={styles.eduEmptyState}>
+              <Ionicons name="school-outline" size={32} color="#CBD5E1" />
+              <Text style={styles.eduEmptyText}>No education details added yet</Text>
+              <Text style={styles.eduEmptySubtext}>
+                Add your UG, PG, PhD or other qualifications
+              </Text>
+            </View>
+          )}
+
+          {/* Always-visible Add Education Button */}
+          <TouchableOpacity
+            style={styles.addEduBtn}
+            onPress={() => handleOpenEduForm()}
+            disabled={educationLoading}
+          >
+            {educationLoading ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <>
+                <Feather name="plus" size={16} color="#FFFFFF" style={{ marginRight: 8 }} />
+                <Text style={styles.addEduBtnText}>Add Education</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
       </ScrollView>
 
-      {/* Choice Modal Picker */}
+      {/* Choice Modal Picker (Blood Group / Batch) */}
       <Modal visible={activePicker !== null} transparent animationType="fade">
         <TouchableOpacity
           style={styles.pickerOverlay}
@@ -450,6 +639,170 @@ export default function ProfileScreen({ route }: any) {
                   onPress={() => {
                     handleInputChange(activePicker as string, opt);
                     setActivePicker(null);
+                  }}
+                >
+                  <Text style={styles.pickerOptionText}>{opt}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* ==================== Education Form Modal ==================== */}
+      <Modal visible={showEduModal} transparent animationType="slide">
+        <View style={styles.eduModalOverlay}>
+          <View style={styles.eduModalSheet}>
+            {/* Modal Header */}
+            <View style={styles.eduModalHeader}>
+              <Text style={styles.eduModalTitle}>
+                {editingEduId ? 'Edit Education' : 'Add Education'}
+              </Text>
+              <TouchableOpacity onPress={() => { setShowEduModal(false); setEditingEduId(null); setEduForm(EMPTY_EDU_FORM); }}>
+                <Feather name="x" size={22} color="#1E293B" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.eduModalScroll} contentContainerStyle={styles.eduModalScrollContent}>
+              {/* Level Picker */}
+              <Text style={styles.eduFormLabel}>Level *</Text>
+              <TouchableOpacity
+                style={styles.pickerSelectorEdit}
+                onPress={() => setEduPicker('level')}
+              >
+                <Text style={[styles.pickerSelectorEditText, !eduForm.level && { color: '#94A3B8' }]}>
+                  {eduForm.level || 'Select Level (UG, PG, PhD...)'}
+                </Text>
+                <Feather name="chevron-down" size={16} color="#64748B" />
+              </TouchableOpacity>
+
+              {/* Degree Input */}
+              <Text style={styles.eduFormLabel}>Degree *</Text>
+              <TextInput
+                style={styles.inputEdit}
+                value={eduForm.degree}
+                onChangeText={(txt) => setEduForm((prev) => ({ ...prev, degree: txt }))}
+                placeholder="e.g. B.Tech, MBA, M.Sc, PhD"
+                placeholderTextColor="#94A3B8"
+              />
+
+              {/* Field of Study */}
+              <Text style={styles.eduFormLabel}>Field of Study</Text>
+              <TextInput
+                style={styles.inputEdit}
+                value={eduForm.field}
+                onChangeText={(txt) => setEduForm((prev) => ({ ...prev, field: txt }))}
+                placeholder="e.g. Computer Science, Finance"
+                placeholderTextColor="#94A3B8"
+              />
+
+              {/* Institution */}
+              <Text style={styles.eduFormLabel}>Institution / University *</Text>
+              <TextInput
+                style={styles.inputEdit}
+                value={eduForm.institution}
+                onChangeText={(txt) => setEduForm((prev) => ({ ...prev, institution: txt }))}
+                placeholder="e.g. IIT Delhi, BITS Pilani"
+                placeholderTextColor="#94A3B8"
+              />
+
+              {/* Start Year */}
+              <Text style={styles.eduFormLabel}>Start Year *</Text>
+              <TouchableOpacity
+                style={styles.pickerSelectorEdit}
+                onPress={() => setEduPicker('startYear')}
+              >
+                <Text style={[styles.pickerSelectorEditText, !eduForm.startYear && { color: '#94A3B8' }]}>
+                  {eduForm.startYear || 'Select Start Year'}
+                </Text>
+                <Feather name="chevron-down" size={16} color="#64748B" />
+              </TouchableOpacity>
+
+              {/* End Year */}
+              <Text style={styles.eduFormLabel}>End Year</Text>
+              <TouchableOpacity
+                style={styles.pickerSelectorEdit}
+                onPress={() => setEduPicker('endYear')}
+              >
+                <Text style={[styles.pickerSelectorEditText, !eduForm.endYear && { color: '#94A3B8' }]}>
+                  {eduForm.endYear || 'Select End Year (or leave for Present)'}
+                </Text>
+                <Feather name="chevron-down" size={16} color="#64748B" />
+              </TouchableOpacity>
+
+              {/* Save / Cancel */}
+              <View style={styles.eduModalActions}>
+                <TouchableOpacity
+                  style={styles.eduModalCancelBtn}
+                  onPress={() => { setShowEduModal(false); setEditingEduId(null); setEduForm(EMPTY_EDU_FORM); }}
+                >
+                  <Text style={styles.eduModalCancelText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.eduModalSaveBtn}
+                  onPress={handleSaveEducation}
+                  disabled={educationLoading}
+                >
+                  {educationLoading ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <Text style={styles.eduModalSaveText}>
+                      {editingEduId ? 'Update' : 'Save'}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Education Sub-Picker Modal (Level / Year) */}
+      <Modal visible={eduPicker !== null} transparent animationType="fade">
+        <TouchableOpacity
+          style={styles.pickerOverlay}
+          activeOpacity={1}
+          onPress={() => setEduPicker(null)}
+        >
+          <View style={styles.pickerBox}>
+            <Text style={styles.pickerTitle}>
+              Select{' '}
+              {eduPicker === 'level'
+                ? 'Education Level'
+                : eduPicker === 'startYear'
+                ? 'Start Year'
+                : 'End Year'}
+            </Text>
+            <ScrollView style={styles.pickerScroll}>
+              {eduPicker === 'endYear' && (
+                <TouchableOpacity
+                  style={styles.pickerOption}
+                  onPress={() => {
+                    setEduForm((prev) => ({ ...prev, endYear: '' }));
+                    setEduPicker(null);
+                  }}
+                >
+                  <Text style={[styles.pickerOptionText, { color: '#10B981', fontWeight: '700' }]}>
+                    Present (Ongoing)
+                  </Text>
+                </TouchableOpacity>
+              )}
+              {(eduPicker === 'level'
+                ? EDUCATION_LEVELS
+                : YEAR_OPTIONS
+              ).map((opt) => (
+                <TouchableOpacity
+                  key={opt}
+                  style={styles.pickerOption}
+                  onPress={() => {
+                    if (eduPicker === 'level') {
+                      setEduForm((prev) => ({ ...prev, level: opt }));
+                    } else if (eduPicker === 'startYear') {
+                      setEduForm((prev) => ({ ...prev, startYear: opt }));
+                    } else {
+                      setEduForm((prev) => ({ ...prev, endYear: opt }));
+                    }
+                    setEduPicker(null);
                   }}
                 >
                   <Text style={styles.pickerOptionText}>{opt}</Text>
@@ -752,5 +1105,212 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#334155',
     textAlign: 'center',
+  },
+
+  // ==================== Education History Styles ====================
+  eduSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  eduSubtitle: {
+    fontSize: 11,
+    color: '#94A3B8',
+    fontWeight: '500',
+    marginTop: -8,
+    marginBottom: 16,
+  },
+
+  // Education Card
+  eduCard: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    position: 'relative',
+  },
+  eduCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  eduLevelBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  eduLevelText: {
+    fontSize: 10,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  eduCardActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  eduActionBtn: {
+    width: 30,
+    height: 30,
+    borderRadius: 8,
+    backgroundColor: '#EFF6FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 6,
+  },
+  eduDeleteBtn: {
+    backgroundColor: '#FEF2F2',
+  },
+  eduDegree: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 4,
+  },
+  eduInstitutionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  eduInstitution: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#475569',
+    flex: 1,
+  },
+  eduYearRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  eduYear: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#94A3B8',
+  },
+  eduConnector: {
+    position: 'absolute',
+    left: 24,
+    bottom: -12,
+    width: 2,
+    height: 12,
+    backgroundColor: '#CBD5E1',
+  },
+
+  // Empty state
+  eduEmptyState: {
+    alignItems: 'center',
+    paddingVertical: 24,
+  },
+  eduEmptyText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#64748B',
+    marginTop: 8,
+  },
+  eduEmptySubtext: {
+    fontSize: 11,
+    color: '#94A3B8',
+    marginTop: 2,
+  },
+
+  // Add Education Button
+  addEduBtn: {
+    backgroundColor: '#007AFF',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 10,
+    marginTop: 8,
+  },
+  addEduBtnText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+
+  // ==================== Education Form Modal Styles ====================
+  eduModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.4)',
+    justifyContent: 'flex-end',
+  },
+  eduModalSheet: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '85%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  eduModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  eduModalTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  eduModalScroll: {
+    flexGrow: 1,
+  },
+  eduModalScrollContent: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+  eduFormLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#64748B',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+    marginTop: 16,
+  },
+  eduModalActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 28,
+  },
+  eduModalCancelBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  eduModalCancelText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#64748B',
+  },
+  eduModalSaveBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: '#10B981',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+  eduModalSaveText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });

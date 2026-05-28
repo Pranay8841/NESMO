@@ -131,6 +131,7 @@ export const getAlumniDirectory = async (req, res) => {
       bloodGroup: profile?.bloodGroup || null,
       about: profile?.about || null,
       photo: profile?.profilePhoto || null,
+      educationHistory: Array.isArray(profile?.educationHistory) ? profile.educationHistory : [],
       role: user.role,
       isMember: user.isMember || user.role !== 'ALUMNI'
     }));

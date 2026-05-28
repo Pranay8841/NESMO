@@ -39,6 +39,16 @@ export interface AlumniMember {
   about: string | null;
   /** Profile photo URL */
   photo: string | null;
+  /** Education history entries */
+  educationHistory: Array<{
+    id: string;
+    level: string;
+    degree: string;
+    field: string;
+    institution: string;
+    startYear: string;
+    endYear: string;
+  }>;
   /** User role (ALUMNI, MEMBER, EVENT_LEAD, ADMIN) */
   role: 'ALUMNI' | 'MEMBER' | 'EVENT_LEAD' | 'ADMIN';
   /** Whether user is a paid member */

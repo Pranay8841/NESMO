@@ -127,3 +127,96 @@ export const fetchProfileCompleteness = createAsyncThunk(
     }
   }
 );
+
+/**
+ * Education entry data structure
+ */
+export interface EducationEntry {
+  id: string;
+  level: string;
+  degree: string;
+  field: string;
+  institution: string;
+  startYear: string;
+  endYear: string;
+}
+
+/**
+ * Add a new education entry to the user's profile
+ * 
+ * @async
+ * @param {Omit<EducationEntry, 'id'>} educationData - Education data to add
+ * @returns {Promise<EducationEntry[]>} Updated education history array
+ */
+export const addEducation = createAsyncThunk(
+  'profile/addEducation',
+  async (
+    educationData: Omit<EducationEntry, 'id'>,
+    { dispatch, rejectWithValue }
+  ) => {
+    try {
+      const response = await apiConnector(
+        'POST',
+        PROFILE_API.ADD_EDUCATION,
+        educationData
+      );
+      dispatch(fetchProfileCompleteness());
+      return response.data.educationHistory;
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Failed to add education entry';
+      return rejectWithValue(message);
+    }
+  }
+);
+
+/**
+ * Update an existing education entry
+ * 
+ * @async
+ * @param {{ eduId: string; data: Partial<EducationEntry> }} params
+ * @returns {Promise<EducationEntry[]>} Updated education history array
+ */
+export const updateEducation = createAsyncThunk(
+  'profile/updateEducation',
+  async (
+    { eduId, data }: { eduId: string; data: Partial<EducationEntry> },
+    { dispatch, rejectWithValue }
+  ) => {
+    try {
+      const response = await apiConnector(
+        'PUT',
+        `${PROFILE_API.UPDATE_EDUCATION}/${eduId}`,
+        data
+      );
+      dispatch(fetchProfileCompleteness());
+      return response.data.educationHistory;
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Failed to update education entry';
+      return rejectWithValue(message);
+    }
+  }
+);
+
+/**
+ * Delete an education entry
+ * 
+ * @async
+ * @param {string} eduId - Education entry ID to delete
+ * @returns {Promise<EducationEntry[]>} Updated education history array
+ */
+export const deleteEducation = createAsyncThunk(
+  'profile/deleteEducation',
+  async (eduId: string, { dispatch, rejectWithValue }) => {
+    try {
+      const response = await apiConnector(
+        'DELETE',
+        `${PROFILE_API.DELETE_EDUCATION}/${eduId}`
+      );
+      dispatch(fetchProfileCompleteness());
+      return response.data.educationHistory;
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Failed to delete education entry';
+      return rejectWithValue(message);
+    }
+  }
+);
