@@ -14,8 +14,6 @@ import {
   setKnowledgeError,
   setLoadingSmartMatch,
   setSmartMatchResults,
-  setIsSearching,
-  setSearchSuggestions,
 } from '../redux/slices/communitySlice';
 
 /* ─────────────────────────────────────────────
@@ -105,6 +103,14 @@ export const createKnowledgeEntry = async (payload: CreateKnowledgePayload) => {
   return response.data;
 };
 
+/**
+ * Request mentorship connection with an alumnus.
+ */
+export const requestMentorship = async (mentorId: string) => {
+  const response = await apiConnector('POST', COMMUNITY_API.REQUEST_MENTORSHIP, { mentorId });
+  return response.data;
+};
+
 /* ─────────────────────────────────────────────
    THUNKS (dispatch-based, update Redux state)
 ───────────────────────────────────────────── */
@@ -174,45 +180,4 @@ export const runSmartMatch = createAsyncThunk(
   }
 );
 
-/**
- * Search messages + knowledge entries for the smart suggestion strip.
- * Called while user is typing (debounced in MessageInput).
- */
-export const searchCommunity = createAsyncThunk(
-  'community/search',
-  async (query: string, { dispatch, rejectWithValue }) => {
-    try {
-      if (query.trim().length < 3) {
-        dispatch(setSearchSuggestions([]));
-        return [];
-      }
-      dispatch(setIsSearching(true));
 
-      const response = await apiConnector(
-        'GET',
-        COMMUNITY_API.SEARCH,
-        null,
-        null,
-        { q: query }
-      );
-
-      if (response.data.success) {
-        const combined = [
-          ...(response.data.messages || []),
-          ...(response.data.knowledge || []).map((k: any) => ({
-            id: k.id,
-            text: k.title,
-            authorName: 'Knowledge Base',
-          })),
-        ];
-        dispatch(setSearchSuggestions(combined));
-        return combined;
-      }
-      return rejectWithValue('Search failed');
-    } catch {
-      return rejectWithValue('Search failed');
-    } finally {
-      dispatch(setIsSearching(false));
-    }
-  }
-);

@@ -17,17 +17,29 @@ import {
   Modal,
   FlatList,
   TouchableWithoutFeedback,
+  Linking,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import type { MatchedAlumni } from '../../redux/slices/communitySlice';
+import { requestMentorship } from '../../services/communityService';
 
 interface SmartMatchBannerProps {
   text: string;
   matchedAlumni: MatchedAlumni[];
 }
 
-function AlumniCard({ alumni }: { alumni: MatchedAlumni }) {
+function AlumniCard({
+  alumni,
+  onConnect,
+  isConnecting,
+}: {
+  alumni: MatchedAlumni;
+  onConnect: (mentorId: string) => void;
+  isConnecting: boolean;
+}) {
   const initials = alumni.name
     .split(' ')
     .map((n) => n[0])
@@ -57,16 +69,58 @@ function AlumniCard({ alumni }: { alumni: MatchedAlumni }) {
           <Text style={styles.alumniBatch}>'{alumni.batch.slice(-2)} batch</Text>
         ) : null}
         <Text style={styles.alumniOccupation} numberOfLines={1}>
-          {alumni.occupation}
-          {alumni.location ? ` · ${alumni.location}` : ''}
+          {alumni.occupation}{alumni.organization ? ` at ${alumni.organization}` : ''}
         </Text>
+        {alumni.location ? (
+          <Text style={styles.alumniLocation} numberOfLines={1}>
+            {alumni.location}
+          </Text>
+        ) : null}
       </View>
+      <TouchableOpacity
+        style={[styles.connectBtn, isConnecting && styles.connectBtnDisabled]}
+        onPress={() => onConnect(alumni.id)}
+        disabled={isConnecting}
+      >
+        {isConnecting ? (
+          <ActivityIndicator size="small" color="#FFFFFF" />
+        ) : (
+          <Text style={styles.connectBtnText}>Connect</Text>
+        )}
+      </TouchableOpacity>
     </View>
   );
 }
 
 export default function SmartMatchBanner({ text, matchedAlumni }: SmartMatchBannerProps) {
   const [sheetVisible, setSheetVisible] = useState(false);
+  const [connectingId, setConnectingId] = useState<string | null>(null);
+
+  const handleConnect = async (mentorId: string) => {
+    try {
+      setConnectingId(mentorId);
+      const res = await requestMentorship(mentorId);
+      if (res.success && res.phone) {
+        let cleanPhone = res.phone.replace(/[^0-9]/g, '');
+        if (cleanPhone.length === 10) {
+          cleanPhone = `91${cleanPhone}`;
+        }
+        const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(res.message)}`;
+        Linking.openURL(url).catch((err) => {
+          console.error('An error occurred opening WhatsApp', err);
+          Alert.alert('Error', 'Could not open WhatsApp on this device.');
+        });
+      } else {
+        Alert.alert('Error', res.message || 'Failed to request mentorship');
+      }
+    } catch (error: any) {
+      console.error('requestMentorship error:', error);
+      const errMsg = error.response?.data?.message || 'Failed to request mentorship. Please try again.';
+      Alert.alert('Error', errMsg);
+    } finally {
+      setConnectingId(null);
+    }
+  };
 
   const sectorIcon = (() => {
     const lower = text.toLowerCase();
@@ -126,7 +180,13 @@ export default function SmartMatchBanner({ text, matchedAlumni }: SmartMatchBann
                 <FlatList
                   data={matchedAlumni}
                   keyExtractor={(item) => item.id}
-                  renderItem={({ item }) => <AlumniCard alumni={item} />}
+                  renderItem={({ item }) => (
+                    <AlumniCard
+                      alumni={item}
+                      onConnect={handleConnect}
+                      isConnecting={connectingId === item.id}
+                    />
+                  )}
                   ItemSeparatorComponent={() => <View style={styles.separator} />}
                   showsVerticalScrollIndicator={false}
                   contentContainerStyle={{ paddingBottom: 20 }}
@@ -257,8 +317,30 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     marginTop: 1,
   },
+  alumniLocation: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 1,
+  },
   separator: {
     height: 1,
     backgroundColor: '#F3F4F6',
+  },
+  connectBtn: {
+    backgroundColor: '#2563EB',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    minWidth: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  connectBtnDisabled: {
+    backgroundColor: '#9CA3AF',
+  },
+  connectBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
   },
 });

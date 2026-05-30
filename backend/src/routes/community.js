@@ -14,11 +14,11 @@ import {
   deleteMessage,
   reactToMessage,
   reportMessage,
-  searchMessages,
   smartMatchAlumni,
   getKnowledgeEntries,
   createKnowledgeEntry,
   getMentionableUsers,
+  requestMentorship,
 } from "../controllers/community.js";
 
 const router = express.Router();
@@ -49,13 +49,13 @@ router.post("/messages/:id/react", reactToMessage);
 /** POST /api/community/messages/:id/report — Report message */
 router.post("/messages/:id/report", reportMessage);
 
-/* ─── Search & Smart Match ─── */
-
-/** GET /api/community/search?q= — Keyword search */
-router.get("/search", searchMessages);
+/* ─── Smart Match ─── */
 
 /** GET /api/community/smart-match?q= — Alumni profile matcher */
 router.get("/smart-match", smartMatchAlumni);
+
+/** POST /api/community/mentorship/request — Send mentorship request notification & get WhatsApp details */
+router.post("/mentorship/request", requestMentorship);
 
 /* ─── Knowledge Base ─── */
 

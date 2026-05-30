@@ -22,8 +22,8 @@ import {
 } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
-import { clearReplyingTo, clearSearchSuggestions } from '../../redux/slices/communitySlice';
-import { postMessage, searchCommunity, getMentionableUsers } from '../../services/communityService';
+import { clearReplyingTo } from '../../redux/slices/communitySlice';
+import { postMessage, getMentionableUsers } from '../../services/communityService';
 import { Avatar } from './MessageBubble';
 
 interface MentionableUser {
@@ -40,15 +40,12 @@ interface MessageInputProps {
 
 export default function MessageInput({ onMessageSent }: MessageInputProps) {
   const dispatch = useAppDispatch();
-  const { replyingTo, searchSuggestions, isSearching } = useAppSelector(
+  const { replyingTo } = useAppSelector(
     (state) => state.community
   );
 
   const [text, setText] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const suggestionAnim = useRef(new Animated.Value(0)).current;
 
   // Mentions autocomplete state
   const [allUsers, setAllUsers] = useState<MentionableUser[]>([]);
@@ -100,6 +97,7 @@ export default function MessageInput({ onMessageSent }: MessageInputProps) {
   const filteredUsers = mentionInfo
     ? [
         { id: 'everyone', name: 'Everyone', email: 'Notify all members in the group', photo: '', batch: '' },
+        { id: 'ai', name: 'AI', email: 'Ask NESMO AI a question', photo: '', batch: '' },
         ...allUsers,
       ].filter(
         (u) =>
@@ -114,7 +112,12 @@ export default function MessageInput({ onMessageSent }: MessageInputProps) {
       if (!activeMention) return;
 
       const { startIndex } = activeMention;
-      const nameToInsert = selectedUser.id === 'everyone' ? '@Everyone' : `@${selectedUser.name}`;
+      const nameToInsert =
+        selectedUser.id === 'everyone'
+          ? '@Everyone'
+          : selectedUser.id === 'ai'
+          ? '@AI'
+          : `@${selectedUser.name}`;
 
       const newText =
         text.slice(0, startIndex) +
@@ -124,8 +127,8 @@ export default function MessageInput({ onMessageSent }: MessageInputProps) {
 
       setText(newText);
 
-      // Add to selected mentions list if not everyone
-      if (selectedUser.id !== 'everyone') {
+      // Add to selected mentions list if not everyone/AI
+      if (selectedUser.id !== 'everyone' && selectedUser.id !== 'ai') {
         if (!selectedMentions.includes(selectedUser.id)) {
           setSelectedMentions((prev) => [...prev, selectedUser.id]);
         }
@@ -138,33 +141,7 @@ export default function MessageInput({ onMessageSent }: MessageInputProps) {
     [text, selection.start, selectedMentions, getActiveMentionQuery]
   );
 
-  // Debounced search for suggestion strip
-  useEffect(() => {
-    if (searchTimeout.current) clearTimeout(searchTimeout.current);
-
-    if (text.length >= 15) {
-      searchTimeout.current = setTimeout(() => {
-        dispatch(searchCommunity(text));
-        setShowSuggestions(true);
-      }, 600);
-    } else {
-      setShowSuggestions(false);
-      dispatch(clearSearchSuggestions());
-    }
-
-    return () => {
-      if (searchTimeout.current) clearTimeout(searchTimeout.current);
-    };
-  }, [text]);
-
-  // Animate suggestion strip in/out
-  useEffect(() => {
-    Animated.timing(suggestionAnim, {
-      toValue: showSuggestions && searchSuggestions.length > 0 ? 1 : 0,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-  }, [showSuggestions, searchSuggestions.length]);
+  // Autocomplete/search suggestions disabled
 
   const handleSend = useCallback(async () => {
     const trimmed = text.trim();
@@ -187,8 +164,6 @@ export default function MessageInput({ onMessageSent }: MessageInputProps) {
       setText('');
       setSelectedMentions([]);
       dispatch(clearReplyingTo());
-      dispatch(clearSearchSuggestions());
-      setShowSuggestions(false);
       onMessageSent();
     } catch {
       // The message might still have gone through even if the response failed
@@ -198,9 +173,7 @@ export default function MessageInput({ onMessageSent }: MessageInputProps) {
     }
   }, [text, isSending, replyingTo, dispatch, onMessageSent, selectedMentions, allUsers]);
 
-  const handleDismissSuggestions = () => {
-    setShowSuggestions(false);
-  };
+
 
   return (
     <View style={styles.container}>
@@ -220,13 +193,17 @@ export default function MessageInput({ onMessageSent }: MessageInputProps) {
                   <View style={[styles.avatar, styles.everyoneAvatar]}>
                     <Ionicons name="megaphone-outline" size={16} color="#fff" />
                   </View>
+                ) : item.id === 'ai' ? (
+                  <View style={[styles.avatar, styles.aiAvatar]}>
+                    <Ionicons name="sparkles" size={16} color="#fff" />
+                  </View>
                 ) : (
                   <Avatar name={item.name} photoUrl={item.photo || ''} size={32} />
                 )}
                 <View style={styles.autocompleteTextContainer}>
                   <View style={styles.autocompleteNameRow}>
                     <Text style={styles.autocompleteName}>
-                      {item.id === 'everyone' ? '@Everyone' : item.name}
+                      {item.id === 'everyone' ? '@Everyone' : item.id === 'ai' ? '@AI' : item.name}
                     </Text>
                     {item.batch ? (
                       <Text style={styles.autocompleteBatch}>'{item.batch.slice(-2)}</Text>
@@ -244,41 +221,7 @@ export default function MessageInput({ onMessageSent }: MessageInputProps) {
         </View>
       )}
 
-      {/* Smart suggestion strip */}
-      {showSuggestions && searchSuggestions.length > 0 && (
-        <Animated.View style={[styles.suggestionStrip, { opacity: suggestionAnim }]}>
-          <View style={styles.suggestionHeader}>
-            <Ionicons name="bulb-outline" size={14} color="#2563EB" />
-            <Text style={styles.suggestionTitle}>Similar past discussions</Text>
-            <TouchableOpacity onPress={handleDismissSuggestions} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Feather name="x" size={14} color="#9CA3AF" />
-            </TouchableOpacity>
-          </View>
-          <FlatList
-            data={searchSuggestions.slice(0, 3)}
-            keyExtractor={(item) => item.id}
-            showsVerticalScrollIndicator={false}
-            renderItem={({ item }) => (
-              <View style={styles.suggestionItem}>
-                <Feather name="message-circle" size={12} color="#6B7280" style={{ marginTop: 2 }} />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.suggestionText} numberOfLines={2}>{item.text}</Text>
-                  <Text style={styles.suggestionAuthor}>{item.authorName}</Text>
-                </View>
-              </View>
-            )}
-            ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: '#F3F4F6' }} />}
-          />
-        </Animated.View>
-      )}
 
-      {/* Searching indicator */}
-      {isSearching && text.length >= 15 && (
-        <View style={styles.searchingRow}>
-          <ActivityIndicator size="small" color="#2563EB" />
-          <Text style={styles.searchingText}>Finding similar discussions…</Text>
-        </View>
-      )}
 
       {/* Reply preview strip */}
       {replyingTo && (
@@ -542,6 +485,14 @@ const styles = StyleSheet.create({
     height: 32,
     borderRadius: 16,
     backgroundColor: '#2563EB',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  aiAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#7C3AED',
     justifyContent: 'center',
     alignItems: 'center',
   },

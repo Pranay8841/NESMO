@@ -12,6 +12,7 @@ export interface MatchedAlumni {
   id: string;
   name: string;
   occupation: string;
+  organization?: string;
   location: string;
   sector: string;
   profilePhoto: string;
@@ -51,9 +52,6 @@ interface CommunityState {
   smartMatchResults: MatchedAlumni[];
   isLoadingSmartMatch: boolean;
 
-  /** Search results for the suggestion strip */
-  searchSuggestions: { id: string; text: string; authorName: string }[];
-  isSearching: boolean;
 }
 
 const initialState: CommunityState = {
@@ -63,8 +61,6 @@ const initialState: CommunityState = {
   replyingTo: null,
   smartMatchResults: [],
   isLoadingSmartMatch: false,
-  searchSuggestions: [],
-  isSearching: false,
 };
 
 const communitySlice = createSlice({
@@ -101,19 +97,6 @@ const communitySlice = createSlice({
       state.smartMatchResults = [];
     },
 
-    // ── Search Suggestions ──
-    setIsSearching(state, action: PayloadAction<boolean>) {
-      state.isSearching = action.payload;
-    },
-    setSearchSuggestions(
-      state,
-      action: PayloadAction<{ id: string; text: string; authorName: string }[]>
-    ) {
-      state.searchSuggestions = action.payload;
-    },
-    clearSearchSuggestions(state) {
-      state.searchSuggestions = [];
-    },
   },
 });
 
@@ -126,9 +109,6 @@ export const {
   setLoadingSmartMatch,
   setSmartMatchResults,
   clearSmartMatchResults,
-  setIsSearching,
-  setSearchSuggestions,
-  clearSearchSuggestions,
 } = communitySlice.actions;
 
 export default communitySlice.reducer;

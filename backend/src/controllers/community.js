@@ -20,6 +20,7 @@ import {
   updateDocument,
 } from "../config/firestore.js";
 import { sendNotifications } from "../service/notification.js";
+import { hasAITrigger, handleAIQuery } from "../service/aiAgent.js";
 
 /* ─────────────────────────────────────────────
    KEYWORD MAPS FOR AUTO-CATEGORY DETECTION
@@ -149,7 +150,9 @@ async function findMatchingAlumni(locations, sectors) {
       if (!user.profile) continue;
       try {
         const profile = await getDocument("profiles", user.profile);
-        if (!profile) continue;
+        if (!profile) {
+          continue;
+        }
 
         const cityMatch =
           locations.length === 0 ||
@@ -183,6 +186,7 @@ async function findMatchingAlumni(locations, sectors) {
             id: user.uid || user.id,
             name: `${user.firstName} ${user.lastName}`,
             occupation: profile.occupation || "",
+            organization: profile.organization || "",
             location: profile.currentAddress || "",
             sector: profile.sector || "",
             profilePhoto: profile.profilePhoto || "",
@@ -191,8 +195,8 @@ async function findMatchingAlumni(locations, sectors) {
         }
 
         if (matches.length >= 5) break;
-      } catch {
-        // Skip profiles that fail to load
+      } catch (err) {
+        console.error(`[findMatchingAlumni Debug] Error parsing profile for user: ${user.firstName} ${user.lastName}`, err);
       }
     }
 
@@ -312,6 +316,23 @@ export const postMessage = async (req, res) => {
 
     const messageId = await addDocument("community_messages", messageData);
 
+    /* ── 5.1 AI Agent: handle @AI mentions ── */
+    (async () => {
+      try {
+        if (hasAITrigger(text)) {
+          await handleAIQuery({
+            messageId,
+            userId,
+            text,
+            authorName: `${userDoc.firstName} ${userDoc.lastName}`,
+            autoCategory,
+          });
+        }
+      } catch (aiErr) {
+        console.error("AI Agent error (non-blocking):", aiErr);
+      }
+    })();
+
     /* ── 5.5 Send Notifications to Mentioned Users ── */
     (async () => {
       try {
@@ -344,6 +365,7 @@ export const postMessage = async (req, res) => {
 
     /* ── 6. Smart alumni matching ── */
     const { locations, sectors } = extractSmartMatchHints(text);
+
     if (locations.length > 0 || sectors.length > 0) {
       const matchedAlumni = await findMatchingAlumni(locations, sectors);
 
@@ -569,63 +591,7 @@ export const reportMessage = async (req, res) => {
   }
 };
 
-/**
- * GET /api/community/search?q=
- * Keyword search across message texts (basic, for smart suggestion strip).
- */
-export const searchMessages = async (req, res) => {
-  try {
-    const { q } = req.query;
 
-    if (!q || q.trim().length < 3) {
-      return res.status(400).json({ success: false, message: "Query must be at least 3 characters" });
-    }
-
-    // Fetch recent messages and filter in-memory (Firestore doesn't support full-text)
-    // For production, integrate Algolia or ElasticSearch here.
-    const messages = await getDocuments("community_messages", [
-      { field: "isDeleted", operator: "==", value: false },
-    ], {
-      orderBy: { field: "createdAt", direction: "desc" },
-      limit: 200,
-    });
-
-    const lower = q.toLowerCase();
-    const results = messages
-      .filter((m) => !m.isSystemMessage && m.text.toLowerCase().includes(lower))
-      .slice(0, 10)
-      .map((m) => ({
-        id: m.id,
-        text: m.text,
-        authorName: m.authorName,
-        authorBatch: m.authorBatch,
-        createdAt: m.createdAt,
-      }));
-
-    // Also search knowledge entries
-    const knowledge = await getDocuments("knowledge_entries", [], {
-      limit: 50,
-    });
-    const knowledgeResults = knowledge
-      .filter(
-        (k) =>
-          k.title?.toLowerCase().includes(lower) ||
-          k.summary?.toLowerCase().includes(lower) ||
-          (k.tags || []).some((t) => t.toLowerCase().includes(lower))
-      )
-      .slice(0, 5);
-
-    res.status(200).json({
-      success: true,
-      messages: results,
-      knowledge: knowledgeResults,
-      total: results.length + knowledgeResults.length,
-    });
-  } catch (error) {
-    console.error("searchMessages error:", error);
-    res.status(500).json({ success: false, message: "Search failed" });
-  }
-};
 
 /**
  * GET /api/community/smart-match?q=
@@ -798,4 +764,80 @@ export const getMentionableUsers = async (req, res) => {
     res.status(500).json({ success: false, message: "Failed to fetch users for tagging" });
   }
 };
+
+/**
+ * POST /api/community/mentorship/request
+ * Send a push notification to mentor and return their WhatsApp contact details.
+ * Body: { mentorId }
+ */
+export const requestMentorship = async (req, res) => {
+  try {
+    const juniorId = req.user.id;
+    const { mentorId } = req.body;
+
+    if (!mentorId) {
+      return res.status(400).json({ success: false, message: "Mentor ID is required" });
+    }
+
+    if (juniorId === mentorId) {
+      return res.status(400).json({ success: false, message: "You cannot request mentorship from yourself" });
+    }
+
+    // 1. Fetch Junior User and Profile
+    const juniorDoc = await getDocument("users", juniorId);
+    if (!juniorDoc) {
+      return res.status(404).json({ success: false, message: "Junior user not found" });
+    }
+    const juniorProfileDoc = juniorDoc.profile
+      ? await getDocument("profiles", juniorDoc.profile)
+      : null;
+
+    // 2. Fetch Mentor User and Profile
+    const mentorDoc = await getDocument("users", mentorId);
+    if (!mentorDoc) {
+      return res.status(404).json({ success: false, message: "Mentor user not found" });
+    }
+    const mentorProfileDoc = mentorDoc.profile
+      ? await getDocument("profiles", mentorDoc.profile)
+      : null;
+
+    if (!mentorProfileDoc || !mentorProfileDoc.phone) {
+      return res.status(400).json({
+        success: false,
+        message: "This alumnus does not have a phone number registered for WhatsApp contact.",
+      });
+    }
+
+    const juniorName = `${juniorDoc.firstName} ${juniorDoc.lastName}`.trim();
+    const juniorBatch = juniorProfileDoc?.passoutBatch || "N/A";
+    const mentorName = `${mentorDoc.firstName} ${mentorDoc.lastName}`.trim();
+    const mentorSector = mentorProfileDoc.sector || mentorProfileDoc.occupation || "your sector";
+
+    const batchSuffix = juniorBatch !== "N/A" ? `'${juniorBatch.slice(-2)}` : "N/A";
+
+    // 3. Send Push Notification to Mentor
+    const notificationMessage = `Hi ${mentorName}, ${juniorName} (Batch ${batchSuffix}) is looking for guidance in ${mentorSector}. Would you like to connect?`;
+    await sendNotifications({
+      title: "Mentorship Request",
+      message: notificationMessage,
+      type: "SYSTEM",
+      recipients: [mentorId],
+      link: "/community",
+      meta: { juniorId }
+    });
+
+    // 4. Generate WhatsApp Prefilled Message Text
+    const whatsappMessage = `Hi ${mentorName}, I am ${juniorName} from JNV Gadchiroli (Batch ${batchSuffix}). I saw your profile in the NESMO community list for ${mentorSector} and would love to connect for guidance!`;
+
+    res.status(200).json({
+      success: true,
+      phone: mentorProfileDoc.phone,
+      message: whatsappMessage,
+    });
+  } catch (error) {
+    console.error("requestMentorship error:", error);
+    res.status(500).json({ success: false, message: "Failed to process mentorship request" });
+  }
+};
+
 

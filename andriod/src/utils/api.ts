@@ -154,8 +154,6 @@ export const COMMUNITY_API = {
   REACT_TO_MESSAGE: (id: string) => `${BASE_URL}/community/messages/${id}/react`,
   /** POST - Report a message */
   REPORT_MESSAGE: (id: string) => `${BASE_URL}/community/messages/${id}/report`,
-  /** GET - Keyword search across messages + knowledge */
-  SEARCH: `${BASE_URL}/community/search`,
   /** GET - Smart alumni match for a query */
   SMART_MATCH: `${BASE_URL}/community/smart-match`,
   /** GET - List curated knowledge entries */
@@ -164,4 +162,6 @@ export const COMMUNITY_API = {
   CREATE_KNOWLEDGE: `${BASE_URL}/community/knowledge`,
   /** GET - Fetch mentionable users */
   GET_MENTIONABLE_USERS: `${BASE_URL}/community/users`,
+  /** POST - Request mentorship (sends notification & returns WhatsApp credentials) */
+  REQUEST_MENTORSHIP: `${BASE_URL}/community/mentorship/request`,
 };

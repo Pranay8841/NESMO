@@ -38,6 +38,7 @@ import { Feather } from '@expo/vector-icons';
 import { db, auth } from '../../config/firebaseClient';
 import MessageBubble, { type CommunityMessage } from '../../components/Discussion/MessageBubble';
 import SmartMatchBanner from '../../components/Discussion/SmartMatchBanner';
+import AIResponseBubble from '../../components/Discussion/AIResponseBubble';
 import MessageInput from '../../components/Discussion/MessageInput';
 import KnowledgeBaseSheet from '../../components/Discussion/KnowledgeBaseSheet';
 import { useAppSelector } from '../../redux/hooks';
@@ -174,6 +175,15 @@ export default function CommunityScreen() {
   const renderItem = useCallback(
     ({ item }: { item: CommunityMessage }) => {
       if (item.isSystemMessage) {
+        if ((item as any).isAIResponse) {
+          return (
+            <AIResponseBubble
+              text={item.text}
+              replyToPreview={item.replyToPreview}
+              createdAt={item.createdAt}
+            />
+          );
+        }
         return (
           <SmartMatchBanner
             text={item.text}

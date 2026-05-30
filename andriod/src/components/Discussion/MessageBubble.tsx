@@ -47,6 +47,7 @@ export interface CommunityMessage {
   isKnowledgeEntry: boolean;
   isDeleted: boolean;
   isSystemMessage: boolean;
+  isAIResponse?: boolean;
   editedAt: any;
   createdAt: any;
 }
