@@ -12,7 +12,8 @@ import { Feather } from '@expo/vector-icons';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { logoutUser } from '../../services/authService';
 import { fetchProfileCompleteness } from '../../services/profileService';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
+import { APP_CONSTANTS } from '../../constants';
 
 // Import LandingPage components
 import HeroSection from '../../components/LandingPage/HeroSection';
@@ -25,7 +26,9 @@ import Footer from '../../components/LandingPage/Footer';
 export default function HomeScreen() {
   const dispatch = useAppDispatch();
   const navigation = useNavigation<any>();
+  const isFocused = useIsFocused();
   const { user, token } = useAppSelector((state) => state.auth);
+  const unreadCount = useAppSelector((state) => state.notification.unreadCount);
 
   // Fetch profile completeness on mount to ensure backend connection is healthy (only if logged in)
   useEffect(() => {
@@ -50,9 +53,25 @@ export default function HomeScreen() {
           <Text style={styles.headerTitle}>NESMO</Text>
         </View>
         {token && user ? (
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Feather name="log-out" size={16} color="#FF3B30" />
-          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              style={styles.bellButton}
+              onPress={() => navigation.navigate(APP_CONSTANTS.SCREENS.NOTIFICATIONS)}
+              activeOpacity={0.7}
+            >
+              <Feather name="bell" size={18} color="#2563EB" />
+              {unreadCount > 0 && (
+                <View style={styles.badgeContainer}>
+                  <Text style={styles.badgeText}>
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+              <Feather name="log-out" size={16} color="#FF3B30" />
+            </TouchableOpacity>
+          </View>
         ) : (
           <TouchableOpacity
             style={styles.loginButton}
@@ -124,6 +143,34 @@ const styles = StyleSheet.create({
     padding: 6,
     borderRadius: 8,
     backgroundColor: '#FFEAEA',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  bellButton: {
+    padding: 6,
+    borderRadius: 8,
+    backgroundColor: '#EFF6FF',
+    position: 'relative',
+  },
+  badgeContainer: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#EF4444',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 3,
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '700',
   },
   loginButton: {
     paddingHorizontal: 12,

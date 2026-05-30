@@ -9,3 +9,5 @@ const router = express.Router();
 
 router.get("/", protect, getMyNotifications);
 router.patch("/:id/read", protect, markNotificationRead);
+
+export default router;

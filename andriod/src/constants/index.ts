@@ -21,6 +21,9 @@ export const APP_CONSTANTS = {
     PROFILE: 'Profile',
     USER_MODERATION: 'UserModeration',
     ADMIN_DASHBOARD: 'AdminDashboard',
+    COMMUNITY: 'Community',
+    KNOWLEDGE_BASE: 'KnowledgeBase',
+    NOTIFICATIONS: 'Notifications',
   },
 
   // Navigation names

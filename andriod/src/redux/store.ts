@@ -10,6 +10,8 @@ import authReducer from './slices/authSlice';
 import profileReducer from './slices/profileSlice';
 import alumniReducer from './slices/alumniSlice';
 import adminReducer from './slices/adminSlice';
+import communityReducer from './slices/communitySlice';
+import notificationReducer from './slices/notificationSlice';
 
 /**
  * Redux store instance
@@ -21,6 +23,8 @@ export const store = configureStore({
     profile: profileReducer,
     alumni: alumniReducer,
     admin: adminReducer,
+    community: communityReducer,
+    notification: notificationReducer,
   },
 });
 

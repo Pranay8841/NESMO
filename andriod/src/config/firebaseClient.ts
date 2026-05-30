@@ -10,6 +10,7 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import { initializeAuth, getAuth } from 'firebase/auth';
 // @ts-ignore - getReactNativePersistence exists at runtime in firebase/auth but lacks type declarations
 import { getReactNativePersistence } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Firebase configuration from environment variables
@@ -52,6 +53,7 @@ const validateFirebaseConfig = () => {
 // Initialize Firebase
 let app: any = null;
 let auth: any = null;
+let db: any = null;
 
 try {
   if (!validateFirebaseConfig()) {
@@ -76,8 +78,9 @@ try {
   }
 
   console.log('✅ Firebase initialized successfully (JS SDK)');
+  db = getFirestore(app);
 } catch (error) {
   console.error('❌ Firebase initialization failed:', error);
 }
 
-export { app, auth };
+export { app, auth, db };

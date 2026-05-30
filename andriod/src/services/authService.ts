@@ -13,6 +13,7 @@ import {
   signOut,
 } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 import { auth } from '../config/firebaseClient';
 import { apiConnector } from '../utils/APIsConnector';
@@ -40,15 +41,11 @@ export const googleSignIn = createAsyncThunk(
       dispatch(setLoading(true));
       dispatch(setError(null));
 
-      console.log('🔐 Signing in with Firebase using Google credential...');
-
       // Create Firebase credential with the ID token from expo-auth-session
       const credential = GoogleAuthProvider.credential(idToken);
 
       // Sign in to Firebase with the credential
       const userCredential = await signInWithCredential(auth, credential);
-
-      console.log('✅ Firebase authentication successful:', userCredential.user.email);
 
       // Get Firebase ID token
       const firebaseIdToken = await userCredential.user.getIdToken();
@@ -60,8 +57,6 @@ export const googleSignIn = createAsyncThunk(
         { idToken: firebaseIdToken }
       );
 
-      console.log('✅ Backend verification successful');
-
       // Store token in AsyncStorage
       const token = response.data.token || firebaseIdToken;
       await AsyncStorage.setItem('authToken', JSON.stringify(token));
@@ -71,8 +66,6 @@ export const googleSignIn = createAsyncThunk(
       if (response.data.user) {
         dispatch(setUser(response.data.user));
       }
-
-      console.log(`✅ Welcome, ${response.data.user?.firstName}!`);
 
       dispatch(setLoading(false));
       return response.data;
@@ -140,22 +133,30 @@ export const logoutUser = createAsyncThunk(
     try {
       dispatch(setLoading(true));
 
-      // Sign out from Firebase (JS SDK)
-      await signOut(auth);
-
-      // Call logout endpoint (optional)
+      // Call logout endpoint while still authenticated
       try {
         await apiConnector('POST', USER_API.LOGOUT, {});
       } catch (error) {
         console.warn('Logout API call failed:', error);
       }
 
-      // Clear local auth state
+      // Clear local auth state and update Redux first so listeners can unsubscribe while still authenticated
       await AsyncStorage.removeItem('authToken');
       dispatch(setToken(null));
       dispatch(setUser(null));
 
-      console.log('✅ Logged out successfully');
+      // Yield execution so React components have time to run their cleanup effects/unsubscriptions
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      // Sign out from Firebase (JS SDK)
+      await signOut(auth);
+
+      // Sign out from native Google Sign-in to prompt for account chooser next time
+      try {
+        await GoogleSignin.signOut();
+      } catch (googleError) {
+        // Silent error since native Google SDK might not be configured
+      }
 
       dispatch(setLoading(false));
       return { message: 'Logged out successfully' };

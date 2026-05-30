@@ -11,6 +11,8 @@ import helplineRoutes from "./routes/helpline.js";
 import eventRoutes from "./routes/events.js";
 import albumRoutes from "./routes/album.js";
 import newsletterRoutes from "./routes/newsletter.js";
+import communityRoutes from "./routes/community.js";
+import notificationRoutes from "./routes/notification.js";
 
 import initializeFirebase from "./config/firestore.js";
 import fileUpload from "express-fileupload"
@@ -38,6 +40,8 @@ app.use("/api/helpline", helplineRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/albums", albumRoutes);
 app.use("/api/newsletter", newsletterRoutes);
+app.use("/api/community", communityRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 const startServer = async () => {
   try {

@@ -136,3 +136,32 @@ export const NEWSLETTER_API = {
   GET_STATS: `${BASE_URL}/newsletter/stats`,
 };
 
+/* ==================== Community Endpoints ==================== */
+
+/**
+ * Community Knowledge & Guidance System API endpoints.
+ */
+export const COMMUNITY_API = {
+  /** GET - Initial load of last 50 messages */
+  GET_MESSAGES: `${BASE_URL}/community/messages`,
+  /** POST - Post a new message */
+  POST_MESSAGE: `${BASE_URL}/community/messages`,
+  /** PATCH - Edit own message (within 15 min) */
+  EDIT_MESSAGE: (id: string) => `${BASE_URL}/community/messages/${id}`,
+  /** DELETE - Soft-delete a message */
+  DELETE_MESSAGE: (id: string) => `${BASE_URL}/community/messages/${id}`,
+  /** POST - Toggle emoji reaction */
+  REACT_TO_MESSAGE: (id: string) => `${BASE_URL}/community/messages/${id}/react`,
+  /** POST - Report a message */
+  REPORT_MESSAGE: (id: string) => `${BASE_URL}/community/messages/${id}/report`,
+  /** GET - Keyword search across messages + knowledge */
+  SEARCH: `${BASE_URL}/community/search`,
+  /** GET - Smart alumni match for a query */
+  SMART_MATCH: `${BASE_URL}/community/smart-match`,
+  /** GET - List curated knowledge entries */
+  GET_KNOWLEDGE: `${BASE_URL}/community/knowledge`,
+  /** POST - Admin: create knowledge entry */
+  CREATE_KNOWLEDGE: `${BASE_URL}/community/knowledge`,
+  /** GET - Fetch mentionable users */
+  GET_MENTIONABLE_USERS: `${BASE_URL}/community/users`,
+};

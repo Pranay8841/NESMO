@@ -74,12 +74,12 @@ export default function About() {
       screen: APP_CONSTANTS.SCREENS.DIRECTORY,
     },
     {
-      title: 'Membership Benefits',
-      desc: 'Unlock exclusive perks, discounts, and networking opportunities.',
-      icon: 'credit-card',
+      title: 'Community Chat',
+      desc: 'Connect and chat in real-time with JNV alumni globally.',
+      icon: 'message-square',
       iconSet: 'Feather',
       color: '#16A34A',
-      screen: APP_CONSTANTS.SCREENS.MEMBERSHIP,
+      screen: APP_CONSTANTS.SCREENS.COMMUNITY,
     },
     {
       title: 'Medical Helpline',

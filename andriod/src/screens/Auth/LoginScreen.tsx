@@ -74,7 +74,6 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
       const response = await GoogleSignin.signIn();
 
       if (response.type === 'success' && response.data?.idToken) {
-        console.log('🔐 Google Sign-In successful, sending to Firebase...');
         dispatch(googleSignIn({ idToken: response.data.idToken }));
       } else {
         dispatch(setError('No ID token received from Google'));
@@ -84,7 +83,6 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
 
       if (err.code === statusCodes.SIGN_IN_CANCELLED) {
         // User cancelled the sign-in flow
-        console.log('User cancelled sign-in');
       } else if (err.code === statusCodes.IN_PROGRESS) {
         dispatch(setError('Sign-in is already in progress'));
       } else if (err.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {

@@ -30,13 +30,11 @@ export const protect = async (req, res, next) => {
     try {
       decodedToken = await auth.verifyIdToken(token);
       uid = decodedToken.uid;
-      console.log('✅ Firebase ID token verified for UID:', uid);
     } catch (idTokenError) {
       // Fallback: Try to verify as JWT session token (from OAuth or manual sign-in)
       try {
         decodedToken = jwt.verify(token, process.env.JWT_SECRET || 'your-jwt-secret-change-this');
         uid = decodedToken.uid;
-        console.log('✅ JWT session token verified for UID:', uid);
       } catch (jwtError) {
         console.error('❌ Token verification failed (neither Firebase ID nor JWT)');
         console.error('   Firebase error:', idTokenError.message);

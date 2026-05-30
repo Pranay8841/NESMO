@@ -160,15 +160,15 @@ export default function SettingsScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.actionTile, { borderColor: '#FEE2E2' }]}
+            style={[styles.actionTile, { borderColor: '#EFF6FF' }]}
             activeOpacity={0.75}
-            onPress={() => navigation.navigate(APP_CONSTANTS.SCREENS.MEMBERSHIP)}
+            onPress={() => navigation.navigate(APP_CONSTANTS.SCREENS.COMMUNITY)}
           >
-            <View style={[styles.actionIconContainer, { backgroundColor: '#FFEAEA' }]}>
-              <Feather name="credit-card" size={20} color="#EF4444" />
+            <View style={[styles.actionIconContainer, { backgroundColor: '#EFF6FF' }]}>
+              <Feather name="message-square" size={20} color="#2563EB" />
             </View>
-            <Text style={styles.actionTileTitle}>Membership</Text>
-            <Text style={styles.actionTileDesc}>View subscription benefits and status</Text>
+            <Text style={styles.actionTileTitle}>Community</Text>
+            <Text style={styles.actionTileDesc}>Connect and chat with JNV alumni</Text>
           </TouchableOpacity>
 
           <TouchableOpacity

@@ -135,10 +135,10 @@ export default function HeroSection() {
       <View style={styles.actionButtons}>
         <TouchableOpacity
           style={styles.joinButton}
-          onPress={() => navigation.navigate(APP_CONSTANTS.SCREENS.MEMBERSHIP)}
+          onPress={() => navigation.navigate(APP_CONSTANTS.SCREENS.COMMUNITY)}
         >
-          <Feather name="users" size={16} color="#FFFFFF" style={styles.buttonIcon} />
-          <Text style={styles.joinButtonText}>Join Membership</Text>
+          <Feather name="message-square" size={16} color="#FFFFFF" style={styles.buttonIcon} />
+          <Text style={styles.joinButtonText}>Community Chat</Text>
         </TouchableOpacity>
 
         <TouchableOpacity

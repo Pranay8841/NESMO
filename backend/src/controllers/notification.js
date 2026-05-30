@@ -5,7 +5,11 @@ export const getMyNotifications = async (req, res) => {
         const notifications = await getDocuments('notifications', [
             { field: 'recipient', operator: '==', value: req.user.id }
         ]);
-        const sorted = notifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        const sorted = notifications.sort((a, b) => {
+            const timeA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : new Date(a.createdAt).getTime();
+            const timeB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : new Date(b.createdAt).getTime();
+            return timeB - timeA;
+        });
 
         res.json({ success: true, data: sorted });
     } catch (error) {

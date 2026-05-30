@@ -20,6 +20,8 @@ export type UserStatus = 'ACTIVE' | 'BLOCKED';
 export interface User {
   /** MongoDB ObjectId */
   _id?: string;
+  /** Firebase UID */
+  id?: string;
   /** User's first name */
   firstName: string;
   /** User's last name */
