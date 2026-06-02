@@ -1,10 +1,12 @@
 /**
  * @fileoverview Profile Controller
- * Handles user profile management including viewing, updating, and photo uploads.
+ * Handles user profile management including viewing, updating, photo uploads,
+ * and education history CRUD.
  * 
  * @module controllers/profile
  */
 
+import crypto from "crypto";
 import uploadImageToCloudinary from "../utils/imageUploader.js";
 import { getDocument, updateDocument } from "../config/firestore.js";
 
@@ -149,8 +151,9 @@ export const getProfileCompleteness = async (req, res) => {
     if (profile.joinBatch) filledFields++;
     if (profile.passoutBatch) filledFields++;
     if (profile.bloodGroup) filledFields++;
+    if (Array.isArray(profile.educationHistory) && profile.educationHistory.length > 0) filledFields++;
 
-    const completeness = Math.round((filledFields / 10) * 100);
+    const completeness = Math.round((filledFields / 11) * 100);
 
     res.status(200).json({ success: true, completeness });
   } catch (error) {
@@ -201,4 +204,149 @@ export const uploadProfilePhoto = async (req, res) => {
   }
 };
 
+/**
+ * Add a new education entry to user's profile.
+ * Appends to the educationHistory array on the profile document.
+ *
+ * @async
+ * @function addEducation
+ * @param {Object} req - Express request object
+ * @param {Object} req.user - Authenticated user from middleware
+ * @param {Object} req.body - Education entry data
+ * @param {string} req.body.level - Education level (UG, PG, PhD, Diploma, Other)
+ * @param {string} req.body.degree - Degree name (e.g. B.Tech, MBA)
+ * @param {string} req.body.field - Field of study
+ * @param {string} req.body.institution - College/University name
+ * @param {string} req.body.startYear - Start year
+ * @param {string} [req.body.endYear] - End year (empty if ongoing)
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with updated educationHistory
+ */
+export const addEducation = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { level, degree, field, institution, startYear, endYear } = req.body;
 
+    if (!level || !degree || !institution || !startYear) {
+      return res.status(400).json({ success: false, message: 'Level, degree, institution, and start year are required' });
+    }
+
+    const user = await getDocument('users', userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const profileId = user.profile;
+    if (!profileId) return res.status(404).json({ success: false, message: 'Profile not found' });
+
+    const profile = await getDocument('profiles', profileId);
+    const existingHistory = Array.isArray(profile?.educationHistory) ? profile.educationHistory : [];
+
+    const newEntry = {
+      id: crypto.randomUUID(),
+      level,
+      degree,
+      field: field || '',
+      institution,
+      startYear,
+      endYear: endYear || '',
+    };
+
+    const updatedHistory = [...existingHistory, newEntry];
+    await updateDocument('profiles', profileId, { educationHistory: updatedHistory, updatedAt: new Date() });
+
+    res.status(201).json({ success: true, message: 'Education entry added', educationHistory: updatedHistory });
+  } catch (error) {
+    console.error('Add education error:', error);
+    res.status(500).json({ success: false, message: 'Unable to add education entry' });
+  }
+};
+
+/**
+ * Update an existing education entry.
+ * Finds the entry by id in the educationHistory array and replaces it.
+ *
+ * @async
+ * @function updateEducation
+ * @param {Object} req - Express request object
+ * @param {string} req.params.eduId - Education entry ID
+ * @param {Object} req.body - Updated education data
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with updated educationHistory
+ */
+export const updateEducation = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { eduId } = req.params;
+    const { level, degree, field, institution, startYear, endYear } = req.body;
+
+    const user = await getDocument('users', userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const profileId = user.profile;
+    if (!profileId) return res.status(404).json({ success: false, message: 'Profile not found' });
+
+    const profile = await getDocument('profiles', profileId);
+    const existingHistory = Array.isArray(profile?.educationHistory) ? profile.educationHistory : [];
+
+    const entryIndex = existingHistory.findIndex(e => e.id === eduId);
+    if (entryIndex === -1) {
+      return res.status(404).json({ success: false, message: 'Education entry not found' });
+    }
+
+    existingHistory[entryIndex] = {
+      ...existingHistory[entryIndex],
+      level: level || existingHistory[entryIndex].level,
+      degree: degree || existingHistory[entryIndex].degree,
+      field: field !== undefined ? field : existingHistory[entryIndex].field,
+      institution: institution || existingHistory[entryIndex].institution,
+      startYear: startYear || existingHistory[entryIndex].startYear,
+      endYear: endYear !== undefined ? endYear : existingHistory[entryIndex].endYear,
+    };
+
+    await updateDocument('profiles', profileId, { educationHistory: existingHistory, updatedAt: new Date() });
+
+    res.status(200).json({ success: true, message: 'Education entry updated', educationHistory: existingHistory });
+  } catch (error) {
+    console.error('Update education error:', error);
+    res.status(500).json({ success: false, message: 'Unable to update education entry' });
+  }
+};
+
+/**
+ * Delete an education entry from user's profile.
+ * Removes the entry by id from the educationHistory array.
+ *
+ * @async
+ * @function deleteEducation
+ * @param {Object} req - Express request object
+ * @param {string} req.params.eduId - Education entry ID to delete
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with updated educationHistory
+ */
+export const deleteEducation = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { eduId } = req.params;
+
+    const user = await getDocument('users', userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const profileId = user.profile;
+    if (!profileId) return res.status(404).json({ success: false, message: 'Profile not found' });
+
+    const profile = await getDocument('profiles', profileId);
+    const existingHistory = Array.isArray(profile?.educationHistory) ? profile.educationHistory : [];
+
+    const updatedHistory = existingHistory.filter(e => e.id !== eduId);
+
+    if (updatedHistory.length === existingHistory.length) {
+      return res.status(404).json({ success: false, message: 'Education entry not found' });
+    }
+
+    await updateDocument('profiles', profileId, { educationHistory: updatedHistory, updatedAt: new Date() });
+
+    res.status(200).json({ success: true, message: 'Education entry deleted', educationHistory: updatedHistory });
+  } catch (error) {
+    console.error('Delete education error:', error);
+    res.status(500).json({ success: false, message: 'Unable to delete education entry' });
+  }
+};
