@@ -128,7 +128,7 @@ export default function MessageBubble({ message, onRefresh }: MessageBubbleProps
   const { user } = useAppSelector((state) => state.auth);
   const [menuVisible, setMenuVisible] = useState(false);
 
-  const isOwnMessage = user?._id === message.authorId;
+  const isOwnMessage = user?.id === message.authorId;
   const isAdmin = user?.role === 'ADMIN';
 
   const handleReply = () => {
@@ -198,7 +198,7 @@ export default function MessageBubble({ message, onRefresh }: MessageBubbleProps
 
   const quickEmojis = ['👍', '❤️', '😊', '🙏'];
   const myReactions = message.reactions
-    .filter((r) => r.userIds.includes(user?._id || ''))
+    .filter((r) => r.userIds.includes(user?.id || ''))
     .map((r) => r.emoji);
 
   return (

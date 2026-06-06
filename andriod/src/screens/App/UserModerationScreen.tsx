@@ -27,14 +27,13 @@ import {
   verifyUserEmail,
   type UserFilterParams,
 } from '../../services/adminService';
-import type { AdminUser } from '../../redux/slices/adminSlice';
 import { Feather, Ionicons } from '@expo/vector-icons';
+import { useToast } from 'react-native-toast-notifications';
 
 /** Role display configuration */
 const roleConfig: Record<string, { label: string; color: string; bgColor: string }> = {
-  ALUMNI: { label: 'Alumni', color: '#1E40AF', bgColor: '#DBEAFE' },
   MEMBER: { label: 'Member', color: '#065F46', bgColor: '#D1FAE5' },
-  EVENT_LEAD: { label: 'Event Lead', color: '#5B21B6', bgColor: '#EDE9FE' },
+  BATCH_REP: { label: 'Batch Rep', color: '#5B21B6', bgColor: '#EDE9FE' },
   ADMIN: { label: 'Admin', color: '#991B1B', bgColor: '#FEE2E2' },
 };
 
@@ -46,13 +45,14 @@ const statusConfig: Record<string, { label: string; color: string; bgColor: stri
 
 export default function UserModerationScreen() {
   const dispatch = useAppDispatch();
+  const toast = useToast();
   const { users } = useAppSelector((state) => state.admin);
   const currentUser = useAppSelector((state) => state.auth.user);
 
   // Search & Filter state
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'active' | 'blocked' | ''>('');
-  const [roleFilter, setRoleFilter] = useState<'ALUMNI' | 'MEMBER' | 'EVENT_LEAD' | 'ADMIN' | ''>('');
+  const [roleFilter, setRoleFilter] = useState<'MEMBER' | 'BATCH_REP' | 'ADMIN' | ''>('');
   const [verifiedFilter, setVerifiedFilter] = useState<'true' | 'false' | ''>('');
   const [showFilterModal, setShowFilterModal] = useState(false);
 
@@ -63,7 +63,7 @@ export default function UserModerationScreen() {
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [blockReason, setBlockReason] = useState('');
-  const [newRole, setNewRole] = useState<'ALUMNI' | 'MEMBER' | 'EVENT_LEAD' | 'ADMIN'>('ALUMNI');
+  const [newRole, setNewRole] = useState<'MEMBER' | 'BATCH_REP' | 'ADMIN'>('MEMBER');
 
   // Build filter parameters
   const buildFilterParams = useCallback((): UserFilterParams => {
@@ -106,26 +106,50 @@ export default function UserModerationScreen() {
 
   const handleBlockUser = async () => {
     if (!selectedUser || !blockReason.trim()) return;
-    await dispatch(blockUser({ userId: selectedUser._id, reason: blockReason }));
-    setShowBlockModal(false);
-    setSelectedUser(null);
-    setBlockReason('');
+    const result = await dispatch(blockUser({ userId: selectedUser.id, reason: blockReason }));
+    if (blockUser.fulfilled.match(result)) {
+      toast.show('User blocked successfully!', { type: 'success' });
+      setShowBlockModal(false);
+      setSelectedUser(null);
+      setBlockReason('');
+    } else {
+      const errorMsg = result.payload || 'Failed to block user';
+      toast.show(errorMsg as string, { type: 'danger' });
+    }
   };
 
   const handleUnblockUser = async (user: AdminUser) => {
-    await dispatch(unblockUser(user._id));
+    const result = await dispatch(unblockUser(user.id));
+    if (unblockUser.fulfilled.match(result)) {
+      toast.show('User unblocked successfully!', { type: 'success' });
+    } else {
+      const errorMsg = result.payload || 'Failed to unblock user';
+      toast.show(errorMsg as string, { type: 'danger' });
+    }
     setShowOptionsModal(false);
   };
 
   const handleRoleChange = async () => {
     if (!selectedUser) return;
-    await dispatch(updateUserRole({ userId: selectedUser._id, role: newRole }));
-    setShowRoleModal(false);
-    setSelectedUser(null);
+    const result = await dispatch(updateUserRole({ userId: selectedUser.id, role: newRole }));
+    if (updateUserRole.fulfilled.match(result)) {
+      toast.show('User role updated successfully!', { type: 'success' });
+      setShowRoleModal(false);
+      setSelectedUser(null);
+    } else {
+      const errorMsg = result.payload || 'Failed to update user role';
+      toast.show(errorMsg as string, { type: 'danger' });
+    }
   };
 
   const handleVerifyEmail = async (user: AdminUser) => {
-    await dispatch(verifyUserEmail(user._id));
+    const result = await dispatch(verifyUserEmail(user.id));
+    if (verifyUserEmail.fulfilled.match(result)) {
+      toast.show('User email verified successfully!', { type: 'success' });
+    } else {
+      const errorMsg = result.payload || 'Failed to verify email';
+      toast.show(errorMsg as string, { type: 'danger' });
+    }
     setShowOptionsModal(false);
   };
 
@@ -206,10 +230,10 @@ export default function UserModerationScreen() {
       ) : (
         <FlatList
           data={users.data}
-          keyExtractor={(item, index) => item._id ? `${item._id}-${index}` : index.toString()}
+          keyExtractor={(item, index) => item.id ? `${item.id}-${index}` : index.toString()}
           contentContainerStyle={styles.listContainer}
           renderItem={({ item }) => {
-            const rConfig = roleConfig[item.role] || roleConfig.ALUMNI;
+            const rConfig = roleConfig[item.role] || roleConfig.MEMBER;
             const sConfig = statusConfig[item.status] || statusConfig.ACTIVE;
             const photoUrl = item.profile?.profilePhoto;
 
@@ -316,7 +340,7 @@ export default function UserModerationScreen() {
               {/* Role Filter */}
               <Text style={styles.filterLabel}>Role</Text>
               <View style={styles.optionRow}>
-                {['', 'ALUMNI', 'MEMBER', 'EVENT_LEAD', 'ADMIN'].map((opt) => (
+                {['', 'MEMBER', 'BATCH_REP', 'ADMIN'].map((opt) => (
                   <TouchableOpacity
                     key={`role-${opt || 'all'}`}
                     style={[styles.optionTag, roleFilter === opt && styles.optionTagSelected]}
@@ -390,10 +414,16 @@ export default function UserModerationScreen() {
 
                 <TouchableOpacity
                   style={styles.menuItem}
-                  disabled={selectedUser._id === currentUser?._id}
+                  disabled={selectedUser.id === currentUser?.id}
                   onPress={() => {
                     setShowOptionsModal(false);
-                    setNewRole(selectedUser.role);
+                    // Normalize role for mobile picker modal
+                    const validRoles = ['MEMBER', 'BATCH_REP', 'ADMIN'];
+                    if (validRoles.includes(selectedUser.role)) {
+                      setNewRole(selectedUser.role as 'MEMBER' | 'BATCH_REP' | 'ADMIN');
+                    } else {
+                      setNewRole('MEMBER');
+                    }
                     setShowRoleModal(true);
                   }}
                 >
@@ -415,10 +445,10 @@ export default function UserModerationScreen() {
                   <TouchableOpacity
                     style={[
                       styles.menuItem,
-                      (selectedUser.role === 'ADMIN' || selectedUser._id === currentUser?._id) &&
-                        styles.menuItemDisabled,
+                      (selectedUser.role === 'ADMIN' || selectedUser.id === currentUser?.id) &&
+                      styles.menuItemDisabled,
                     ]}
-                    disabled={selectedUser.role === 'ADMIN' || selectedUser._id === currentUser?._id}
+                    disabled={selectedUser.role === 'ADMIN' || selectedUser.id === currentUser?.id}
                     onPress={() => {
                       setShowOptionsModal(false);
                       setBlockReason('');
@@ -489,7 +519,7 @@ export default function UserModerationScreen() {
               Select new role for {selectedUser?.firstName} {selectedUser?.lastName}:
             </Text>
             <View style={styles.rolePickerBox}>
-              {['ALUMNI', 'MEMBER', 'EVENT_LEAD', 'ADMIN'].map((roleOpt) => (
+              {['MEMBER', 'BATCH_REP', 'ADMIN'].map((roleOpt) => (
                 <TouchableOpacity
                   key={`role-option-${roleOpt}`}
                   style={[styles.roleOptRow, newRole === roleOpt && styles.roleOptRowSelected]}

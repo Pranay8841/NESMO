@@ -41,9 +41,8 @@ const LIMIT = 12;
 
 const roleConfig: Record<string, { label: string; bgColor: string; textColor: string }> = {
   ADMIN: { label: 'Admin', bgColor: '#EF4444', textColor: '#FFFFFF' },
-  EVENT_LEAD: { label: 'Event Lead', bgColor: '#8B5CF6', textColor: '#FFFFFF' },
+  BATCH_REP: { label: 'Batch Rep', bgColor: '#8B5CF6', textColor: '#FFFFFF' },
   MEMBER: { label: 'Member', bgColor: '#3B82F6', textColor: '#FFFFFF' },
-  ALUMNI: { label: 'Alumni', bgColor: '#F3F4F6', textColor: '#4B5563' },
 };
 
 export default function DirectoryScreen() {
@@ -281,15 +280,15 @@ export default function DirectoryScreen() {
           refreshing={loading && alumni.length > 0}
           onRefresh={loadDirectory}
           renderItem={({ item }) => {
-            const isPaid = item.role !== 'ALUMNI' || item.isMember;
-            const rInfo = roleConfig[item.role] || roleConfig.ALUMNI;
+            const isPaid = item.role === 'ADMIN' || item.role === 'BATCH_REP' || item.isMember;
+            const rInfo = roleConfig[item.role] || roleConfig.MEMBER;
 
             return (
               <TouchableOpacity style={styles.card} onPress={() => handleViewProfile(item)}>
                 {/* Role Tag */}
                 <View style={[styles.roleTag, { backgroundColor: rInfo.bgColor }]}>
                   <Text style={[styles.roleTagText, { color: rInfo.textColor }]}>
-                    {item.role !== 'ALUMNI' && '✓ '}{rInfo.label}
+                    {(item.role === 'ADMIN' || item.role === 'BATCH_REP') && '✓ '}{rInfo.label}
                   </Text>
                 </View>
 

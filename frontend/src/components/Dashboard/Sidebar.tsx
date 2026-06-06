@@ -77,8 +77,9 @@ export default function Sidebar({ isMobileOpen = false, onMobileClose }: Sidebar
     const navigate = useNavigate();
     const { user } = useAppSelector((state) => state.auth);
 
-    // Check if user is admin
+    // Check if user is admin or batch rep
     const isAdmin = user?.role === 'ADMIN';
+    const isBatchRep = user?.role === 'BATCH_REP';
 
     // Close mobile sidebar when route changes
     useEffect(() => {
@@ -108,16 +109,36 @@ export default function Sidebar({ isMobileOpen = false, onMobileClose }: Sidebar
                     <Link
                         key={item.path}
                         to={item.path}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-sm transition-colors ${
-                            isActive(item.path)
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-sm transition-colors ${isActive(item.path)
                                 ? 'bg-blue-50 text-blue-600 font-semibold'
                                 : 'text-gray-700 hover:bg-gray-50'
-                        }`}
+                            }`}
                     >
                         {item.icon}
                         {item.label}
                     </Link>
                 ))}
+
+                {/* Batch Rep-only items - Only visible for Batch Reps */}
+                {isBatchRep && (
+                    <>
+                        <div className="pt-4 pb-2">
+                            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide px-4">
+                                Batch Portal
+                            </div>
+                        </div>
+                        <Link
+                            to="/dashboard"
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-sm transition-colors ${isActive('/dashboard')
+                                    ? 'bg-blue-50 text-blue-600 font-semibold'
+                                    : 'text-gray-700 hover:bg-gray-50'
+                                }`}
+                        >
+                            <Users className="w-5 h-5" />
+                            Batch Dashboard
+                        </Link>
+                    </>
+                )}
 
                 {/* Admin-only items - Only visible for Admin users */}
                 {isAdmin && (
@@ -131,11 +152,10 @@ export default function Sidebar({ isMobileOpen = false, onMobileClose }: Sidebar
                             <Link
                                 key={item.path}
                                 to={item.path}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-sm transition-colors ${
-                                    isActive(item.path)
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-sm transition-colors ${isActive(item.path)
                                         ? 'bg-blue-50 text-blue-600 font-semibold'
                                         : 'text-gray-700 hover:bg-gray-50'
-                                }`}
+                                    }`}
                             >
                                 {item.icon}
                                 {item.label}
@@ -177,9 +197,8 @@ export default function Sidebar({ isMobileOpen = false, onMobileClose }: Sidebar
 
             {/* Mobile Sidebar */}
             <aside
-                className={`fixed top-0 left-0 h-full w-64 bg-white z-50 transform transition-transform duration-300 ease-in-out lg:hidden ${
-                    isMobileOpen ? 'translate-x-0' : '-translate-x-full'
-                }`}
+                className={`fixed top-0 left-0 h-full w-64 bg-white z-50 transform transition-transform duration-300 ease-in-out lg:hidden ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+                    }`}
             >
                 {/* Mobile Header */}
                 <div className="flex items-center justify-between p-4 border-b border-gray-200">

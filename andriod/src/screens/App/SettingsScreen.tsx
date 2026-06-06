@@ -44,17 +44,16 @@ export default function SettingsScreen() {
   };
 
   const firstName = user?.firstName || 'User';
-  const role = user?.role || 'ALUMNI';
+  const role = user?.role || 'MEMBER';
 
   // Role styling configuration matching our high premium design guidelines
   const roleStyles: Record<string, { label: string; bgColor: string; textColor: string; icon: string }> = {
     ADMIN: { label: 'Admin', bgColor: '#FEE2E2', textColor: '#EF4444', icon: 'shield-outline' },
-    EVENT_LEAD: { label: 'Event Lead', bgColor: '#F5F3FF', textColor: '#8B5CF6', icon: 'ribbon-outline' },
+    BATCH_REP: { label: 'Batch Rep', bgColor: '#F5F3FF', textColor: '#8B5CF6', icon: 'ribbon-outline' },
     MEMBER: { label: 'Member', bgColor: '#EFF6FF', textColor: '#3B82F6', icon: 'card-outline' },
-    ALUMNI: { label: 'Alumni', bgColor: '#F1F5F9', textColor: '#64748B', icon: 'school-outline' },
   };
 
-  const roleInfo = roleStyles[role] || roleStyles.ALUMNI;
+  const roleInfo = roleStyles[role] || roleStyles.MEMBER;
   const completenessVal = completeness || 0;
   const profileImage = profile?.profilePhoto || (user && typeof user.profile === 'object' ? user.profile.profilePhoto : null);
 
@@ -211,6 +210,26 @@ export default function SettingsScreen() {
                 </View>
                 <Text style={styles.actionTileTitle}>User Moderation</Text>
                 <Text style={styles.actionTileDesc}>Approve, verify, role update or block users</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
+
+        {/* Batch Portal Section (Batch Reps Only) */}
+        {role === 'BATCH_REP' && (
+          <>
+            <Text style={styles.sectionHeading}>Batch Portal</Text>
+            <View style={styles.actionsGrid}>
+              <TouchableOpacity
+                style={[styles.actionTile, { borderColor: '#F5D0FE', width: '100%' }]}
+                activeOpacity={0.75}
+                onPress={() => navigation.navigate(APP_CONSTANTS.SCREENS.BATCH_DASHBOARD)}
+              >
+                <View style={[styles.actionIconContainer, { backgroundColor: '#FDF4FF' }]}>
+                  <Feather name="users" size={20} color="#8B5CF6" />
+                </View>
+                <Text style={styles.actionTileTitle}>Batch Dashboard</Text>
+                <Text style={styles.actionTileDesc}>View and manage members of your passout batch</Text>
               </TouchableOpacity>
             </View>
           </>

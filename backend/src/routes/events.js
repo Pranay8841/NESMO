@@ -31,7 +31,7 @@ router.put(
 router.post(
     "/create",
     protect,
-    authorize("EVENT_LEAD"),
+    authorize("BATCH_REP"),
     createEvent
 );
 
@@ -46,7 +46,7 @@ router.post(
 router.get(
     "/:id/dashboard",
     protect,
-    authorize("EVENT_LEAD"),
+    authorize("BATCH_REP"),
     eventDashboard
 );
 

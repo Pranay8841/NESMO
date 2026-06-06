@@ -50,7 +50,7 @@ export interface AlumniMember {
     endYear: string;
   }>;
   /** User role (ALUMNI, MEMBER, EVENT_LEAD, ADMIN) */
-  role: 'ALUMNI' | 'MEMBER' | 'EVENT_LEAD' | 'ADMIN';
+  role: 'MEMBER' | 'BATCH_REP' | 'ADMIN';
   /** Whether user is a paid member */
   isMember: boolean;
 }

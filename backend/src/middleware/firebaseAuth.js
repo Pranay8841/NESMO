@@ -9,6 +9,28 @@ import { getAuth, getDocument } from '../config/firestore.js';
 import jwt from 'jsonwebtoken';
 
 /**
+ * Constructs a detailed error message for blocked users
+ * @param {Object} userDoc - The blocked user document
+ * @returns {string} Formatted error message
+ */
+export const getBlockedMessage = (userDoc) => {
+  const reason = (userDoc.blockedReason || 'No reason specified').trim();
+  const cleanReason = reason.endsWith('.') ? reason.slice(0, -1) : reason;
+  
+  const blockerName = userDoc.blockedByName;
+  const blockerRole = userDoc.blockedByRole;
+  const blockerBatch = userDoc.blockedByBatch;
+
+  if (blockerRole === 'BATCH_REP' && blockerName) {
+    return `Your account has been blocked by your JNV Batch Representative, ${blockerName}${blockerBatch ? ` (Batch of ${blockerBatch})` : ''}.\n\nReason: ${cleanReason}.\n\nPlease reach out to them to resolve this issue.`;
+  } else if (blockerRole === 'ADMIN') {
+    return `Your account has been blocked by an Admin${blockerName ? ` (${blockerName})` : ''}.\n\nReason: ${cleanReason}.\n\nPlease reach out to support to resolve this issue.`;
+  } else {
+    return `Your account has been blocked.\n\nReason: ${cleanReason}.\n\nPlease contact support for assistance.`;
+  }
+};
+
+/**
  * Middleware to verify Firebase ID token or custom token
  * Attaches user data to req.user
  * Blocks access for blocked users
@@ -52,7 +74,7 @@ export const protect = async (req, res, next) => {
 
     // Check if user is blocked
     if (userDoc.status === 'BLOCKED') {
-      return res.status(403).json({ message: 'Account blocked' });
+      return res.status(403).json({ message: getBlockedMessage(userDoc) });
     }
 
     // Attach user to request

@@ -29,16 +29,15 @@ interface AlumniProfileModalProps {
 
 const roleConfig: Record<string, { label: string; color: string; bgColor: string }> = {
   ADMIN: { label: 'Admin', color: '#FFFFFF', bgColor: '#EF4444' },
-  EVENT_LEAD: { label: 'Event Lead', color: '#FFFFFF', bgColor: '#8B5CF6' },
+  BATCH_REP: { label: 'Batch Rep', color: '#FFFFFF', bgColor: '#8B5CF6' },
   MEMBER: { label: 'Member', color: '#FFFFFF', bgColor: '#3B82F6' },
-  ALUMNI: { label: 'Alumni', color: '#4B5563', bgColor: '#F3F4F6' },
 };
 
 export default function AlumniProfileModal({ isOpen, onClose, member }: AlumniProfileModalProps) {
   if (!member) return null;
 
-  const isPaidMember = member.role !== 'ALUMNI' || member.isMember;
-  const roleInfo = roleConfig[member.role] || roleConfig.ALUMNI;
+  const isPaidMember = member.role === 'ADMIN' || member.role === 'BATCH_REP' || member.isMember;
+  const roleInfo = roleConfig[member.role] || roleConfig.MEMBER;
 
   const handleWhatsApp = () => {
     if (!member.phone) return;

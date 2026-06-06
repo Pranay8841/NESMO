@@ -28,7 +28,7 @@ export interface UserFilterParams {
   page?: number;
   limit?: number;
   status?: 'active' | 'blocked';
-  role?: 'ALUMNI' | 'MEMBER' | 'EVENT_LEAD' | 'ADMIN';
+  role?: 'MEMBER' | 'BATCH_REP' | 'ADMIN';
   verified?: 'true' | 'false';
   search?: string;
   [key: string]: string | number | undefined;
@@ -160,7 +160,7 @@ export const unblockUser = createAsyncThunk(
  */
 export const updateUserRole = createAsyncThunk(
   'admin/updateUserRole',
-  async ({ userId, role }: { userId: string; role: 'ALUMNI' | 'MEMBER' | 'EVENT_LEAD' | 'ADMIN' }, { dispatch, rejectWithValue }) => {
+  async ({ userId, role }: { userId: string; role: 'MEMBER' | 'BATCH_REP' | 'ADMIN' }, { dispatch, rejectWithValue }) => {
     try {
       const url = ADMIN_API.UPDATE_USER_ROLE.replace(':id', userId);
       const response = await apiConnector(

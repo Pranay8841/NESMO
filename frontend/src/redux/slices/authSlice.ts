@@ -8,8 +8,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
-/** User role hierarchy: ALUMNI < MEMBER < EVENT_LEAD < ADMIN */
-type UserRole = "ALUMNI" | "MEMBER" | "EVENT_LEAD" | "ADMIN";
+/** User role hierarchy: MEMBER < BATCH_REP < ADMIN */
+type UserRole = "MEMBER" | "BATCH_REP" | "ADMIN";
 
 /** Account status */
 type UserStatus = "ACTIVE" | "BLOCKED";

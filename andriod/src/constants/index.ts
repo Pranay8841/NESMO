@@ -21,6 +21,7 @@ export const APP_CONSTANTS = {
     PROFILE: 'Profile',
     USER_MODERATION: 'UserModeration',
     ADMIN_DASHBOARD: 'AdminDashboard',
+    BATCH_DASHBOARD: 'BatchDashboard',
     COMMUNITY: 'Community',
     KNOWLEDGE_BASE: 'KnowledgeBase',
     NOTIFICATIONS: 'Notifications',

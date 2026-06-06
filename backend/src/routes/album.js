@@ -17,14 +17,14 @@ router.get("/", protect, getAlbums);
 router.post(
     "/create-album",
     protect,
-    authorize("ADMIN", "EVENT_LEAD"),
+    authorize("ADMIN", "BATCH_REP"),
     createAlbum
 );
 
 router.post(
     "/:albumId/media",
     protect,
-    authorize("ADMIN", "EVENT_LEAD"),
+    authorize("ADMIN", "BATCH_REP"),
     uploadMedia
 );
 

@@ -40,7 +40,7 @@ export interface AlumniMember {
     /** Profile photo URL */
     photo: string | null;
     /** User role (ALUMNI, MEMBER, EVENT_LEAD, ADMIN) */
-    role: 'ALUMNI' | 'MEMBER' | 'EVENT_LEAD' | 'ADMIN';
+    role: 'MEMBER' | 'BATCH_REP' | 'ADMIN';
     /** Whether user is a paid member */
     isMember: boolean;
 }

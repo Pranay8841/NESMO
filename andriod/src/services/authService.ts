@@ -72,10 +72,15 @@ export const googleSignIn = createAsyncThunk(
     } catch (error: any) {
       dispatch(setLoading(false));
 
-      console.error('❌ Google Sign-In error:', error);
+      // Reset authentication states on failure to let the user select another account
+      try {
+        await signOut(auth);
+      } catch (e) { }
+      try {
+        await GoogleSignin.signOut();
+      } catch (e) { }
 
       let errorMessage = 'Sign-in failed';
-
       if (error.code === 'auth/invalid-credential') {
         errorMessage = 'Invalid Google credential. Please try again.';
       } else if (error.code === 'auth/account-exists-with-different-credential') {
@@ -193,6 +198,12 @@ export const restoreToken = createAsyncThunk(
           await AsyncStorage.removeItem('authToken');
           dispatch(setToken(null));
           dispatch(setUser(null));
+          try {
+            await signOut(auth);
+          } catch (e) { }
+          try {
+            await GoogleSignin.signOut();
+          } catch (e) { }
         }
       }
     } catch (error) {

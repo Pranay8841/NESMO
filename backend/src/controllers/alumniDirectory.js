@@ -43,11 +43,9 @@ export const getAlumniDirectory = async (req, res) => {
 
     // Apply role/membership filters
     if (req.query.isMember === 'true') {
-      // Members: role in [MEMBER, EVENT_LEAD, ADMIN] or isMember flag
-      userFilters.push({ field: 'role', operator: 'in', value: ['MEMBER', 'EVENT_LEAD', 'ADMIN'] });
+      userFilters.push({ field: 'isMember', operator: '==', value: true });
     } else if (req.query.isMember === 'false') {
-      // Non-members: ALUMNI role
-      userFilters.push({ field: 'role', operator: '==', value: 'ALUMNI' });
+      userFilters.push({ field: 'isMember', operator: '==', value: false });
     }
 
     const allUsers = await getDocuments('users', userFilters);
@@ -129,7 +127,7 @@ export const getAlumniDirectory = async (req, res) => {
       photo: profile?.profilePhoto || null,
       educationHistory: Array.isArray(profile?.educationHistory) ? profile.educationHistory : [],
       role: user.role,
-      isMember: user.isMember || user.role !== 'ALUMNI'
+      isMember: user.isMember || false
     }));
 
     /* ------------------ Response ------------------ */

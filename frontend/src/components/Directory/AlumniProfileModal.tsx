@@ -42,14 +42,13 @@ export default function AlumniProfileModal({ isOpen, onClose, member }: AlumniPr
 
     if (!isOpen || !member) return null;
 
-    const isPaidMember = member.role !== 'ALUMNI' || member.isMember;
+    const isPaidMember = member.role === 'ADMIN' || member.role === 'BATCH_REP' || member.isMember;
     const roleConfig: Record<string, { label: string; color: string }> = {
         ADMIN: { label: 'Admin', color: 'bg-red-500' },
-        EVENT_LEAD: { label: 'Event Lead', color: 'bg-purple-500' },
+        BATCH_REP: { label: 'Batch Rep', color: 'bg-purple-500' },
         MEMBER: { label: 'Member', color: 'bg-blue-500' },
-        ALUMNI: { label: 'Alumni', color: 'bg-gray-500' },
     };
-    const roleInfo = roleConfig[member.role] || roleConfig.ALUMNI;
+    const roleInfo = roleConfig[member.role] || roleConfig.MEMBER;
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4" onClick={onClose}>

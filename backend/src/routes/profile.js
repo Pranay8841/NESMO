@@ -27,7 +27,10 @@ import {
   completeOnboarding,
   addEducation,
   updateEducation,
-  deleteEducation
+  deleteEducation,
+  getBatchDashboardStats,
+  blockBatchUser,
+  unblockBatchUser
 } from "../controllers/profile.js";
 import { getAlumniDirectory } from "../controllers/alumniDirectory.js";
 import { protect } from "../middleware/firebaseAuth.js";
@@ -38,6 +41,13 @@ const router = express.Router();
 
 /** Get current user's profile with populated data */
 router.get("/me", protect, getMyProfile);
+
+/** Get Batch Rep dashboard stats and members */
+router.get("/batch-dashboard", protect, getBatchDashboardStats);
+
+/** Block/unblock a member of the representative's batch */
+router.put("/batch/user/:id/block", protect, blockBatchUser);
+router.put("/batch/user/:id/unblock", protect, unblockBatchUser);
 
 /** Update profile fields (bio, contact, education, work) */
 router.put("/update", protect, updateProfile);

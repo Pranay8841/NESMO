@@ -8,7 +8,7 @@
 
 import crypto from "crypto";
 import uploadImageToCloudinary from "../utils/imageUploader.js";
-import { getDocument, updateDocument } from "../config/firestore.js";
+import { getDocument, updateDocument, getDocuments } from "../config/firestore.js";
 
 /**
  * Update user's profile information.
@@ -451,5 +451,206 @@ export const deleteEducation = async (req, res) => {
   } catch (error) {
     console.error('Delete education error:', error);
     res.status(500).json({ success: false, message: 'Unable to delete education entry' });
+  }
+};
+
+/**
+ * Get Batch Representative Dashboard Statistics
+ * Returns metrics and lists users within the same batch.
+ */
+export const getBatchDashboardStats = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await getDocument('users', userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (user.role !== 'BATCH_REP' && user.role !== 'ADMIN') {
+      return res.status(403).json({ success: false, message: 'Access denied: Batch Representatives only' });
+    }
+
+    const profileId = user.profile;
+    if (!profileId) {
+      return res.status(404).json({ success: false, message: 'Profile not found' });
+    }
+
+    const profile = await getDocument('profiles', profileId);
+    const joinBatch = profile?.joinBatch;
+
+    if (!joinBatch) {
+      return res.status(400).json({ success: false, message: 'Your profile does not specify a joining batch' });
+    }
+
+    // Fetch all users to filter by batch
+    const allUsers = await getDocuments('users', []);
+    
+    let batchUsers = [];
+    for (const u of allUsers) {
+      if (u.profile) {
+        try {
+          const up = await getDocument('profiles', u.profile);
+          if (up && up.joinBatch === joinBatch) {
+            // Calculate completeness
+            let filledFields = 0;
+            if (up.profilePhoto) filledFields++;
+            if (up.phone) filledFields++;
+            if (up.currentAddress) filledFields++;
+            if (up.occupation) filledFields++;
+            if (up.organization) filledFields++;
+            if (up.sector) filledFields++;
+            if (up.about) filledFields++;
+            if (up.joinBatch) filledFields++;
+            if (up.passoutBatch) filledFields++;
+            if (up.bloodGroup) filledFields++;
+            if (Array.isArray(up.educationHistory) && up.educationHistory.length > 0) filledFields++;
+
+            const completeness = Math.round((filledFields / 11) * 100);
+            
+            batchUsers.push({
+              id: u.uid || u.id,
+              firstName: u.firstName,
+              lastName: u.lastName,
+              email: u.email,
+              phone: up.phone || '',
+              city: up.currentAddress || '',
+              occupation: up.occupation || '',
+              profilePhoto: up.profilePhoto || '',
+              completeness,
+              isOnboarded: (u.isOnboarded !== undefined && u.isOnboarded !== null) ? u.isOnboarded : (completeness >= 80),
+              status: u.status || 'ACTIVE',
+              createdAt: u.createdAt
+            });
+          }
+        } catch (e) {
+          console.error(`Error loading profile for batch user ${u.uid}:`, e);
+        }
+      }
+    }
+
+    const totalMembers = batchUsers.length;
+    const pendingProfileCount = batchUsers.filter(bu => !bu.isOnboarded || bu.completeness < 80).length;
+    const completedProfileCount = totalMembers - pendingProfileCount;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        passoutBatch: joinBatch, // Set joinBatch to passoutBatch key for frontend compatibility
+        totalMembers,
+        pendingProfileCount,
+        completedProfileCount,
+        members: batchUsers
+      }
+    });
+  } catch (error) {
+    console.error('Get batch dashboard stats error:', error);
+    res.status(500).json({ success: false, message: 'Unable to fetch batch dashboard statistics' });
+  }
+};
+
+/**
+ * Block a batch member (Batch Representative action)
+ * Restricts blocking to users within the representative's own joining batch.
+ */
+export const blockBatchUser = async (req, res) => {
+  try {
+    const repId = req.user.id;
+    const targetUserId = req.params.id;
+    const { reason } = req.body;
+
+    const rep = await getDocument('users', repId);
+    if (!rep || (rep.role !== 'BATCH_REP' && rep.role !== 'ADMIN')) {
+      return res.status(403).json({ success: false, message: 'Access denied: Batch Representatives only' });
+    }
+
+    if (repId === targetUserId) {
+      return res.status(400).json({ success: false, message: 'Cannot block yourself' });
+    }
+
+    const repProfile = await getDocument('profiles', rep.profile);
+    const repJoinBatch = repProfile?.joinBatch;
+    if (!repJoinBatch) {
+      return res.status(400).json({ success: false, message: 'Your profile does not specify a joining batch' });
+    }
+
+    const targetUser = await getDocument('users', targetUserId);
+    if (!targetUser) {
+      return res.status(404).json({ success: false, message: 'Target user not found' });
+    }
+
+    if (targetUser.role === 'ADMIN') {
+      return res.status(403).json({ success: false, message: 'Cannot block an admin user' });
+    }
+
+    const targetProfile = await getDocument('profiles', targetUser.profile);
+    if (!targetProfile || targetProfile.joinBatch !== repJoinBatch) {
+      return res.status(403).json({ success: false, message: 'You can only block members of your own joining batch' });
+    }
+
+    await updateDocument('users', targetUserId, {
+      status: 'BLOCKED',
+      blockedReason: reason || 'Blocked by Batch Representative',
+      blockedAt: new Date(),
+      blockedBy: repId,
+      blockedByRole: rep.role,
+      blockedByName: `${rep.firstName} ${rep.lastName}`.trim(),
+      blockedByBatch: repJoinBatch,
+      updatedAt: new Date()
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'User blocked successfully'
+    });
+  } catch (error) {
+    console.error('Block batch user error:', error);
+    res.status(500).json({ success: false, message: 'Failed to block user' });
+  }
+};
+
+/**
+ * Unblock a batch member (Batch Representative action)
+ * Restricts unblocking to users within the representative's own joining batch.
+ */
+export const unblockBatchUser = async (req, res) => {
+  try {
+    const repId = req.user.id;
+    const targetUserId = req.params.id;
+
+    const rep = await getDocument('users', repId);
+    if (!rep || (rep.role !== 'BATCH_REP' && rep.role !== 'ADMIN')) {
+      return res.status(403).json({ success: false, message: 'Access denied: Batch Representatives only' });
+    }
+
+    const repProfile = await getDocument('profiles', rep.profile);
+    const repJoinBatch = repProfile?.joinBatch;
+    if (!repJoinBatch) {
+      return res.status(400).json({ success: false, message: 'Your profile does not specify a joining batch' });
+    }
+
+    const targetUser = await getDocument('users', targetUserId);
+    if (!targetUser) {
+      return res.status(404).json({ success: false, message: 'Target user not found' });
+    }
+
+    const targetProfile = await getDocument('profiles', targetUser.profile);
+    if (!targetProfile || targetProfile.joinBatch !== repJoinBatch) {
+      return res.status(403).json({ success: false, message: 'You can only unblock members of your own joining batch' });
+    }
+
+    await updateDocument('users', targetUserId, {
+      status: 'ACTIVE',
+      blockedReason: null,
+      blockedAt: null,
+      updatedAt: new Date()
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'User unblocked successfully'
+    });
+  } catch (error) {
+    console.error('Unblock batch user error:', error);
+    res.status(500).json({ success: false, message: 'Failed to unblock user' });
   }
 };

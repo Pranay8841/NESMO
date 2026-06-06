@@ -52,6 +52,12 @@ export const PROFILE_API = {
   DELETE_EDUCATION: `${BASE_URL}/profile/education`,
   /** POST - Complete mandatory profile onboarding */
   COMPLETE_ONBOARDING: `${BASE_URL}/profile/onboarding`,
+  /** GET - Get batch representative dashboard statistics */
+  GET_BATCH_DASHBOARD: `${BASE_URL}/profile/batch-dashboard`,
+  /** PUT - Block a user in the representative's batch */
+  BLOCK_BATCH_USER: `${BASE_URL}/profile/batch/user/:id/block`,
+  /** PUT - Unblock a user in the representative's batch */
+  UNBLOCK_BATCH_USER: `${BASE_URL}/profile/batch/user/:id/unblock`,
 };
 
 /* ==================== Membership Endpoints ==================== */

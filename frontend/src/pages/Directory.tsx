@@ -337,87 +337,84 @@ export default function Directory() {
                                 ) : (
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-12">
                                         {alumni.map((member) => {
-                                            const isPaidMember = member.role !== 'ALUMNI' || member.isMember;
+                                            const isPaidMember = member.role === 'ADMIN' || member.role === 'BATCH_REP' || member.isMember;
                                             const roleConfig: Record<string, { label: string; bgColor: string; textColor: string }> = {
                                                 ADMIN: { label: 'Admin', bgColor: 'bg-gradient-to-r from-red-500 to-red-600', textColor: 'text-white' },
-                                                EVENT_LEAD: { label: 'Event Lead', bgColor: 'bg-gradient-to-r from-purple-500 to-purple-600', textColor: 'text-white' },
+                                                BATCH_REP: { label: 'Batch Rep', bgColor: 'bg-gradient-to-r from-purple-500 to-purple-600', textColor: 'text-white' },
                                                 MEMBER: { label: 'Member', bgColor: 'bg-gradient-to-r from-blue-500 to-blue-600', textColor: 'text-white' },
-                                                ALUMNI: { label: 'Alumni', bgColor: 'bg-gray-100', textColor: 'text-gray-600' },
                                             };
-                                            const roleInfo = roleConfig[member.role] || roleConfig.ALUMNI;
-                                            
-                                            return (
-                                            <div key={member.id} className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200 hover:shadow-md transition-shadow cursor-pointer relative overflow-hidden">
-                                                {/* Role Badge - Top Right */}
-                                                <div className={`absolute top-0 right-0 px-1.5 sm:px-2 py-0.5 sm:py-1 text-[8px] sm:text-[9px] font-bold uppercase tracking-wide rounded-bl-md ${roleInfo.bgColor} ${roleInfo.textColor} whitespace-nowrap`}>
-                                                    {member.role !== 'ALUMNI' && '✓ '}{roleInfo.label}
-                                                </div>
+                                            const roleInfo = roleConfig[member.role] || roleConfig.MEMBER;
 
-                                                {/* Avatar */}
-                                                <div className="flex justify-center mb-3 mt-4 sm:mt-2">
-                                                    <div className="relative">
-                                                        {member.photo ? (
-                                                            <img
-                                                                src={member.photo}
-                                                                alt={member.name}
-                                                                className={`w-16 h-16 rounded-full object-cover ${
-                                                                    isPaidMember ? 'ring-2 ring-blue-400' : ''
-                                                                }`}
-                                                            />
-                                                        ) : (
-                                                            <div className={`w-16 h-16 rounded-full flex items-center justify-center text-white text-lg font-bold ${
-                                                                isPaidMember
-                                                                    ? 'bg-gradient-to-br from-blue-500 to-blue-600 ring-2 ring-blue-400'
-                                                                    : 'bg-gradient-to-br from-gray-400 to-gray-500'
-                                                            }`}>
-                                                                {member.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                                                            </div>
+                                            return (
+                                                <div key={member.id} className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200 hover:shadow-md transition-shadow cursor-pointer relative overflow-hidden">
+                                                    {/* Role Badge - Top Right */}
+                                                    <div className={`absolute top-0 right-0 px-1.5 sm:px-2 py-0.5 sm:py-1 text-[8px] sm:text-[9px] font-bold uppercase tracking-wide rounded-bl-md ${roleInfo.bgColor} ${roleInfo.textColor} whitespace-nowrap`}>
+                                                        {isPaidMember && '✓ '}{roleInfo.label}
+                                                    </div>
+
+                                                    {/* Avatar */}
+                                                    <div className="flex justify-center mb-3 mt-4 sm:mt-2">
+                                                        <div className="relative">
+                                                            {member.photo ? (
+                                                                <img
+                                                                    src={member.photo}
+                                                                    alt={member.name}
+                                                                    className={`w-16 h-16 rounded-full object-cover ${isPaidMember ? 'ring-2 ring-blue-400' : ''
+                                                                        }`}
+                                                                />
+                                                            ) : (
+                                                                <div className={`w-16 h-16 rounded-full flex items-center justify-center text-white text-lg font-bold ${isPaidMember
+                                                                        ? 'bg-gradient-to-br from-blue-500 to-blue-600 ring-2 ring-blue-400'
+                                                                        : 'bg-gradient-to-br from-gray-400 to-gray-500'
+                                                                    }`}>
+                                                                    {member.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Name */}
+                                                    <div className="text-center mb-1">
+                                                        <h3 className="text-sm font-bold text-gray-900 truncate">{member.name}</h3>
+                                                    </div>
+
+                                                    {/* Occupation */}
+                                                    {member.occupation && (
+                                                        <div className="text-center text-xs text-gray-600 font-medium mb-1 truncate">
+                                                            {member.occupation}
+                                                        </div>
+                                                    )}
+
+                                                    {/* Batch & Blood Group */}
+                                                    <div className="flex items-center justify-center gap-2 text-xs mb-1">
+                                                        {(member.joinBatch || member.passoutBatch) && (
+                                                            <span className="font-semibold text-gray-700">{member.joinBatch || '?'} - {member.passoutBatch || '?'}</span>
+                                                        )}
+                                                        {(member.joinBatch || member.passoutBatch) && member.bloodGroup && <span className="text-gray-400">•</span>}
+                                                        {member.bloodGroup && (
+                                                            <span className="px-1.5 py-0.5 bg-red-50 text-red-600 rounded text-[10px] font-semibold">
+                                                                🩸 {member.bloodGroup}
+                                                            </span>
                                                         )}
                                                     </div>
-                                                </div>
 
-                                                {/* Name */}
-                                                <div className="text-center mb-1">
-                                                    <h3 className="text-sm font-bold text-gray-900 truncate">{member.name}</h3>
-                                                </div>
-
-                                                {/* Occupation */}
-                                                {member.occupation && (
-                                                    <div className="text-center text-xs text-gray-600 font-medium mb-1 truncate">
-                                                        {member.occupation}
-                                                    </div>
-                                                )}
-
-                                                {/* Batch & Blood Group */}
-                                                <div className="flex items-center justify-center gap-2 text-xs mb-1">
-                                                    {(member.joinBatch || member.passoutBatch) && (
-                                                        <span className="font-semibold text-gray-700">{member.joinBatch || '?'} - {member.passoutBatch || '?'}</span>
+                                                    {/* Location */}
+                                                    {member.city && (
+                                                        <div className="flex items-center justify-center gap-1 text-xs text-gray-500 mb-2">
+                                                            <MapPin className="w-2.5 h-2.5" />
+                                                            <span className="truncate max-w-[120px]">{member.city}</span>
+                                                        </div>
                                                     )}
-                                                    {(member.joinBatch || member.passoutBatch) && member.bloodGroup && <span className="text-gray-400">•</span>}
-                                                    {member.bloodGroup && (
-                                                        <span className="px-1.5 py-0.5 bg-red-50 text-red-600 rounded text-[10px] font-semibold">
-                                                            🩸 {member.bloodGroup}
-                                                        </span>
-                                                    )}
+
+                                                    {/* View Profile Button */}
+                                                    <button
+                                                        onClick={() => handleViewProfile(member)}
+                                                        className="w-full py-2 bg-blue-600 text-white rounded-md font-semibold text-xs hover:bg-blue-700 transition-colors cursor-pointer"
+                                                    >
+                                                        View Profile
+                                                    </button>
                                                 </div>
-
-                                                {/* Location */}
-                                                {member.city && (
-                                                    <div className="flex items-center justify-center gap-1 text-xs text-gray-500 mb-2">
-                                                        <MapPin className="w-2.5 h-2.5" />
-                                                        <span className="truncate max-w-[120px]">{member.city}</span>
-                                                    </div>
-                                                )}
-
-                                                {/* View Profile Button */}
-                                                <button 
-                                                    onClick={() => handleViewProfile(member)}
-                                                    className="w-full py-2 bg-blue-600 text-white rounded-md font-semibold text-xs hover:bg-blue-700 transition-colors cursor-pointer"
-                                                >
-                                                    View Profile
-                                                </button>
-                                            </div>
-                                        );
+                                            );
                                         })}
                                     </div>
                                 )}

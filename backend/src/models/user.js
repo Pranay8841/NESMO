@@ -24,7 +24,7 @@ import mongoose from "mongoose";
  * @property {string} password - Hashed password (select: false for security)
  * @property {string} authProvider - Authentication method: "LOCAL" | "GOOGLE"
  * @property {string} googleId - Google OAuth ID (unique, sparse index)
- * @property {string} role - User role: "ALUMNI" | "MEMBER" | "EVENT_LEAD" | "ADMIN"
+ * @property {string} role - User role: "MEMBER" | "BATCH_REP" | "ADMIN"
  * @property {boolean} isMember - NESMO paid membership status
  * @property {string} status - Account status: "ACTIVE" | "BLOCKED"
  * @property {ObjectId} profile - Reference to Profile document
@@ -76,8 +76,8 @@ const userSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ["ALUMNI", "MEMBER", "EVENT_LEAD", "ADMIN"],
-      default: "ALUMNI"
+      enum: ["MEMBER", "BATCH_REP", "ADMIN"],
+      default: "MEMBER"
     },
 
     isMember: {

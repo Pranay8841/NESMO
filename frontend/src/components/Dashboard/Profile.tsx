@@ -60,11 +60,10 @@ export default function Profile() {
     // Display role based on user.role - show proper role hierarchy with styling
     const roleConfig: Record<string, { label: string; bgColor: string }> = {
         ADMIN: { label: 'Admin', bgColor: 'bg-red-500' },
-        EVENT_LEAD: { label: 'Event Lead', bgColor: 'bg-purple-500' },
+        BATCH_REP: { label: 'Batch Rep', bgColor: 'bg-purple-500' },
         MEMBER: { label: 'Member', bgColor: 'bg-blue-500' },
-        ALUMNI: { label: 'Alumni', bgColor: 'bg-gray-500' },
     };
-    const roleInfo = roleConfig[user?.role || 'ALUMNI'] || roleConfig.ALUMNI;
+    const roleInfo = roleConfig[user?.role || 'MEMBER'] || roleConfig.MEMBER;
     
     // Generate avatar from user's initials or use uploaded photo
     const profileImage = profile?.profilePhoto || 

@@ -47,7 +47,7 @@ export const googleSignIn = createAsyncThunk(
 
             console.log('🔐 Initiating Google Sign-In with Firebase...');
             const result = await signInWithPopup(auth, provider);
-            
+
             console.log('✅ Google Sign-In successful:', result.user.email);
 
             // Get Firebase ID token
@@ -88,7 +88,7 @@ export const googleSignIn = createAsyncThunk(
 
         } catch (error: any) {
             dispatch(setLoading(false));
-            
+
             console.error('❌ Google Sign-In error:', error);
 
             // Firebase error handling
@@ -114,12 +114,8 @@ export const googleSignIn = createAsyncThunk(
 
             // Backend error handling
             const errorMessage = error.response?.data?.message || error.message || 'Sign-in failed';
-            
-            if (error.response?.status === 403) {
-                toast.error('Your account has been blocked', { id: toastId });
-            } else {
-                toast.error(errorMessage, { id: toastId });
-            }
+
+            toast.error(errorMessage, { id: toastId });
 
             return rejectWithValue(errorMessage);
         }
@@ -196,7 +192,7 @@ export const fetchCurrentUser = createAsyncThunk(
             dispatch(setLoading(true));
             const tokenStr = localStorage.getItem('token');
             const token = tokenStr ? JSON.parse(tokenStr) : null;
-            
+
             if (!token) {
                 dispatch(setLoading(false));
                 return rejectWithValue('No token found');

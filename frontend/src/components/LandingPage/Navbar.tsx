@@ -31,12 +31,12 @@ export default function Navbar({ onSignupClick, onLoginClick }: NavbarProps) {
 
     // Display role based on user.role - show proper role hierarchy
     const getRoleDisplay = () => {
-        if (!user) return 'Alumni';
+        if (!user) return 'Member';
         switch (user.role) {
             case 'ADMIN': return 'Admin';
-            case 'EVENT_LEAD': return 'Event Lead';
+            case 'BATCH_REP': return 'Batch Rep';
             case 'MEMBER': return 'Member';
-            default: return 'Alumni';
+            default: return 'Member';
         }
     };
 

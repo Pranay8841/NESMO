@@ -24,6 +24,7 @@ import SettingsScreen from '../screens/App/SettingsScreen';
 import UserModerationScreen from '../screens/App/UserModerationScreen';
 import AdminDashboardScreen from '../screens/App/AdminDashboardScreen';
 import NotificationsScreen from '../screens/App/NotificationsScreen';
+import BatchDashboardScreen from '../screens/App/BatchDashboardScreen';
 
 import { APP_CONSTANTS } from '../constants';
 import { Ionicons } from '@expo/vector-icons';
@@ -55,6 +56,7 @@ export type AppStackParamList = {
   };
   [APP_CONSTANTS.SCREENS.USER_MODERATION]: undefined;
   [APP_CONSTANTS.SCREENS.ADMIN_DASHBOARD]: undefined;
+  [APP_CONSTANTS.SCREENS.BATCH_DASHBOARD]: undefined;
   [APP_CONSTANTS.SCREENS.NOTIFICATIONS]: undefined;
 };
 
@@ -401,8 +403,8 @@ export default function AppNavigator() {
             const createdAt = notif.createdAt?.toDate
               ? notif.createdAt.toDate().getTime()
               : (notif.createdAt instanceof Date
-                  ? notif.createdAt.getTime()
-                  : new Date(notif.createdAt).getTime());
+                ? notif.createdAt.getTime()
+                : new Date(notif.createdAt).getTime());
 
             // Only fire notification for documents created AFTER mount
             // (avoid replaying all existing notifications on app start)
@@ -528,6 +530,15 @@ export default function AppNavigator() {
           options={{
             title: 'Admin Dashboard',
             headerShown: true,
+            headerTitleAlign: 'center',
+          }}
+        />
+        <Stack.Screen
+          name={APP_CONSTANTS.SCREENS.BATCH_DASHBOARD}
+          component={BatchDashboardScreen}
+          options={{
+            title: 'Batch Dashboard',
+            headerShown: false,
             headerTitleAlign: 'center',
           }}
         />

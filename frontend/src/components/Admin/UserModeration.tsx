@@ -6,13 +6,13 @@
  */
 
 import { useEffect, useState, useCallback } from 'react';
-import { 
-    Users, 
-    Search, 
-    Filter, 
-    Shield, 
-    ShieldOff, 
-    CheckCircle, 
+import {
+    Users,
+    Search,
+    Filter,
+    Shield,
+    ShieldOff,
+    CheckCircle,
     XCircle,
     ChevronLeft,
     ChevronRight,
@@ -26,22 +26,20 @@ import {
     X
 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
-import { 
-    fetchAllUsers, 
-    blockUser, 
-    unblockUser, 
-    updateUserRole, 
+import {
+    fetchAllUsers,
+    blockUser,
+    unblockUser,
+    updateUserRole,
     verifyUserEmail,
-    type UserFilterParams 
+    type UserFilterParams
 } from '../../services/adminService';
 import { getProfilePhotoUrl } from '../../utils/avatarHelper';
 import type { AdminUser } from '../../redux/slices/adminSlice';
 
-/** Role configuration for display */
 const roleConfig: Record<string, { label: string; color: string; bgColor: string }> = {
-    ALUMNI: { label: 'Alumni', color: 'text-blue-700', bgColor: 'bg-blue-100' },
     MEMBER: { label: 'Member', color: 'text-green-700', bgColor: 'bg-green-100' },
-    EVENT_LEAD: { label: 'Event Lead', color: 'text-purple-700', bgColor: 'bg-purple-100' },
+    BATCH_REP: { label: 'Batch Representative', color: 'text-purple-700', bgColor: 'bg-purple-100' },
     ADMIN: { label: 'Admin', color: 'text-red-700', bgColor: 'bg-red-100' },
 };
 
@@ -58,22 +56,22 @@ const UserModeration = () => {
     const dispatch = useAppDispatch();
     const { users } = useAppSelector(state => state.admin);
     const currentUser = useAppSelector(state => state.auth.user);
-    
+
     // Filter states
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<'active' | 'blocked' | ''>('');
-    const [roleFilter, setRoleFilter] = useState<'ALUMNI' | 'MEMBER' | 'EVENT_LEAD' | 'ADMIN' | ''>('');
+    const [roleFilter, setRoleFilter] = useState<'MEMBER' | 'BATCH_REP' | 'ADMIN' | ''>('');
     const [verifiedFilter, setVerifiedFilter] = useState<'true' | 'false' | ''>('');
     const [showFilters, setShowFilters] = useState(false);
-    
+
     // Modal states
     const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
     const [showBlockModal, setShowBlockModal] = useState(false);
     const [showRoleModal, setShowRoleModal] = useState(false);
     const [showUserDetail, setShowUserDetail] = useState(false);
     const [blockReason, setBlockReason] = useState('');
-    const [newRole, setNewRole] = useState<'ALUMNI' | 'MEMBER' | 'EVENT_LEAD' | 'ADMIN'>('ALUMNI');
-    
+    const [newRole, setNewRole] = useState<'MEMBER' | 'BATCH_REP' | 'ADMIN'>('MEMBER');
+
     // Dropdown state
     const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
@@ -125,17 +123,19 @@ const UserModeration = () => {
      */
     const handleBlockUser = async () => {
         if (!selectedUser || !blockReason.trim()) return;
-        await dispatch(blockUser({ userId: selectedUser._id, reason: blockReason }));
-        setShowBlockModal(false);
-        setSelectedUser(null);
-        setBlockReason('');
+        const result = await dispatch(blockUser({ userId: selectedUser.id, reason: blockReason }));
+        if (blockUser.fulfilled.match(result)) {
+            setShowBlockModal(false);
+            setSelectedUser(null);
+            setBlockReason('');
+        }
     };
 
     /**
      * Handle unblock user action
      */
     const handleUnblockUser = async (user: AdminUser) => {
-        await dispatch(unblockUser(user._id));
+        await dispatch(unblockUser(user.id));
         setOpenDropdown(null);
     };
 
@@ -144,16 +144,18 @@ const UserModeration = () => {
      */
     const handleRoleChange = async () => {
         if (!selectedUser) return;
-        await dispatch(updateUserRole({ userId: selectedUser._id, role: newRole }));
-        setShowRoleModal(false);
-        setSelectedUser(null);
+        const result = await dispatch(updateUserRole({ userId: selectedUser.id, role: newRole }));
+        if (updateUserRole.fulfilled.match(result)) {
+            setShowRoleModal(false);
+            setSelectedUser(null);
+        }
     };
 
     /**
      * Handle verify email action
      */
     const handleVerifyEmail = async (user: AdminUser) => {
-        await dispatch(verifyUserEmail(user._id));
+        await dispatch(verifyUserEmail(user.id));
         setOpenDropdown(null);
     };
 
@@ -172,7 +174,15 @@ const UserModeration = () => {
      */
     const openRoleModal = (user: AdminUser) => {
         setSelectedUser(user);
-        setNewRole(user.role);
+
+        // Normalize role for frontend select box (safeguard for legacy roles like 'ALUMNI')
+        const validRoles = ['MEMBER', 'BATCH_REP', 'ADMIN'];
+        if (validRoles.includes(user.role)) {
+            setNewRole(user.role as 'MEMBER' | 'BATCH_REP' | 'ADMIN');
+        } else {
+            setNewRole('MEMBER'); // default to MEMBER if it's a legacy or invalid role
+        }
+
         setShowRoleModal(true);
         setOpenDropdown(null);
     };
@@ -253,15 +263,14 @@ const UserModeration = () => {
                             className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xs sm:text-sm"
                         />
                     </div>
-                    
+
                     {/* Filter Toggle */}
                     <button
                         onClick={() => setShowFilters(!showFilters)}
-                        className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 border rounded-lg font-medium transition-colors text-xs sm:text-sm ${
-                            showFilters || statusFilter || roleFilter || verifiedFilter
+                        className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 border rounded-lg font-medium transition-colors text-xs sm:text-sm ${showFilters || statusFilter || roleFilter || verifiedFilter
                                 ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
                                 : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                        }`}
+                            }`}
                     >
                         <Filter className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         <span className="hidden sm:inline">Filters</span>
@@ -290,7 +299,7 @@ const UserModeration = () => {
                                 <option value="blocked">Blocked</option>
                             </select>
                         </div>
-                        
+
                         {/* Role Filter */}
                         <div>
                             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">Role</label>
@@ -300,13 +309,12 @@ const UserModeration = () => {
                                 className="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-xs sm:text-sm"
                             >
                                 <option value="">All Roles</option>
-                                <option value="ALUMNI">Alumni</option>
                                 <option value="MEMBER">Member</option>
-                                <option value="EVENT_LEAD">Event Lead</option>
+                                <option value="BATCH_REP">Batch Representative</option>
                                 <option value="ADMIN">Admin</option>
                             </select>
                         </div>
-                        
+
                         {/* Verified Filter */}
                         <div>
                             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">Email Verified</label>
@@ -320,7 +328,7 @@ const UserModeration = () => {
                                 <option value="false">Unverified</option>
                             </select>
                         </div>
-                        
+
                         {/* Clear Filters */}
                         {(statusFilter || roleFilter || verifiedFilter) && (
                             <div className="md:col-span-3 flex justify-end">
@@ -365,7 +373,7 @@ const UserModeration = () => {
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
                                     {users.data.map((user) => (
-                                        <tr key={user._id} className="hover:bg-gray-50 transition-colors">
+                                        <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                                             {/* User Info */}
                                             <td className="px-3 sm:px-6 py-2.5 sm:py-4 whitespace-nowrap">
                                                 <div className="flex items-center gap-2 sm:gap-3">
@@ -382,14 +390,14 @@ const UserModeration = () => {
                                                     </div>
                                                 </div>
                                             </td>
-                                            
+
                                             {/* Role */}
                                             <td className="px-3 sm:px-6 py-2.5 sm:py-4 whitespace-nowrap">
-                                                <span className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium ${roleConfig[user.role]?.bgColor} ${roleConfig[user.role]?.color}`}>
+                                                <span className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium ${roleConfig[user.role]?.bgColor || 'bg-gray-100'} ${roleConfig[user.role]?.color || 'text-gray-700'}`}>
                                                     {roleConfig[user.role]?.label || user.role}
                                                 </span>
                                             </td>
-                                            
+
                                             {/* Status */}
                                             <td className="px-3 sm:px-6 py-2.5 sm:py-4 whitespace-nowrap">
                                                 <span className={`inline-flex items-center gap-0.5 sm:gap-1 px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium ${statusConfig[user.status]?.bgColor} ${statusConfig[user.status]?.color}`}>
@@ -401,7 +409,7 @@ const UserModeration = () => {
                                                     {statusConfig[user.status]?.label || user.status}
                                                 </span>
                                             </td>
-                                            
+
                                             {/* Email Verified */}
                                             <td className="px-3 sm:px-6 py-2.5 sm:py-4 whitespace-nowrap">
                                                 {user.isEmailVerified ? (
@@ -418,24 +426,24 @@ const UserModeration = () => {
                                                     </span>
                                                 )}
                                             </td>
-                                            
+
                                             {/* Joined Date */}
                                             <td className="px-3 sm:px-6 py-2.5 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                                                 {formatDate(user.createdAt)}
                                             </td>
-                                            
+
                                             {/* Actions */}
                                             <td className="px-3 sm:px-6 py-2.5 sm:py-4 whitespace-nowrap text-right">
                                                 <div className="relative">
                                                     <button
-                                                        onClick={() => setOpenDropdown(openDropdown === user._id ? null : user._id)}
+                                                        onClick={() => setOpenDropdown(openDropdown === user.id ? null : user.id)}
                                                         className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors"
                                                     >
                                                         <MoreVertical className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
                                                     </button>
-                                                    
+
                                                     {/* Dropdown Menu */}
-                                                    {openDropdown === user._id && (
+                                                    {openDropdown === user.id && (
                                                         <div className="absolute right-0 mt-1 sm:mt-2 w-40 sm:w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
                                                             <button
                                                                 onClick={() => openUserDetail(user)}
@@ -444,16 +452,16 @@ const UserModeration = () => {
                                                                 <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                                                 View Details
                                                             </button>
-                                                            
+
                                                             <button
                                                                 onClick={() => openRoleModal(user)}
                                                                 className="w-full flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-50"
-                                                                disabled={user._id === currentUser?._id}
+                                                                disabled={user.id === currentUser?.id}
                                                             >
                                                                 <UserCog className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                                                 Change Role
                                                             </button>
-                                                            
+
                                                             {!user.isEmailVerified && (
                                                                 <button
                                                                     onClick={() => handleVerifyEmail(user)}
@@ -463,14 +471,14 @@ const UserModeration = () => {
                                                                     Verify Email
                                                                 </button>
                                                             )}
-                                                            
+
                                                             <div className="border-t border-gray-100 my-0.5 sm:my-1"></div>
-                                                            
+
                                                             {user.status === 'ACTIVE' ? (
                                                                 <button
                                                                     onClick={() => openBlockModal(user)}
                                                                     className="w-full flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-red-600 hover:bg-red-50"
-                                                                    disabled={user.role === 'ADMIN' || user._id === currentUser?._id}
+                                                                    disabled={user.role === 'ADMIN' || user.id === currentUser?.id}
                                                                 >
                                                                     <Ban className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                                                     Block User
@@ -607,7 +615,7 @@ const UserModeration = () => {
                                 />
                                 <div className="min-w-0">
                                     <div className="font-medium text-xs sm:text-sm truncate">{selectedUser.firstName} {selectedUser.lastName}</div>
-                                    <div className="text-xs sm:text-sm text-gray-500">Current: {roleConfig[selectedUser.role]?.label}</div>
+                                    <div className="text-xs sm:text-sm text-gray-500">Current: {roleConfig[selectedUser.role]?.label || selectedUser.role}</div>
                                 </div>
                             </div>
                             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">New Role</label>
@@ -616,9 +624,8 @@ const UserModeration = () => {
                                 onChange={(e) => setNewRole(e.target.value as any)}
                                 className="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-xs sm:text-sm"
                             >
-                                <option value="ALUMNI">Alumni - Basic access</option>
-                                <option value="MEMBER">Member - Paid member with full access</option>
-                                <option value="EVENT_LEAD">Event Lead - Can manage events</option>
+                                <option value="MEMBER">Member - Standard access</option>
+                                <option value="BATCH_REP">Batch Representative - Manage batch activities</option>
                                 <option value="ADMIN">Admin - Full administrative access</option>
                             </select>
                             <p className="mt-2 text-xs sm:text-sm text-gray-500">
@@ -674,14 +681,14 @@ const UserModeration = () => {
                                     <p className="text-xs sm:text-sm text-gray-500 truncate">{selectedUser.email}</p>
                                 </div>
                             </div>
-                            
+
                             {/* Details Grid */}
                             <div className="space-y-4">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="p-3 bg-gray-50 rounded-lg">
                                         <div className="text-sm text-gray-500 mb-1">Role</div>
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${roleConfig[selectedUser.role]?.bgColor} ${roleConfig[selectedUser.role]?.color}`}>
-                                            {roleConfig[selectedUser.role]?.label}
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${roleConfig[selectedUser.role]?.bgColor || 'bg-gray-100'} ${roleConfig[selectedUser.role]?.color || 'text-gray-700'}`}>
+                                            {roleConfig[selectedUser.role]?.label || selectedUser.role}
                                         </span>
                                     </div>
                                     <div className="p-3 bg-gray-50 rounded-lg">
@@ -691,7 +698,7 @@ const UserModeration = () => {
                                         </span>
                                     </div>
                                 </div>
-                                
+
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="p-3 bg-gray-50 rounded-lg">
                                         <div className="text-sm text-gray-500 mb-1">Email Verified</div>
@@ -718,26 +725,26 @@ const UserModeration = () => {
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <div className="p-2 sm:p-3 bg-gray-50 rounded-lg">
                                     <div className="text-xs sm:text-sm text-gray-500 mb-1">Joined</div>
                                     <div className="font-medium text-xs sm:text-sm">{formatDate(selectedUser.createdAt)}</div>
                                 </div>
-                                
+
                                 {selectedUser.profile?.city && (
                                     <div className="p-2 sm:p-3 bg-gray-50 rounded-lg">
                                         <div className="text-xs sm:text-sm text-gray-500 mb-1">City</div>
                                         <div className="font-medium text-xs sm:text-sm">{selectedUser.profile.city}</div>
                                     </div>
                                 )}
-                                
+
                                 {selectedUser.profile?.currentCompany && (
                                     <div className="p-2 sm:p-3 bg-gray-50 rounded-lg">
                                         <div className="text-xs sm:text-sm text-gray-500 mb-1">Company</div>
                                         <div className="font-medium text-xs sm:text-sm">{selectedUser.profile.currentCompany}</div>
                                     </div>
                                 )}
-                                
+
                                 {selectedUser.status === 'BLOCKED' && selectedUser.blockedReason && (
                                     <div className="p-2 sm:p-3 bg-red-50 rounded-lg border border-red-200">
                                         <div className="text-xs sm:text-sm text-red-600 font-medium mb-1">Block Reason</div>
@@ -765,8 +772,8 @@ const UserModeration = () => {
 
             {/* Click outside to close dropdown */}
             {openDropdown && (
-                <div 
-                    className="fixed inset-0 z-40" 
+                <div
+                    className="fixed inset-0 z-40"
                     onClick={() => setOpenDropdown(null)}
                 />
             )}

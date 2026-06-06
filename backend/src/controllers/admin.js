@@ -10,11 +10,11 @@ export const getDashboardStats = async (req, res) => {
     // User Statistics
     const allUsers = await getDocuments('users', []);
     const totalUsers = allUsers.length;
-    
+
     const usersByRole = {};
     const blockedUsers = allUsers.filter(u => u.status === 'BLOCKED').length;
     const unverifiedUsers = allUsers.filter(u => !u.isEmailVerified).length;
-    
+
     allUsers.forEach(u => {
       usersByRole[u.role] = (usersByRole[u.role] || 0) + 1;
     });
@@ -24,12 +24,12 @@ export const getDashboardStats = async (req, res) => {
     const totalPayments = allPayments.length;
     const paymentsByStatus = {};
     let totalPaymentAmount = 0;
-    
+
     allPayments.forEach(p => {
       paymentsByStatus[p.status] = paymentsByStatus[p.status] || { count: 0, total: 0 };
       paymentsByStatus[p.status].count += 1;
       paymentsByStatus[p.status].total += (p.amount || 0);
-      
+
       if (p.status === 'SUCCESS') {
         totalPaymentAmount += (p.amount || 0);
       }
@@ -41,7 +41,7 @@ export const getDashboardStats = async (req, res) => {
     const ticketsByPriority = {};
     const openTickets = allTickets.filter(t => ['OPEN', 'IN_PROGRESS'].includes(t.status)).length;
     const emergencyTickets = allTickets.filter(t => t.priority === 'EMERGENCY').length;
-    
+
     allTickets.forEach(t => {
       ticketsByPriority[t.priority] = (ticketsByPriority[t.priority] || 0) + 1;
     });
@@ -191,7 +191,7 @@ export const bootstrapAdmin = async (req, res) => {
 export const updateUserRole = async (req, res) => {
   try {
     const { role } = req.body;
-    const validRoles = ["ALUMNI", "MEMBER", "EVENT_LEAD", "ADMIN"];
+    const validRoles = ["MEMBER", "BATCH_REP", "ADMIN"];
 
     if (!validRoles.includes(role)) {
       return res.status(400).json({ message: "Invalid role" });
@@ -204,9 +204,29 @@ export const updateUserRole = async (req, res) => {
 
     await updateDocument('users', req.params.id, {
       role: role,
-      isMember: role === "MEMBER" || role === "ADMIN",
+      isMember: role === "ADMIN" || role === "BATCH_REP" ? true : user.isMember || false,
       updatedAt: new Date()
     });
+
+    // Send system and in-app notification for role change
+    const roleLabels = {
+      MEMBER: "Member",
+      BATCH_REP: "Batch Representative",
+      ADMIN: "Admin"
+    };
+
+    try {
+      await sendNotifications({
+        title: "Role Change Alert",
+        message: `Your role has been updated to ${roleLabels[role] || role} by an Administrator.`,
+        type: "SYSTEM",
+        recipients: [req.params.id],
+        link: "/dashboard",
+        meta: { newRole: role }
+      });
+    } catch (err) {
+      console.error("Failed to send role update notification:", err);
+    }
 
     res.json({
       message: "User role updated successfully"
@@ -264,7 +284,7 @@ export const getAllUsers = async (req, res) => {
       users = users.filter(u => u.status === "ACTIVE");
     }
 
-    if (role && ["ALUMNI", "MEMBER", "EVENT_LEAD", "ADMIN"].includes(role)) {
+    if (role && ["MEMBER", "BATCH_REP", "ADMIN"].includes(role)) {
       users = users.filter(u => u.role === role);
     }
 
@@ -338,10 +358,15 @@ export const blockUser = async (req, res) => {
       return res.status(403).json({ success: false, message: "Cannot block an admin user" });
     }
 
+    const adminUser = req.user;
     await updateDocument('users', userId, {
       status: "BLOCKED",
       blockedReason: reason || "No reason provided",
-      blockedAt: new Date()
+      blockedAt: new Date(),
+      blockedBy: adminUser.id || adminUser.uid,
+      blockedByRole: adminUser.role,
+      blockedByName: `${adminUser.firstName} ${adminUser.lastName}`.trim(),
+      blockedByBatch: ""
     });
 
     res.json({
@@ -537,12 +562,6 @@ export const reviewEventRequest = async (req, res) => {
       status: status,
       adminRemark: adminRemark
     });
-
-    if (status === "APPROVED") {
-      await updateDocument('users', request.requestedBy, {
-        role: "EVENT_LEAD"
-      });
-    }
 
     res.json({ success: true, message: "Request processed" });
   } catch (error) {

@@ -109,7 +109,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
       {/* Error Messages */}
       {error && (
         <View style={styles.errorContainer}>
-          <Ionicons name="alert-circle" size={20} color="#f00" />
+          <Ionicons name="alert-circle" size={20} color="#EF4444" style={{ marginTop: 1 }} />
           <Text style={styles.errorText}>{error}</Text>
         </View>
       )}
@@ -167,18 +167,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   errorContainer: {
-    backgroundColor: '#fee',
-    borderLeftColor: '#f00',
+    backgroundColor: '#FEE2E2',
+    borderLeftColor: '#EF4444',
     borderLeftWidth: 4,
     padding: 12,
-    borderRadius: 4,
+    borderRadius: 8,
     marginBottom: 30,
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   errorText: {
-    color: '#c00',
-    fontSize: 14,
+    color: '#991B1B',
+    fontSize: 13,
+    lineHeight: 18,
     marginLeft: 10,
     flex: 1,
   },

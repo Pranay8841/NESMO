@@ -267,11 +267,10 @@ export default function ProfileScreen({ route }: any) {
   const fullName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : 'User';
   const roleConfig: Record<string, { label: string; bgColor: string }> = {
     ADMIN: { label: 'Admin', bgColor: '#EF4444' },
-    EVENT_LEAD: { label: 'Event Lead', bgColor: '#8B5CF6' },
+    BATCH_REP: { label: 'Batch Rep', bgColor: '#8B5CF6' },
     MEMBER: { label: 'Member', bgColor: '#3B82F6' },
-    ALUMNI: { label: 'Alumni', bgColor: '#6B7280' },
   };
-  const roleInfo = roleConfig[user?.role || 'ALUMNI'] || roleConfig.ALUMNI;
+  const roleInfo = roleConfig[user?.role || 'MEMBER'] || roleConfig.MEMBER;
 
   const profileImage = profile?.profilePhoto ||
     `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=3b82f6&color=fff&size=128`;

@@ -10,6 +10,7 @@ import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { Link } from 'react-router-dom';
 import { fetchProfileCompleteness } from '../../services/profileService';
 import AdminDashboard from '../Admin/AdminDashboard';
+import BatchDashboard from '../Admin/BatchDashboard';
 
 export default function Dashboard() {
     const dispatch = useAppDispatch();
@@ -26,16 +27,20 @@ export default function Dashboard() {
         return <AdminDashboard />;
     }
 
+    // If user is batch representative, show Batch Representative Dashboard
+    if (user?.role === 'BATCH_REP') {
+        return <BatchDashboard />;
+    }
+
     // Derive user info
     const firstName = user?.firstName || 'User';
     // Display role based on user.role - show proper role hierarchy with styling
     const roleConfig: Record<string, { label: string; bgColor: string }> = {
         ADMIN: { label: 'Admin', bgColor: 'bg-red-500' },
-        EVENT_LEAD: { label: 'Event Lead', bgColor: 'bg-purple-500' },
+        BATCH_REP: { label: 'Batch Rep', bgColor: 'bg-purple-500' },
         MEMBER: { label: 'Member', bgColor: 'bg-blue-500' },
-        ALUMNI: { label: 'Alumni', bgColor: 'bg-gray-500' },
     };
-    const roleInfo = roleConfig[user?.role || 'ALUMNI'] || roleConfig.ALUMNI;
+    const roleInfo = roleConfig[user?.role || 'MEMBER'] || roleConfig.MEMBER;
     const profileCompleteness = completeness || 0;
 
     return (
@@ -67,8 +72,8 @@ export default function Dashboard() {
                                 <div className="text-lg sm:text-2xl font-black text-blue-600">{profileCompleteness}%</div>
                             </div>
                             <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div 
-                                    className="bg-blue-600 h-2 rounded-full transition-all duration-500" 
+                                <div
+                                    className="bg-blue-600 h-2 rounded-full transition-all duration-500"
                                     style={{ width: `${profileCompleteness}%` }}
                                 ></div>
                             </div>
@@ -113,13 +118,13 @@ export default function Dashboard() {
                         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
                             <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-blue-600 rounded-full shrink-0">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="sm:w-6 sm:h-6">
-                                    <path d="M12 16V12M12 8H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    <path d="M12 16V12M12 8H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                 </svg>
                             </div>
                             <div>
                                 <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-1">Welcome to NESMO Alumni Network!</h3>
                                 <p className="text-xs sm:text-sm text-gray-600">
-                                    This is the first release of our platform. More features like events, membership benefits, 
+                                    This is the first release of our platform. More features like events, membership benefits,
                                     and mentorship programs are coming soon. For now, update your profile and explore the alumni directory!
                                 </p>
                             </div>

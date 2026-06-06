@@ -8,6 +8,7 @@
 import { getAuth, getFirestore, addDocument, getDocument, updateDocument, getDocuments } from '../config/firestore.js';
 import { getAvatarUrl, getProfilePhotoUrl } from '../utils/avatarHelper.js';
 import admin from 'firebase-admin';
+import { getBlockedMessage } from '../middleware/firebaseAuth.js';
 
 /**
  * Handle Firebase Google Sign-In
@@ -69,7 +70,7 @@ export const googleSignIn = async (req, res) => {
         email,
         profile: profileId,
         authProvider: 'GOOGLE',
-        role: 'ALUMNI',
+        role: 'MEMBER',
         isMember: false,
         status: 'ACTIVE',
         isEmailVerified: true, // Google users are pre-verified
@@ -83,7 +84,7 @@ export const googleSignIn = async (req, res) => {
         firstName: firstName || 'User',
         lastName: lastName || '',
         email,
-        role: 'ALUMNI',
+        role: 'MEMBER',
         isMember: false,
         status: 'ACTIVE',
         profile: profileId,
@@ -95,7 +96,7 @@ export const googleSignIn = async (req, res) => {
 
     // Check if user is blocked
     if (userDoc.status === 'BLOCKED') {
-      return res.status(403).json({ message: 'Account blocked' });
+      return res.status(403).json({ message: getBlockedMessage(userDoc) });
     }
 
     // Get profile with photo
@@ -151,7 +152,7 @@ export const getCurrentUser = async (req, res) => {
 
     // Check if blocked
     if (userDoc.status === 'BLOCKED') {
-      return res.status(403).json({ message: 'Account blocked' });
+      return res.status(403).json({ message: getBlockedMessage(userDoc) });
     }
 
     // Fetch profile

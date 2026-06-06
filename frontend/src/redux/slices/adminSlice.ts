@@ -1,14 +1,6 @@
-/**
- * @fileoverview Admin Redux Slice
- * Manages global admin state including dashboard stats, users, payments, tickets, and news.
- * 
- * @module redux/slices/adminSlice
- */
-
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
-/** Activity item from recent activity feed */
 export interface ActivityItem {
     id: string;
     timestamp: string;
@@ -17,7 +9,6 @@ export interface ActivityItem {
     status: 'Verified' | 'Success' | 'Emergency' | 'Active' | 'Suspended' | 'Pending' | 'Failed';
 }
 
-/** Dashboard statistics structure */
 export interface DashboardStats {
     users: {
         total: number;
@@ -44,13 +35,12 @@ export interface DashboardStats {
     recentActivity: ActivityItem[];
 }
 
-/** Admin user in list */
 export interface AdminUser {
-    _id: string;
+    id: string;
     firstName: string;
     lastName: string;
     email: string;
-    role: 'ALUMNI' | 'MEMBER' | 'EVENT_LEAD' | 'ADMIN';
+    role: 'MEMBER' | 'BATCH_REP' | 'ADMIN';
     isMember: boolean;
     status: 'ACTIVE' | 'BLOCKED';
     isEmailVerified: boolean;
@@ -64,10 +54,9 @@ export interface AdminUser {
     };
 }
 
-/** Payment record */
 export interface Payment {
-    _id: string;
-    user: { _id: string; firstName: string; lastName: string; email: string };
+    id: string;
+    user: { id: string; firstName: string; lastName: string; email: string };
     razorpayOrderId: string;
     razorpayPaymentId: string;
     amount: number;
@@ -77,10 +66,9 @@ export interface Payment {
     createdAt: string;
 }
 
-/** Support ticket */
 export interface SupportTicket {
-    _id: string;
-    createdBy: { _id: string; firstName: string; lastName: string; email: string };
+    id: string;
+    createdBy: { id: string; firstName: string; lastName: string; email: string };
     category: 'MEDICAL' | 'FINANCIAL' | 'CAREER' | 'GENERAL';
     subject: string;
     description: string;
@@ -90,9 +78,8 @@ export interface SupportTicket {
     createdAt: string;
 }
 
-/** News article */
 export interface NewsArticle {
-    _id: string;
+    id: string;
     title: string;
     summary: string;
     content: string;
@@ -100,12 +87,11 @@ export interface NewsArticle {
     status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
     audience: 'ALL' | 'ALUMNI';
     cities: string[];
-    createdBy: { _id: string; firstName: string; lastName: string };
+    createdBy: { id: string; firstName: string; lastName: string };
     publishedAt?: string;
     createdAt: string;
 }
 
-/** Admin state structure */
 interface AdminState {
     dashboardStats: DashboardStats | null;
     dashboardLoading: boolean;
@@ -164,13 +150,13 @@ export const adminSlice = createSlice({
             state.users.pages = action.payload.pages;
         },
         updateUserInList: (state, action: PayloadAction<{ userId: string; updates: Partial<AdminUser> }>) => {
-            const index = state.users.data.findIndex(u => u._id === action.payload.userId);
+            const index = state.users.data.findIndex(u => u.id === action.payload.userId);
             if (index !== -1) {
                 state.users.data[index] = { ...state.users.data[index], ...action.payload.updates };
             }
         },
         removeUserFromList: (state, action: PayloadAction<string>) => {
-            state.users.data = state.users.data.filter(u => u._id !== action.payload);
+            state.users.data = state.users.data.filter(u => u.id !== action.payload);
             state.users.total -= 1;
         },
         setPaymentsLoading: (state, action: PayloadAction<boolean>) => {
