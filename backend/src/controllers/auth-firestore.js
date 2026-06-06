@@ -73,6 +73,7 @@ export const googleSignIn = async (req, res) => {
         isMember: false,
         status: 'ACTIVE',
         isEmailVerified: true, // Google users are pre-verified
+        isOnboarded: false, // New users must complete profile onboarding
         createdAt: new Date(),
         updatedAt: new Date()
       }, uid);
@@ -87,6 +88,7 @@ export const googleSignIn = async (req, res) => {
         status: 'ACTIVE',
         profile: profileId,
         isEmailVerified: true,
+        isOnboarded: false,
         authProvider: 'GOOGLE'
       };
     }
@@ -113,6 +115,7 @@ export const googleSignIn = async (req, res) => {
         isMember: userDoc.isMember || false,
         status: userDoc.status,
         isEmailVerified: true,
+        isOnboarded: userDoc.isOnboarded ?? true, // Existing users without flag default to true
         profile: profileData,
         createdAt: userDoc.createdAt
       },
@@ -168,6 +171,7 @@ export const getCurrentUser = async (req, res) => {
         isMember: userDoc.isMember || false,
         status: userDoc.status,
         isEmailVerified: true,
+        isOnboarded: userDoc.isOnboarded ?? true, // Existing users without flag default to true
         profile: profile,
         createdAt: userDoc.createdAt
       }

@@ -14,6 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import AuthNavigator from './AuthNavigator';
 import AppNavigator from './AppNavigator';
+import ProfileOnboardingScreen from '../screens/Auth/ProfileOnboardingScreen';
 
 import { useAppSelector, useAppDispatch } from '../redux/hooks';
 import { restoreToken } from '../services/authService';
@@ -69,17 +70,26 @@ export default function RootNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen
-          name="AppStack"
-          component={AppNavigator}
-        />
-        <Stack.Screen
-          name="AuthStack"
-          component={AuthNavigator}
-          options={{
-            presentation: 'modal',
-          }}
-        />
+        {token && user && user.isOnboarded === false ? (
+          <Stack.Screen
+            name="ProfileOnboarding"
+            component={ProfileOnboardingScreen}
+          />
+        ) : (
+          <>
+            <Stack.Screen
+              name="AppStack"
+              component={AppNavigator}
+            />
+            <Stack.Screen
+              name="AuthStack"
+              component={AuthNavigator}
+              options={{
+                presentation: 'modal',
+              }}
+            />
+          </>
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );

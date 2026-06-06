@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "697848773272-0ttfmc0qgb4p78q4v06hegbfar671h2g.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nesmo.alumni",
+            "certificate_hash": "db720c1466bab110ec776adf3276c41343d180b5"
+          }
+        },
+        {
           "client_id": "697848773272-dn6221qpk32bvduifjblol9mll3c18ef.apps.googleusercontent.com",
           "client_type": 3
         }

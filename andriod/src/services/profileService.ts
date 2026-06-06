@@ -1,7 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { apiConnector } from '../utils/APIsConnector';
 import { PROFILE_API } from '../utils/api';
-import { updateUserProfilePhoto } from '../redux/slices/authSlice';
+import { updateUserProfilePhoto, setOnboarded } from '../redux/slices/authSlice';
 
 /**
  * Fetch current user's profile
@@ -220,3 +220,43 @@ export const deleteEducation = createAsyncThunk(
     }
   }
 );
+
+/**
+ * Complete mandatory onboarding
+ * 
+ * @async
+ * @param {Object} onboardingData - Mandatory onboarding fields
+ * @returns {Promise<Object>} Updated profile
+ */
+export const completeOnboarding = createAsyncThunk(
+  'profile/completeOnboarding',
+  async (
+    onboardingData: {
+      phone: string;
+      joinBatch: string;
+      passoutBatch: string;
+      occupation: string;
+      organization: string;
+      currentAddress: string;
+      bloodGroup: string;
+    },
+    { dispatch, rejectWithValue }
+  ) => {
+    try {
+      const response = await apiConnector(
+        'POST',
+        PROFILE_API.COMPLETE_ONBOARDING,
+        onboardingData
+      );
+      
+      // Mark user as onboarded in Auth state
+      dispatch(setOnboarded(true));
+      
+      return response.data.profile;
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Failed to complete onboarding';
+      return rejectWithValue(message);
+    }
+  }
+);
+

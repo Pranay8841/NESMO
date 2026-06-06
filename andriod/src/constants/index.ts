@@ -24,6 +24,7 @@ export const APP_CONSTANTS = {
     COMMUNITY: 'Community',
     KNOWLEDGE_BASE: 'KnowledgeBase',
     NOTIFICATIONS: 'Notifications',
+    PROFILE_ONBOARDING: 'ProfileOnboarding',
   },
 
   // Navigation names

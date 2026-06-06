@@ -92,7 +92,7 @@ export default function ProfileScreen({ route }: any) {
   useEffect(() => {
     dispatch(fetchProfile());
     dispatch(fetchProfileCompleteness());
-    
+
     if (route?.params?.edit) {
       dispatch(setIsEditing(true));
     } else {
@@ -273,7 +273,7 @@ export default function ProfileScreen({ route }: any) {
   };
   const roleInfo = roleConfig[user?.role || 'ALUMNI'] || roleConfig.ALUMNI;
 
-  const profileImage = profile?.profilePhoto || 
+  const profileImage = profile?.profilePhoto ||
     `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=3b82f6&color=fff&size=128`;
 
   return (
@@ -348,7 +348,7 @@ export default function ProfileScreen({ route }: any) {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Personal & Education</Text>
-          
+
           {/* Phone */}
           {isEditing ? (
             <View style={styles.fieldRowEdit}>
@@ -458,7 +458,7 @@ export default function ProfileScreen({ route }: any) {
           {/* Organization */}
           {isEditing ? (
             <View style={styles.fieldRowEdit}>
-              <Text style={styles.fieldLabelEdit}>Organization / Company</Text>
+              <Text style={styles.fieldLabelEdit}>Organization / Company / College</Text>
               <TextInput
                 style={styles.inputEdit}
                 value={formData.organization}
@@ -614,8 +614,8 @@ export default function ProfileScreen({ route }: any) {
               {activePicker === 'bloodGroup'
                 ? 'Blood Group'
                 : activePicker === 'joinBatch'
-                ? 'Join Batch'
-                : 'Passout Batch'}
+                  ? 'Join Batch'
+                  : 'Passout Batch'}
             </Text>
             <ScrollView style={styles.pickerScroll}>
               <TouchableOpacity
@@ -630,8 +630,8 @@ export default function ProfileScreen({ route }: any) {
               {(activePicker === 'bloodGroup'
                 ? BLOOD_GROUPS
                 : activePicker === 'joinBatch'
-                ? JOIN_BATCH_OPTIONS
-                : PASSOUT_BATCH_OPTIONS
+                  ? JOIN_BATCH_OPTIONS
+                  : PASSOUT_BATCH_OPTIONS
               ).map((opt) => (
                 <TouchableOpacity
                   key={opt}
@@ -770,8 +770,8 @@ export default function ProfileScreen({ route }: any) {
               {eduPicker === 'level'
                 ? 'Education Level'
                 : eduPicker === 'startYear'
-                ? 'Start Year'
-                : 'End Year'}
+                  ? 'Start Year'
+                  : 'End Year'}
             </Text>
             <ScrollView style={styles.pickerScroll}>
               {eduPicker === 'endYear' && (

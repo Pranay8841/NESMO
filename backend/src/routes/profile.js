@@ -9,6 +9,7 @@
  * PUT    /api/profile/update             - Update profile information
  * PUT    /api/profile/profilePhoto       - Upload profile photo
  * GET    /api/profile/profileCompleteness - Get profile completion percentage
+ * POST   /api/profile/onboarding         - Complete profile onboarding (mandatory)
  * POST   /api/profile/education          - Add education entry
  * PUT    /api/profile/education/:eduId   - Update education entry
  * DELETE /api/profile/education/:eduId   - Delete education entry
@@ -23,6 +24,7 @@ import {
   getMyProfile,
   uploadProfilePhoto,
   getProfileCompleteness,
+  completeOnboarding,
   addEducation,
   updateEducation,
   deleteEducation
@@ -45,6 +47,9 @@ router.put("/profilePhoto", protect, uploadProfilePhoto);
 
 /** Get profile completion percentage (0-100) */
 router.get("/profileCompleteness", protect, getProfileCompleteness);
+
+/** Complete profile onboarding (mandatory fields after signup) */
+router.post("/onboarding", protect, completeOnboarding);
 
 /* ==================== Education History Routes ==================== */
 

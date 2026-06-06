@@ -38,6 +38,8 @@ export interface User {
   profile: string | { id?: string; profilePhoto?: string; [key: string]: any };
   /** Email is verified */
   isEmailVerified: boolean;
+  /** Whether user has completed profile onboarding */
+  isOnboarded?: boolean;
   /** Account creation timestamp */
   createdAt: string;
   /** Last update timestamp */
@@ -103,6 +105,11 @@ export const authSlice = createSlice({
         state.user.profile = { profilePhoto: action.payload };
       }
     },
+    setOnboarded: (state, action: PayloadAction<boolean>) => {
+      if (state.user) {
+        state.user.isOnboarded = action.payload;
+      }
+    },
   },
 });
 
@@ -115,6 +122,7 @@ export const {
   setError,
   logout,
   updateUserProfilePhoto,
+  setOnboarded,
 } = authSlice.actions;
 
 export default authSlice.reducer;

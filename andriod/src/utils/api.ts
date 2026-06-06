@@ -50,6 +50,8 @@ export const PROFILE_API = {
   UPDATE_EDUCATION: `${BASE_URL}/profile/education`,
   /** DELETE - Delete an education entry */
   DELETE_EDUCATION: `${BASE_URL}/profile/education`,
+  /** POST - Complete mandatory profile onboarding */
+  COMPLETE_ONBOARDING: `${BASE_URL}/profile/onboarding`,
 };
 
 /* ==================== Membership Endpoints ==================== */

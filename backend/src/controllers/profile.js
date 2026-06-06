@@ -163,6 +163,109 @@ export const getProfileCompleteness = async (req, res) => {
 };
 
 /**
+ * Complete profile onboarding after signup.
+ * Requires all mandatory fields to be filled before allowing app access.
+ * Sets isOnboarded = true on the user document upon successful completion.
+ * 
+ * @async
+ * @function completeOnboarding
+ * @param {Object} req - Express request object
+ * @param {Object} req.user - Authenticated user from middleware
+ * @param {string} req.user.id - User's ID
+ * @param {Object} req.body - Onboarding profile data
+ * @param {string} req.body.phone - Contact phone number (required)
+ * @param {string} req.body.joinBatch - JNV joining batch year (required)
+ * @param {string} req.body.passoutBatch - JNV passout batch year (required)
+ * @param {string} req.body.occupation - Current occupation (required)
+ * @param {string} req.body.currentAddress - Current city/location (required)
+ * @param {string} req.body.bloodGroup - Blood group (required)
+ * @param {string} [req.body.organization] - Company/organization name
+ * @param {string} [req.body.sector] - Work sector
+ * @param {string} [req.body.about] - User bio
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with updated profile
+ * 
+ * @requires protect middleware
+ */
+export const completeOnboarding = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const {
+      phone, joinBatch, passoutBatch,
+      occupation, currentAddress, bloodGroup,
+      organization, sector, about
+    } = req.body;
+
+    // Validate mandatory onboarding fields
+    const missing = [];
+    if (!phone) missing.push('Phone Number');
+    if (!joinBatch) missing.push('Join Batch');
+    if (!passoutBatch) missing.push('Passout Batch');
+    if (!occupation) missing.push('Occupation');
+    if (!organization) missing.push('Organization');
+    if (!currentAddress) missing.push('Current City');
+    if (!bloodGroup) missing.push('Blood Group');
+
+    if (missing.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Please fill all required fields: ${missing.join(', ')}`
+      });
+    }
+
+    // Validate blood group enum
+    const validBloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+    if (!validBloodGroups.includes(bloodGroup)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid blood group. Must be one of: A+, A-, B+, B-, AB+, AB-, O+, O-'
+      });
+    }
+
+    const user = await getDocument('users', userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const profileId = user.profile;
+    if (!profileId) {
+      return res.status(404).json({ success: false, message: 'Profile not found' });
+    }
+
+    // Update profile with onboarding data
+    await updateDocument('profiles', profileId, {
+      phone,
+      joinBatch,
+      passoutBatch,
+      occupation,
+      currentAddress,
+      bloodGroup,
+      organization: organization || '',
+      sector: sector || '',
+      about: about || '',
+      updatedAt: new Date()
+    });
+
+    // Mark user as onboarded — this flips the flag so the app stops showing onboarding
+    await updateDocument('users', userId, {
+      isOnboarded: true,
+      updatedAt: new Date()
+    });
+
+    const updatedProfile = await getDocument('profiles', profileId);
+
+    res.status(200).json({
+      success: true,
+      message: 'Welcome to NESMO! Your profile is now set up.',
+      profile: updatedProfile
+    });
+  } catch (error) {
+    console.error('Complete onboarding error:', error);
+    res.status(500).json({ success: false, message: 'Onboarding failed. Please try again.' });
+  }
+};
+
+/**
  * Upload and update user's profile photo.
  * Uploads image to Cloudinary and updates profile with secure URL.
  * 
