@@ -42,6 +42,8 @@ export const PROFILE_API = {
   UPDATE_PROFILE: `${BASE_URL}/profile/update`,
   /** PUT - Upload/update profile photo */
   UPLOAD_PROFILE_PHOTO: `${BASE_URL}/profile/profilePhoto`,
+  /** DELETE - Remove profile photo */
+  DELETE_PROFILE_PHOTO: `${BASE_URL}/profile/profilePhoto`,
   /** GET - Get profile completeness percentage */
   GET_PROFILE_COMPLETENESS: `${BASE_URL}/profile/profileCompleteness`,
   /** POST - Add a new education entry */

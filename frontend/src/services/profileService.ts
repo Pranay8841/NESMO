@@ -174,6 +174,38 @@ export const uploadProfilePhoto = createAsyncThunk(
 );
 
 /**
+ * Delete profile photo.
+ * Resets profilePhoto URL to empty string on backend and updates state.
+ * 
+ * @async
+ * @function deleteProfilePhoto
+ * @returns {Promise<string>} Empty string
+ * 
+ * @example
+ * dispatch(deleteProfilePhoto());
+ */
+export const deleteProfilePhoto = createAsyncThunk(
+    'profile/deleteProfilePhoto',
+    async (_, { dispatch, rejectWithValue }) => {
+        const toastId = toast.loading('Removing photo...');
+        try {
+            const headers = getAuthHeaders();
+            await apiConnector('DELETE', PROFILE_API.DELETE_PROFILE_PHOTO, null, headers);
+            toast.success('Profile photo removed!', { id: toastId });
+            
+            // Also update the user's profile photo in authSlice for navbar display
+            dispatch(updateUserProfilePhoto(''));
+            
+            return '';
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.message || 'Failed to remove photo';
+            toast.error(errorMessage, { id: toastId });
+            return rejectWithValue(errorMessage);
+        }
+    }
+);
+
+/**
  * Fetch profile completeness percentage.
  * Returns 0-100 based on filled profile fields.
  * 

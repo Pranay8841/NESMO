@@ -7,7 +7,7 @@
 
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { fetchProfile, updateProfile, uploadProfilePhoto, fetchProfileCompleteness } from "../../services/profileService";
+import { fetchProfile, updateProfile, uploadProfilePhoto, deleteProfilePhoto, fetchProfileCompleteness } from "../../services/profileService";
 import type { Profile } from "../../services/profileService";
 
 /**
@@ -90,6 +90,22 @@ export const profileSlice = createSlice({
             }
         });
         builder.addCase(uploadProfilePhoto.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload as string;
+        });
+
+        // Delete profile photo
+        builder.addCase(deleteProfilePhoto.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        });
+        builder.addCase(deleteProfilePhoto.fulfilled, (state, action) => {
+            state.loading = false;
+            if (state.profile) {
+                state.profile.profilePhoto = action.payload;
+            }
+        });
+        builder.addCase(deleteProfilePhoto.rejected, (state, action) => {
             state.loading = false;
             state.error = action.payload as string;
         });

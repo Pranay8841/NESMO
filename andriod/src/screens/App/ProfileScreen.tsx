@@ -25,6 +25,7 @@ import {
   fetchProfile,
   updateProfile,
   uploadProfilePhoto,
+  deleteProfilePhoto,
   fetchProfileCompleteness,
   addEducation,
   updateEducation,
@@ -192,6 +193,57 @@ export default function ProfileScreen({ route }: any) {
     }
   };
 
+  const handlePhotoDelete = async () => {
+    Alert.alert(
+      'Remove Photo',
+      'Are you sure you want to remove your profile photo?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: async () => {
+            const resultAction = await dispatch(deleteProfilePhoto());
+            if (deleteProfilePhoto.fulfilled.match(resultAction)) {
+              dispatch(fetchProfile());
+              dispatch(fetchProfileCompleteness());
+              toast.show('Profile photo removed successfully!', { type: 'success' });
+            } else {
+              const errorMsg = resultAction.payload || 'Failed to remove photo';
+              toast.show(errorMsg as string, { type: 'danger' });
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handlePhotoOptions = () => {
+    const hasPhoto = !!profile?.profilePhoto;
+
+    const options = [
+      {
+        text: 'Upload New Photo',
+        onPress: handlePhotoUpload,
+      },
+    ];
+
+    if (hasPhoto) {
+      options.push({
+        text: 'Remove Current Photo',
+        onPress: handlePhotoDelete,
+        style: 'destructive',
+      } as any);
+    }
+
+    options.push({
+      text: 'Cancel',
+      style: 'cancel',
+    } as any);
+
+    Alert.alert('Profile Photo', 'Update or remove your profile picture', options);
+  };
+
   // ==================== Education Handlers ====================
 
   const handleOpenEduForm = (entry?: EducationEntry) => {
@@ -282,7 +334,7 @@ export default function ProfileScreen({ route }: any) {
         <View style={styles.profileHeaderBox}>
           <View style={styles.avatarWrapper}>
             <Image source={{ uri: profileImage }} style={styles.avatar} />
-            <TouchableOpacity style={styles.cameraBtn} onPress={handlePhotoUpload}>
+            <TouchableOpacity style={styles.cameraBtn} onPress={handlePhotoOptions}>
               <Feather name="camera" size={16} color="#FFFFFF" />
             </TouchableOpacity>
           </View>

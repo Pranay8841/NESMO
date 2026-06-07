@@ -103,6 +103,35 @@ export const uploadProfilePhoto = createAsyncThunk(
 );
 
 /**
+ * Delete profile photo
+ * 
+ * @async
+ * @returns {Promise<string>} Empty string
+ * 
+ * @example
+ * dispatch(deleteProfilePhoto())
+ */
+export const deleteProfilePhoto = createAsyncThunk(
+  'profile/deleteProfilePhoto',
+  async (_, { dispatch, rejectWithValue }) => {
+    try {
+      await apiConnector(
+        'DELETE',
+        PROFILE_API.DELETE_PROFILE_PHOTO
+      );
+
+      // Reset global auth user profile photo to empty string for real-time sync
+      dispatch(updateUserProfilePhoto(''));
+
+      return '';
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Failed to delete profile photo';
+      return rejectWithValue(message);
+    }
+  }
+);
+
+/**
  * Fetch profile completeness percentage
  * 
  * @async

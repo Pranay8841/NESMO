@@ -1,10 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
 import {
     Camera, MapPin, Building2, GraduationCap,
-    Phone, Droplet, ChevronRight, Pencil, X, Save, Loader2
+    Phone, Droplet, ChevronRight, Pencil, X, Save, Loader2, Trash2
 } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
-import { fetchProfile, updateProfile, uploadProfilePhoto, fetchProfileCompleteness } from '../../services/profileService';
+import { fetchProfile, updateProfile, uploadProfilePhoto, deleteProfilePhoto, fetchProfileCompleteness } from '../../services/profileService';
 import type { ProfileUpdateData } from '../../services/profileService';
 import { setIsEditing } from '../../redux/slices/profileSlice';
 
@@ -113,6 +113,14 @@ export default function Profile() {
         }
     };
 
+    const handlePhotoDelete = async () => {
+        if (window.confirm('Are you sure you want to remove your profile photo?')) {
+            await dispatch(deleteProfilePhoto());
+            await dispatch(fetchProfile());
+            dispatch(fetchProfileCompleteness());
+        }
+    };
+
     // Calculate profile completeness based on filled fields
     const calculateCompleteness = () => {
         if (!profile) return 0;
@@ -149,6 +157,16 @@ export default function Profile() {
                                         className="w-full h-full object-cover"
                                     />
                                 </div>
+                                {profile?.profilePhoto && (
+                                    <button 
+                                        onClick={handlePhotoDelete}
+                                        disabled={loading}
+                                        className="absolute bottom-0 left-0 w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 bg-red-600 rounded-full flex items-center justify-center border-3 sm:border-4 border-white shadow-lg hover:bg-red-700 disabled:opacity-50 cursor-pointer"
+                                        title="Remove Profile Photo"
+                                    >
+                                        <Trash2 className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 text-white" />
+                                    </button>
+                                )}
                                 <button 
                                     onClick={handlePhotoClick}
                                     disabled={loading}
@@ -598,6 +616,21 @@ export default function Profile() {
                                     </div>
                                     <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                 </button>
+                                {profile?.profilePhoto && (
+                                    <button 
+                                        onClick={handlePhotoDelete}
+                                        className="w-full flex items-center justify-between px-4 py-3.5 bg-red-600/20 hover:bg-red-600/30 rounded-xl transition-colors group cursor-pointer text-red-200 text-left"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <Trash2 className="w-5 h-5 text-red-200" />
+                                            <div>
+                                                <div className="font-bold text-sm text-white">Remove Photo</div>
+                                                <div className="text-xs text-red-200/80">Delete your picture</div>
+                                            </div>
+                                        </div>
+                                        <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform text-red-200" />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>

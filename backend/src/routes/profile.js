@@ -23,6 +23,7 @@ import {
   updateProfile,
   getMyProfile,
   uploadProfilePhoto,
+  deleteProfilePhoto,
   getProfileCompleteness,
   completeOnboarding,
   addEducation,
@@ -54,6 +55,9 @@ router.put("/update", protect, updateProfile);
 
 /** Upload/update profile photo to Cloudinary */
 router.put("/profilePhoto", protect, uploadProfilePhoto);
+
+/** Remove/delete profile photo */
+router.delete("/profilePhoto", protect, deleteProfilePhoto);
 
 /** Get profile completion percentage (0-100) */
 router.get("/profileCompleteness", protect, getProfileCompleteness);

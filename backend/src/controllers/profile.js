@@ -308,6 +308,41 @@ export const uploadProfilePhoto = async (req, res) => {
 };
 
 /**
+ * Remove/delete user's profile photo.
+ * Resets profilePhoto field to empty string in Firestore.
+ * 
+ * @async
+ * @function deleteProfilePhoto
+ * @param {Object} req - Express request object
+ * @param {Object} req.user - Authenticated user from middleware
+ * @param {string} req.user.id - User's ID
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with updated profile
+ * 
+ * @requires protect middleware
+ */
+export const deleteProfilePhoto = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Get user to find their profile ID
+    const user = await getDocument('users', userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const profileId = user.profile;
+    if (!profileId) return res.status(404).json({ success: false, message: 'Profile not found' });
+
+    await updateDocument('profiles', profileId, { profilePhoto: '', updatedAt: new Date() });
+    const updatedProfile = await getDocument('profiles', profileId);
+
+    res.status(200).json({ success: true, message: 'Profile photo removed successfully', profilePhoto: '', profile: updatedProfile });
+  } catch (error) {
+    console.error('Delete profile photo error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
  * Add a new education entry to user's profile.
  * Appends to the educationHistory array on the profile document.
  *
