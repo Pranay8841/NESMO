@@ -55,12 +55,10 @@ export interface AlumniFilters {
     passoutBatch: string;
     /** Filter by city (case-insensitive) */
     city: string;
-    /** Filter by occupation (case-insensitive) */
-    occupation: string;
+    /** Filter by organization (case-insensitive) */
+    organization: string;
     /** Filter by blood group */
     bloodGroup: string;
-    /** Filter by NESMO membership ("true"/"false") */
-    isMember: string;
 }
 
 /**
@@ -87,9 +85,8 @@ const initialFilters: AlumniFilters = {
     joinBatch: '',
     passoutBatch: '',
     city: '',
-    occupation: '',
+    organization: '',
     bloodGroup: '',
-    isMember: '',
 };
 
 const initialState: AlumniState = {

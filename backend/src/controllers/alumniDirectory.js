@@ -41,13 +41,6 @@ export const getAlumniDirectory = async (req, res) => {
       { field: 'status', operator: '==', value: 'ACTIVE' }
     ];
 
-    // Apply role/membership filters
-    if (req.query.isMember === 'true') {
-      userFilters.push({ field: 'isMember', operator: '==', value: true });
-    } else if (req.query.isMember === 'false') {
-      userFilters.push({ field: 'isMember', operator: '==', value: false });
-    }
-
     const allUsers = await getDocuments('users', userFilters);
 
     // Filter out current user (if authenticated)
@@ -63,39 +56,71 @@ export const getAlumniDirectory = async (req, res) => {
         // Apply profile-based filters
         let matchesFilters = true;
 
-        if (req.query.city && (!profile.currentAddress || !profile.currentAddress.toLowerCase().includes(req.query.city.toLowerCase()))) {
-          matchesFilters = false;
+        if (req.query.city) {
+          const trimmedCity = req.query.city.trim();
+          if (trimmedCity) {
+            if (!profile.currentAddress || !profile.currentAddress.toLowerCase().includes(trimmedCity.toLowerCase())) {
+              matchesFilters = false;
+            }
+          }
         }
 
-        if (req.query.occupation && (!profile.occupation || !profile.occupation.toLowerCase().includes(req.query.occupation.toLowerCase()))) {
-          matchesFilters = false;
+        if (req.query.organization) {
+          const trimmedQuery = req.query.organization.trim();
+          if (trimmedQuery) {
+            const orgRegex = new RegExp(`\\b${trimmedQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+            const matchesCurrentOrg = profile.organization && orgRegex.test(profile.organization);
+            const matchesEducationOrg = Array.isArray(profile.educationHistory) &&
+              profile.educationHistory.some(edu => edu.institution && orgRegex.test(edu.institution));
+            if (!matchesCurrentOrg && !matchesEducationOrg) {
+              matchesFilters = false;
+            }
+          }
         }
 
-        if (req.query.joinBatch && profile.joinBatch !== req.query.joinBatch) {
-          matchesFilters = false;
-        }
-
-        if (req.query.passoutBatch && profile.passoutBatch !== req.query.passoutBatch) {
-          matchesFilters = false;
-        }
-
-        if (req.query.bloodGroup) {
-          const normalizedBlood = req.query.bloodGroup.replace(/\s/g, '+').toUpperCase();
-          if (!profile.bloodGroup || profile.bloodGroup.toUpperCase() !== normalizedBlood) {
+        if (req.query.joinBatch) {
+          const trimmedJoin = req.query.joinBatch.trim();
+          if (trimmedJoin && profile.joinBatch !== trimmedJoin) {
             matchesFilters = false;
           }
         }
 
-        // Apply search filter (searches across name, email, city, occupation)
-        if (req.query.search) {
-          const searchLower = req.query.search.toLowerCase();
-          const nameMatch = (`${user.firstName} ${user.lastName}`).toLowerCase().includes(searchLower);
-          const emailMatch = user.email.toLowerCase().includes(searchLower);
-          const cityMatch = profile.currentAddress?.toLowerCase().includes(searchLower);
-          const occMatch = profile.occupation?.toLowerCase().includes(searchLower);
-
-          if (!nameMatch && !emailMatch && !cityMatch && !occMatch) {
+        if (req.query.passoutBatch) {
+          const trimmedPassout = req.query.passoutBatch.trim();
+          if (trimmedPassout && profile.passoutBatch !== trimmedPassout) {
             matchesFilters = false;
+          }
+        }
+
+        if (req.query.bloodGroup) {
+          const trimmedBlood = req.query.bloodGroup.trim();
+          if (trimmedBlood) {
+            const normalizedBlood = trimmedBlood.replace(/\s/g, '+').toUpperCase();
+            if (!profile.bloodGroup || profile.bloodGroup.toUpperCase() !== normalizedBlood) {
+              matchesFilters = false;
+            }
+          }
+        }
+
+        // Apply search filter (searches across name, email, city, occupation, organization)
+        if (req.query.search) {
+          const searchTrimmed = req.query.search.trim();
+          if (searchTrimmed) {
+            const searchLower = searchTrimmed.toLowerCase();
+            const nameMatch = (`${user.firstName} ${user.lastName}`).toLowerCase().includes(searchLower);
+            const emailMatch = user.email.toLowerCase().includes(searchLower);
+            const cityMatch = profile.currentAddress?.toLowerCase().includes(searchLower);
+            const occMatch = profile.occupation?.toLowerCase().includes(searchLower);
+            const orgRegex = new RegExp(`\\b${searchTrimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+            const matchesCurrentOrg = profile.organization ? orgRegex.test(profile.organization) : false;
+            const matchesEducationOrg = Array.isArray(profile.educationHistory)
+              ? profile.educationHistory.some(edu => edu.institution && orgRegex.test(edu.institution))
+              : false;
+            const orgMatch = matchesCurrentOrg || matchesEducationOrg;
+
+            if (!nameMatch && !emailMatch && !cityMatch && !occMatch && !orgMatch) {
+              matchesFilters = false;
+            }
           }
         }
 

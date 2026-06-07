@@ -28,7 +28,7 @@ import {
   setSearchQuery,
   setPage,
 } from '../../redux/slices/alumniSlice';
-import type { AlumniMember } from '../../redux/slices/alumniSlice';
+import type { AlumniMember, AlumniFilters } from '../../redux/slices/alumniSlice';
 import { fetchAlumniDirectory } from '../../services/alumniService';
 import AlumniProfileModal from '../../components/Directory/AlumniProfileModal';
 import { Feather, Ionicons, FontAwesome } from '@expo/vector-icons';
@@ -113,7 +113,7 @@ export default function DirectoryScreen() {
     setShowFilterModal(false);
   };
 
-  const handleRemoveFilter = (key: 'joinBatch' | 'passoutBatch' | 'city' | 'occupation' | 'bloodGroup' | 'isMember') => {
+  const handleRemoveFilter = (key: keyof AlumniFilters) => {
     dispatch(removeFilter(key));
   };
 
@@ -218,10 +218,10 @@ export default function DirectoryScreen() {
               </TouchableOpacity>
             </View>
           )}
-          {appliedFilters.occupation && (
+          {appliedFilters.organization && (
             <View style={styles.chip}>
-              <Text style={styles.chipText} numberOfLines={1}>{appliedFilters.occupation}</Text>
-              <TouchableOpacity onPress={() => handleRemoveFilter('occupation')} style={styles.chipClose}>
+              <Text style={styles.chipText} numberOfLines={1}>{appliedFilters.organization}</Text>
+              <TouchableOpacity onPress={() => handleRemoveFilter('organization')} style={styles.chipClose}>
                 <Feather name="x" size={10} color="#2563EB" />
               </TouchableOpacity>
             </View>
@@ -231,14 +231,6 @@ export default function DirectoryScreen() {
               <Text style={[styles.chipText, { color: '#EF4444' }]} numberOfLines={1}>Blood: {appliedFilters.bloodGroup}</Text>
               <TouchableOpacity onPress={() => handleRemoveFilter('bloodGroup')} style={styles.chipClose}>
                 <Feather name="x" size={10} color="#EF4444" />
-              </TouchableOpacity>
-            </View>
-          )}
-          {appliedFilters.isMember === 'true' && (
-            <View style={[styles.chip, { backgroundColor: '#D1FAE5', borderColor: '#A7F3D0' }]}>
-              <Text style={[styles.chipText, { color: '#059669' }]} numberOfLines={1}>NESMO Members</Text>
-              <TouchableOpacity onPress={() => handleRemoveFilter('isMember')} style={styles.chipClose}>
-                <Feather name="x" size={10} color="#059669" />
               </TouchableOpacity>
             </View>
           )}
@@ -426,14 +418,14 @@ export default function DirectoryScreen() {
                 onChangeText={(val) => dispatch(setFilters({ city: val }))}
               />
 
-              {/* Occupation Input */}
-              <Text style={styles.sheetFieldLabel}>Occupation</Text>
+              {/* Organization/College Input */}
+              <Text style={styles.sheetFieldLabel}>Organization / College</Text>
               <TextInput
-                placeholder="e.g. Software Engineer"
+                placeholder="e.g. Google, AIIMS, IIT..."
                 placeholderTextColor="#94A3B8"
                 style={styles.sheetInput}
-                value={filters.occupation}
-                onChangeText={(val) => dispatch(setFilters({ occupation: val }))}
+                value={filters.organization}
+                onChangeText={(val) => dispatch(setFilters({ organization: val }))}
               />
 
               {/* Blood Group Grid */}
@@ -459,28 +451,6 @@ export default function DirectoryScreen() {
                   </TouchableOpacity>
                 ))}
               </View>
-
-              {/* NESMO members checkbox */}
-              <TouchableOpacity
-                style={styles.checkboxRow}
-                onPress={() =>
-                  dispatch(
-                    setFilters({ isMember: filters.isMember === 'true' ? '' : 'true' })
-                  )
-                }
-              >
-                <View
-                  style={[
-                    styles.checkbox,
-                    filters.isMember === 'true' && styles.checkboxChecked,
-                  ]}
-                >
-                  {filters.isMember === 'true' && (
-                    <Feather name="check" size={12} color="#FFFFFF" />
-                  )}
-                </View>
-                <Text style={styles.checkboxLabel}>NESMO Members Only</Text>
-              </TouchableOpacity>
 
               {/* Actions */}
               <View style={styles.sheetActionRow}>

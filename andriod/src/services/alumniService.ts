@@ -62,9 +62,8 @@ export const fetchAlumniDirectory = createAsyncThunk(
       if (filters.joinBatch) params.joinBatch = filters.joinBatch;
       if (filters.passoutBatch) params.passoutBatch = filters.passoutBatch;
       if (filters.city) params.city = filters.city;
-      if (filters.occupation) params.occupation = filters.occupation;
+      if (filters.organization) params.organization = filters.organization;
       if (filters.bloodGroup) params.bloodGroup = filters.bloodGroup;
-      if (filters.isMember) params.isMember = filters.isMember;
       if (search) params.search = search;
 
       const response = await apiConnector(

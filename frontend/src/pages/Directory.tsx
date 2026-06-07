@@ -54,7 +54,7 @@ export default function Directory() {
         dispatch(clearFilters());
     };
 
-    const handleRemoveFilter = (key: 'joinBatch' | 'passoutBatch' | 'city' | 'occupation' | 'bloodGroup' | 'isMember') => {
+    const handleRemoveFilter = (key: keyof AlumniFilters) => {
         dispatch(removeFilter(key));
     };
 
@@ -149,18 +149,18 @@ export default function Directory() {
                                     </div>
                                 </div>
 
-                                {/* Occupation */}
+                                {/* Organization / College */}
                                 <div>
                                     <label className="block text-xs text-gray-500 uppercase tracking-wider font-semibold mb-2">
-                                        OCCUPATION
+                                        ORGANIZATION / COLLEGE
                                     </label>
                                     <div className="relative">
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                         <input
                                             type="text"
-                                            placeholder="e.g. Software Engineer"
-                                            value={filters.occupation}
-                                            onChange={(e) => dispatch(setFilters({ occupation: e.target.value }))}
+                                            placeholder="e.g. Google, AIIMS, IIT..."
+                                            value={filters.organization}
+                                            onChange={(e) => dispatch(setFilters({ organization: e.target.value }))}
                                             className="w-full pl-10 pr-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 placeholder:text-gray-400"
                                         />
                                     </div>
@@ -187,23 +187,7 @@ export default function Directory() {
                                     </div>
                                 </div>
 
-                                {/* NESMO Members Only */}
-                                <div className="space-y-3">
-                                    <label className="flex items-center gap-2 cursor-pointer">
-                                        <div className="relative">
-                                            <input
-                                                type="checkbox"
-                                                checked={filters.isMember === 'true'}
-                                                onChange={(e) => dispatch(setFilters({ isMember: e.target.checked ? 'true' : '' }))}
-                                                className="w-5 h-5 border-2 border-gray-300 rounded checked:bg-blue-600 checked:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 cursor-pointer appearance-none"
-                                            />
-                                            {filters.isMember === 'true' && (
-                                                <Check className="absolute top-0.5 left-0.5 w-4 h-4 text-white pointer-events-none" />
-                                            )}
-                                        </div>
-                                        <span className="text-sm font-medium text-gray-900">NESMO Members Only</span>
-                                    </label>
-                                </div>
+
 
                                 {/* Apply Filters Button */}
                                 <button
@@ -272,22 +256,16 @@ export default function Directory() {
                                             <X className="w-3.5 h-3.5 cursor-pointer" onClick={() => handleRemoveFilter('city')} />
                                         </span>
                                     )}
-                                    {appliedFilters.occupation && (
+                                    {appliedFilters.organization && (
                                         <span className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm font-semibold flex items-center gap-2">
-                                            {appliedFilters.occupation}
-                                            <X className="w-3.5 h-3.5 cursor-pointer" onClick={() => handleRemoveFilter('occupation')} />
+                                            {appliedFilters.organization}
+                                            <X className="w-3.5 h-3.5 cursor-pointer" onClick={() => handleRemoveFilter('organization')} />
                                         </span>
                                     )}
                                     {appliedFilters.bloodGroup && (
                                         <span className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-sm font-semibold flex items-center gap-2">
                                             Blood: {appliedFilters.bloodGroup}
                                             <X className="w-3.5 h-3.5 cursor-pointer" onClick={() => handleRemoveFilter('bloodGroup')} />
-                                        </span>
-                                    )}
-                                    {appliedFilters.isMember === 'true' && (
-                                        <span className="px-3 py-1.5 bg-green-100 text-green-700 rounded-lg text-sm font-semibold flex items-center gap-2">
-                                            NESMO Members
-                                            <X className="w-3.5 h-3.5 cursor-pointer" onClick={() => handleRemoveFilter('isMember')} />
                                         </span>
                                     )}
                                 </div>
