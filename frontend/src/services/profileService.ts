@@ -11,7 +11,7 @@ import type { AxiosRequestHeaders } from 'axios';
 import toast from 'react-hot-toast';
 import { apiConnector } from '../utils/APIsConnector';
 import { PROFILE_API } from '../utils/api';
-import { updateUserProfilePhoto } from '../redux/slices/authSlice';
+import { updateUserProfilePhoto, updateUserNames } from '../redux/slices/authSlice';
 
 /**
  * User profile data structure.
@@ -51,6 +51,8 @@ export interface Profile {
  * All fields are optional - only send fields to update.
  */
 export interface ProfileUpdateData {
+    firstName?: string;
+    lastName?: string;
     about?: string;
     phone?: string;
     joinBatch?: string;
@@ -109,7 +111,7 @@ export const fetchProfile = createAsyncThunk(
  */
 export const updateProfile = createAsyncThunk(
     'profile/updateProfile',
-    async (profileData: ProfileUpdateData, { rejectWithValue }) => {
+    async (profileData: ProfileUpdateData, { dispatch, rejectWithValue }) => {
         const toastId = toast.loading('Updating profile...');
         try {
             const headers = getAuthHeaders();
@@ -119,6 +121,15 @@ export const updateProfile = createAsyncThunk(
                 city: profileData.currentAddress,
             };
             const response = await apiConnector('PUT', PROFILE_API.UPDATE_PROFILE, backendData, headers);
+            
+            // If name is updated, sync it to auth user state
+            if (profileData.firstName !== undefined || profileData.lastName !== undefined) {
+                dispatch(updateUserNames({
+                    firstName: profileData.firstName || '',
+                    lastName: profileData.lastName || '',
+                }));
+            }
+
             toast.success('Profile updated successfully!', { id: toastId });
             return response.data.profile;
         } catch (error: any) {

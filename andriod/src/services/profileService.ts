@@ -1,7 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { apiConnector } from '../utils/APIsConnector';
 import { PROFILE_API } from '../utils/api';
-import { updateUserProfilePhoto, setOnboarded } from '../redux/slices/authSlice';
+import { updateUserProfilePhoto, updateUserNames, setOnboarded } from '../redux/slices/authSlice';
 
 /**
  * Fetch current user's profile
@@ -40,7 +40,7 @@ export const updateProfile = createAsyncThunk(
   'profile/updateProfile',
   async (
     profileData: Record<string, any>,
-    { rejectWithValue }
+    { dispatch, rejectWithValue }
   ) => {
     try {
       const backendData = {
@@ -53,6 +53,14 @@ export const updateProfile = createAsyncThunk(
         PROFILE_API.UPDATE_PROFILE,
         backendData
       );
+
+      // If name is updated, sync it to auth user state
+      if (profileData.firstName !== undefined || profileData.lastName !== undefined) {
+        dispatch(updateUserNames({
+          firstName: profileData.firstName || '',
+          lastName: profileData.lastName || '',
+        }));
+      }
 
       return response.data.profile;
     } catch (error: any) {

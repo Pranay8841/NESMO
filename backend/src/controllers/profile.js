@@ -38,6 +38,8 @@ export const updateProfile = async (req, res) => {
   try {
     const userId = req.user.id;
     const {
+      firstName,
+      lastName,
       about,
       phone,
       city,
@@ -60,7 +62,18 @@ export const updateProfile = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Profile not found' });
     }
 
+    // Update user document if names are provided
+    if (firstName !== undefined || lastName !== undefined) {
+      await updateDocument('users', userId, {
+        ...(firstName !== undefined && { firstName }),
+        ...(lastName !== undefined && { lastName }),
+        updatedAt: new Date()
+      });
+    }
+
     const updates = {
+      ...(firstName !== undefined && { firstName }),
+      ...(lastName !== undefined && { lastName }),
       about,
       phone,
       currentAddress: city,

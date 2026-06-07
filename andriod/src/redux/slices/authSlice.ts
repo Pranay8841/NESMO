@@ -105,6 +105,12 @@ export const authSlice = createSlice({
         state.user.profile = { profilePhoto: action.payload };
       }
     },
+    updateUserNames: (state, action: PayloadAction<{ firstName: string; lastName: string }>) => {
+      if (state.user) {
+        state.user.firstName = action.payload.firstName;
+        state.user.lastName = action.payload.lastName;
+      }
+    },
     setOnboarded: (state, action: PayloadAction<boolean>) => {
       if (state.user) {
         state.user.isOnboarded = action.payload;
@@ -122,6 +128,7 @@ export const {
   setError,
   logout,
   updateUserProfilePhoto,
+  updateUserNames,
   setOnboarded,
 } = authSlice.actions;
 

@@ -78,6 +78,8 @@ export default function ProfileScreen({ route }: any) {
 
   // Form State
   const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
     about: '',
     phone: '',
     joinBatch: '',
@@ -105,6 +107,8 @@ export default function ProfileScreen({ route }: any) {
   useEffect(() => {
     if (profile) {
       setFormData({
+        firstName: user?.firstName || '',
+        lastName: user?.lastName || '',
         about: profile.about || '',
         phone: profile.phone || '',
         joinBatch: profile.joinBatch || '',
@@ -116,7 +120,7 @@ export default function ProfileScreen({ route }: any) {
         bloodGroup: profile.bloodGroup || '',
       });
     }
-  }, [profile]);
+  }, [profile, user]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -127,6 +131,8 @@ export default function ProfileScreen({ route }: any) {
       // Cancel edit - restore original values
       if (profile) {
         setFormData({
+          firstName: user?.firstName || '',
+          lastName: user?.lastName || '',
           about: profile.about || '',
           phone: profile.phone || '',
           joinBatch: profile.joinBatch || '',
@@ -338,7 +344,32 @@ export default function ProfileScreen({ route }: any) {
               <Feather name="camera" size={16} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
-          <Text style={styles.nameText}>{fullName}</Text>
+          {isEditing ? (
+            <View style={styles.nameEditRow}>
+              <View style={styles.nameInputWrapper}>
+                <Text style={styles.fieldLabelEdit}>First Name</Text>
+                <TextInput
+                  style={styles.inputEdit}
+                  value={formData.firstName}
+                  onChangeText={(txt) => handleInputChange('firstName', txt)}
+                  placeholder="First Name"
+                  placeholderTextColor="#94A3B8"
+                />
+              </View>
+              <View style={[styles.nameInputWrapper, { marginLeft: 12 }]}>
+                <Text style={styles.fieldLabelEdit}>Last Name</Text>
+                <TextInput
+                  style={styles.inputEdit}
+                  value={formData.lastName}
+                  onChangeText={(txt) => handleInputChange('lastName', txt)}
+                  placeholder="Last Name"
+                  placeholderTextColor="#94A3B8"
+                />
+              </View>
+            </View>
+          ) : (
+            <Text style={styles.nameText}>{fullName}</Text>
+          )}
           <Text style={styles.emailText}>{user?.email}</Text>
           <View style={[styles.roleBadge, { backgroundColor: roleInfo.bgColor }]}>
             <Text style={styles.roleBadgeText}>{roleInfo.label}</Text>
@@ -1363,5 +1394,15 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: '#FFFFFF',
+  },
+  nameEditRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: 12,
+    paddingHorizontal: 10,
+  },
+  nameInputWrapper: {
+    flex: 1,
   },
 });

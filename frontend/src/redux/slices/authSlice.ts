@@ -97,10 +97,16 @@ export const authSlice = createSlice({
                 // If profile is a string, convert it to an object with profilePhoto
                 state.user.profile = { profilePhoto: action.payload };
             }
+        },
+        updateUserNames: (state, action: PayloadAction<{ firstName: string; lastName: string }>) => {
+            if (state.user) {
+                state.user.firstName = action.payload.firstName;
+                state.user.lastName = action.payload.lastName;
+            }
         }
     },
 });
 
-export const { setLoading, setToken, setUser, setPendingVerificationEmail, clearPendingVerification, logout, updateUserProfilePhoto } = authSlice.actions;
+export const { setLoading, setToken, setUser, setPendingVerificationEmail, clearPendingVerification, logout, updateUserProfilePhoto, updateUserNames } = authSlice.actions;
 
 export default authSlice.reducer;

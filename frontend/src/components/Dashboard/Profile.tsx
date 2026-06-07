@@ -20,6 +20,8 @@ export default function Profile() {
     
     // Form state for editing
     const [formData, setFormData] = useState<ProfileUpdateData>({
+        firstName: '',
+        lastName: '',
         about: '',
         phone: '',
         joinBatch: '',
@@ -41,6 +43,8 @@ export default function Profile() {
     useEffect(() => {
         if (profile) {
             setFormData({
+                firstName: user?.firstName || '',
+                lastName: user?.lastName || '',
                 about: profile.about || '',
                 phone: profile.phone || '',
                 joinBatch: profile.joinBatch || '',
@@ -52,7 +56,7 @@ export default function Profile() {
                 bloodGroup: profile.bloodGroup || '',
             });
         }
-    }, [profile]);
+    }, [profile, user]);
 
     // Derive user info
     const fullName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User' : 'User';
@@ -79,6 +83,8 @@ export default function Profile() {
             // Reset form data if cancelling
             if (profile) {
                 setFormData({
+                    firstName: user?.firstName || '',
+                    lastName: user?.lastName || '',
                     about: profile.about || '',
                     phone: profile.phone || '',
                     joinBatch: profile.joinBatch || '',
@@ -180,11 +186,40 @@ export default function Profile() {
                             <div className="flex-1 w-full">
                                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2 sm:mb-3 gap-2 sm:gap-3">
                                     <div className="text-center sm:text-left">
-                                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5 sm:gap-2 md:gap-3 mb-1 sm:mb-2">
-                                            <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black text-gray-900 break-words">{fullName}</h1>
-                                            <span className={`px-2 sm:px-3 py-0.5 sm:py-1 ${roleInfo.bgColor} text-white text-[10px] sm:text-xs font-bold rounded-full uppercase tracking-wider`}>
-                                                {roleInfo.label}
-                                            </span>
+                                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5 sm:gap-2 md:gap-3 mb-1 sm:mb-2 w-full">
+                                            {isEditing ? (
+                                                <div className="flex flex-col sm:flex-row gap-2 w-full max-w-md">
+                                                    <div className="flex flex-col flex-1">
+                                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 text-left">First Name</label>
+                                                        <input
+                                                            type="text"
+                                                            name="firstName"
+                                                            value={formData.firstName}
+                                                            onChange={handleInputChange}
+                                                            placeholder="First Name"
+                                                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full"
+                                                        />
+                                                    </div>
+                                                    <div className="flex flex-col flex-1">
+                                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 text-left">Last Name</label>
+                                                        <input
+                                                            type="text"
+                                                            name="lastName"
+                                                            value={formData.lastName}
+                                                            onChange={handleInputChange}
+                                                            placeholder="Last Name"
+                                                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black text-gray-900 break-words">{fullName}</h1>
+                                                    <span className={`px-2 sm:px-3 py-0.5 sm:py-1 ${roleInfo.bgColor} text-white text-[10px] sm:text-xs font-bold rounded-full uppercase tracking-wider`}>
+                                                        {roleInfo.label}
+                                                    </span>
+                                                </>
+                                            )}
                                         </div>
                                         {(profile?.occupation || isEditing) && (
                                             <h2 className="text-xs sm:text-base md:text-lg lg:text-xl font-bold text-blue-600 mb-1 sm:mb-2">

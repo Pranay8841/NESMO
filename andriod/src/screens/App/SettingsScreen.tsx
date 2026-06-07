@@ -147,30 +147,6 @@ export default function SettingsScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.actionTile, { borderColor: '#D1FAE5' }]}
-            activeOpacity={0.75}
-            onPress={() => navigation.navigate(APP_CONSTANTS.SCREENS.DIRECTORY)}
-          >
-            <View style={[styles.actionIconContainer, { backgroundColor: '#ECFDF5' }]}>
-              <Feather name="users" size={20} color="#059669" />
-            </View>
-            <Text style={styles.actionTileTitle}>Alumni Directory</Text>
-            <Text style={styles.actionTileDesc}>Find and connect with old batchmates</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.actionTile, { borderColor: '#EFF6FF' }]}
-            activeOpacity={0.75}
-            onPress={() => navigation.navigate(APP_CONSTANTS.SCREENS.COMMUNITY)}
-          >
-            <View style={[styles.actionIconContainer, { backgroundColor: '#EFF6FF' }]}>
-              <Feather name="message-square" size={20} color="#2563EB" />
-            </View>
-            <Text style={styles.actionTileTitle}>Community</Text>
-            <Text style={styles.actionTileDesc}>Connect and chat with JNV alumni</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
             style={[styles.actionTile, { borderColor: '#CBD5E1' }]}
             activeOpacity={0.75}
             onPress={handleLogout}
