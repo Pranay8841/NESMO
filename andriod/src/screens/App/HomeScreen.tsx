@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
@@ -37,8 +38,19 @@ export default function HomeScreen() {
     }
   }, [dispatch, token]);
 
-  const handleLogout = async () => {
-    await dispatch(logoutUser());
+  const handleReportBug = async () => {
+    const email = 'pranaybhandekar8841@gmail.com';
+    const subject = encodeURIComponent('NESMO App - Bug Report');
+    const body = encodeURIComponent(
+      'Hi NESMO Support Team,\n\nI would like to report the following bug:\n\n[Describe the issue here]\n\nDevice Details:\n- App: NESMO Android App\n- User: ' +
+      (user?.firstName ? `${user.firstName} ${user.lastName}` : 'Anonymous')
+    );
+    const url = `mailto:${email}?subject=${subject}&body=${body}`;
+    try {
+      await Linking.openURL(url);
+    } catch (error) {
+      console.warn('Failed to open mail client:', error);
+    }
   };
 
   return (
@@ -68,8 +80,8 @@ export default function HomeScreen() {
                 </View>
               )}
             </TouchableOpacity>
-            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-              <Feather name="log-out" size={16} color="#FF3B30" />
+            <TouchableOpacity style={styles.bugButton} onPress={handleReportBug}>
+              <Feather name="alert-circle" size={18} color="#ff0703ff" />
             </TouchableOpacity>
           </View>
         ) : (
@@ -94,10 +106,10 @@ export default function HomeScreen() {
         <About />
 
         {/* Testimonials */}
-        <Testimonial />
+        {/* <Testimonial /> */}
 
         {/* Spotlights */}
-        <Spotlight />
+        {/* <Spotlight /> */}
 
         {/* Newsletter Subscription */}
         <Newsletter />
@@ -139,10 +151,10 @@ const styles = StyleSheet.create({
     color: '#2563EB',
     letterSpacing: 0.8,
   },
-  logoutButton: {
+  bugButton: {
     padding: 6,
     borderRadius: 8,
-    backgroundColor: '#FFEAEA',
+    backgroundColor: '#F1F5F9',
   },
   headerActions: {
     flexDirection: 'row',

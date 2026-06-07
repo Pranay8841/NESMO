@@ -12,10 +12,7 @@ import { Feather, FontAwesome, Ionicons } from '@expo/vector-icons';
 export default function Footer() {
   const handleOpenURL = async (url: string) => {
     try {
-      const supported = await Linking.canOpenURL(url);
-      if (supported) {
-        await Linking.openURL(url);
-      }
+      await Linking.openURL(url);
     } catch (error) {
       console.warn('Failed to open URL:', url, error);
     }
@@ -36,13 +33,13 @@ export default function Footer() {
         Connecting Navodaya alumni for a lifetime of support, growth, and giving back. Together we build a legacy that transcends generations.
       </Text>
 
-      {/* NGO Status */}
+      {/* NGO Status
       <View style={styles.ngoRow}>
         <Ionicons name="checkmark-circle" size={14} color="#EAB308" style={styles.ngoIcon} />
         <Text style={styles.ngoText}>
           Authorized NGO Reg. No. 12345/GOI
         </Text>
-      </View>
+      </View> */}
 
       {/* Contact Details (Clickable) */}
       <View style={styles.contactContainer}>
@@ -50,24 +47,24 @@ export default function Footer() {
 
         <TouchableOpacity
           style={styles.contactRow}
-          onPress={() => handleOpenURL('tel:+919876543210')}
+          onPress={() => handleOpenURL('tel:+917620149253')}
         >
           <Feather name="phone" size={13} color="#64748B" style={styles.contactIcon} />
-          <Text style={styles.contactValue}>+91 98765 43210</Text>
+          <Text style={styles.contactValue}>+91 7620149253</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.contactRow}
-          onPress={() => handleOpenURL('mailto:contact@nesmo.org')}
+          onPress={() => handleOpenURL('mailto:pranaybhandekar8841@gmail.com')}
         >
           <Feather name="mail" size={13} color="#64748B" style={styles.contactIcon} />
-          <Text style={styles.contactValue}>contact@nesmo.org</Text>
+          <Text style={styles.contactValue}>pranaybhandekar8841@gmail.com</Text>
         </TouchableOpacity>
 
         <View style={styles.contactRow}>
           <Feather name="map-pin" size={13} color="#64748B" style={styles.contactIcon} />
           <Text style={styles.addressText}>
-            123 Alumni Road, Connaught Place, New Delhi, India 110001
+            NESMO JNV Ghot, Gadchiroli, 442603
           </Text>
         </View>
       </View>
@@ -96,7 +93,7 @@ export default function Footer() {
         © {new Date().getFullYear()} NESMO. All rights reserved.
       </Text>
       <Text style={styles.taglineText}>
-        Empowering Alumni Since 1988
+        Empowering Alumni Since 1987
       </Text>
     </View>
   );

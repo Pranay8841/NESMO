@@ -82,6 +82,14 @@ export default function About() {
       screen: APP_CONSTANTS.SCREENS.COMMUNITY,
     },
     {
+      title: 'Events',
+      desc: 'Annual reunions, regional meets, and skill-building workshops.',
+      icon: 'calendar',
+      iconSet: 'Feather',
+      color: '#2563EB',
+      screen: APP_CONSTANTS.SCREENS.EVENTS,
+    },
+    {
       title: 'Medical Helpline',
       desc: '24/7 emergency support and professional health consultations.',
       icon: 'stethoscope',
@@ -102,14 +110,6 @@ export default function About() {
       iconSet: 'FontAwesome',
       color: '#EA580C',
     },
-    {
-      title: 'Events',
-      desc: 'Annual reunions, regional meets, and skill-building workshops.',
-      icon: 'calendar',
-      iconSet: 'Feather',
-      color: '#2563EB',
-      screen: APP_CONSTANTS.SCREENS.EVENTS,
-    },
   ];
 
   const renderIcon = (feature: typeof features[0]) => {
@@ -127,46 +127,6 @@ export default function About() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.yellowBar} />
-        <Text style={styles.subtitle}>WHAT WE DO</Text>
-      </View>
-      <Text style={styles.title}>
-        Connects, Supports, and <Text style={styles.highlightText}>Grow</Text>
-      </Text>
-      <Text style={styles.description}>
-        We bring together alumni, students, and professionals to foster mentorship, opportunities, social impact, and a strong support network beyond school life.
-      </Text>
-
-      {/* Feature Grid */}
-      <View style={styles.grid}>
-        {features.map((feature, idx) => (
-          <TouchableOpacity
-            key={idx}
-            style={styles.card}
-            onPress={() => feature.screen && navigation.navigate(feature.screen)}
-            disabled={!feature.screen}
-          >
-            <View style={[styles.iconBox, { backgroundColor: `${feature.color}15` }]}>
-              {renderIcon(feature)}
-            </View>
-            <Text style={styles.cardTitle} numberOfLines={1}>
-              {feature.title}
-            </Text>
-            <Text style={styles.cardDesc} numberOfLines={3}>
-              {feature.desc}
-            </Text>
-            {feature.screen && (
-              <View style={styles.learnMoreRow}>
-                <Text style={styles.learnMoreText}>Learn More</Text>
-                <Feather name="arrow-right" size={10} color="#2563EB" />
-              </View>
-            )}
-          </TouchableOpacity>
-        ))}
-      </View>
-
       {/* About NESMO Details Card */}
       <View style={styles.aboutCard}>
         {/* Banner with overlay */}
@@ -211,12 +171,51 @@ export default function About() {
             </View>
           )}
 
-          {/* Full Story Button */}
+          {/* Full Story Button
           <TouchableOpacity style={styles.storyButton}>
             <Text style={styles.storyButtonText}>Read Full Story</Text>
             <Feather name="arrow-right" size={14} color="#FFFFFF" style={styles.buttonArrow} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
+      </View>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.yellowBar} />
+        <Text style={styles.subtitle}>WHAT WE DO</Text>
+      </View>
+      <Text style={styles.title}>
+        Connects, Supports, and <Text style={styles.highlightText}>Grow</Text>
+      </Text>
+      <Text style={styles.description}>
+        We bring together alumni, students, and professionals to foster mentorship, opportunities, social impact, and a strong support network beyond school life.
+      </Text>
+
+      {/* Feature Grid */}
+      <View style={styles.grid}>
+        {features.map((feature, idx) => (
+          <TouchableOpacity
+            key={idx}
+            style={styles.card}
+            onPress={() => feature.screen && navigation.navigate(feature.screen)}
+            disabled={!feature.screen}
+          >
+            <View style={[styles.iconBox, { backgroundColor: `${feature.color}15` }]}>
+              {renderIcon(feature)}
+            </View>
+            <Text style={styles.cardTitle} numberOfLines={1}>
+              {feature.title}
+            </Text>
+            <Text style={styles.cardDesc} numberOfLines={3}>
+              {feature.desc}
+            </Text>
+            {feature.screen && (
+              <View style={styles.learnMoreRow}>
+                <Text style={styles.learnMoreText}>Learn More</Text>
+                <Feather name="arrow-right" size={10} color="#2563EB" />
+              </View>
+            )}
+          </TouchableOpacity>
+        ))}
       </View>
     </View>
   );
@@ -319,6 +318,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.02,
     shadowRadius: 3,
     elevation: 2,
+    marginBottom: 32,
   },
   aboutImageContainer: {
     height: 140,
